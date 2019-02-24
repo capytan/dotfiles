@@ -1,3 +1,6 @@
+# encoding
+export LANG=ja_JP.UTF-8
+
 # completions
 fpath=(~/dotfiles $fpath)
 autoload -Uz compinit && compinit
@@ -9,6 +12,7 @@ export EDITOR=vim
 HISTFILE=~/.zsh_history
 HISTSIZE=10000
 SAVEHIST=10000
+setopt share_history
 
 # prompt
 # git-completion
@@ -29,3 +33,8 @@ alias gst='git status'
 alias gp='git pull'
 alias dc='docker'
 alias dcc='docker-compose'
+
+# other
+setopt auto_cd
+setopt auto_pushd
+setopt correct
