@@ -3,6 +3,7 @@ export LANG=ja_JP.UTF-8
 
 # completions
 fpath=(~/dotfiles $fpath)
+# fpath=($(brew --prefix)/share/zsh/site-functions $fpath)
 autoload -Uz compinit && compinit
 
 # editor
