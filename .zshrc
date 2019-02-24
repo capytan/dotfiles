@@ -1,6 +1,9 @@
 # encoding
 export LANG=ja_JP.UTF-8
 
+# colors
+autoload -U colors && colors
+
 # completions
 fpath=(~/dotfiles $fpath)
 autoload -Uz compinit && compinit
@@ -18,7 +21,7 @@ setopt share_history
 # git-completion
 # https://github.com/git/git/blob/master/contrib/completion/git-prompt.sh
 source ~/dotfiles/.git-prompt.sh
-setopt PROMPT_SUBST ; PROMPT='╭─○ %F{green}%n%f:%F{cyan}%~%f $(__git_ps1 " (%s)")
+setopt PROMPT_SUBST ; PROMPT='╭─○ %{$fg_bold[green]%}%n%{$reset_color%}:%{$fg_bold[cyan]%}%~ %{$reset_color%}$(__git_ps1 " (%s)")
 ╰─○ '
 
 # aliases
