@@ -5,6 +5,13 @@ export LANG=ja_JP.UTF-8
 autoload -U colors && colors
 
 # completions
+
+# for heroku completion
+if type brew &>/dev/null; then
+  FPATH=$(brew --prefix)/share/zsh/site-functions:$FPATH
+fi
+
+# for git completion
 fpath=(~/dotfiles $fpath)
 autoload -Uz compinit && compinit
 
