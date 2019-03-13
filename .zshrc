@@ -43,6 +43,7 @@ alias gst='git status'
 alias gp='git pull'
 alias dc='docker'
 alias dcc='docker-compose'
+alias dccr='docker-compose run --rm'
 
 # other
 setopt auto_cd
