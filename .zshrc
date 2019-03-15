@@ -49,3 +49,6 @@ alias dccr='docker-compose run --rm'
 setopt auto_cd
 setopt auto_pushd
 setopt correct
+
+# fzf
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
