@@ -12,6 +12,9 @@ Plug 'scrooloose/nerdtree'
 Plug 'jistr/vim-nerdtree-tabs'
 Plug 'tpope/vim-commentary'
 Plug 'tpope/vim-fugitive'
+Plug 'vim-airline/vim-airline'
+Plug 'vim-airline/vim-airline-themes'
+Plug 'airblade/vim-gitgutter'
 
 Plug 'Shougo/unite.vim'
 Plug 'tpope/vim-rails'
@@ -50,6 +53,14 @@ set fenc=utf-8
 syntax on
 set ruler
 set number
+
+" vim-airline
+let g:airline_theme = 'murmur'
+let g:airline#extensions#syntastic#enabled = 1
+let g:airline#extensions#branch#enabled = 1
+let g:airline#extensions#tabline#enabled = 1
+let g:airline#extensions#tagbar#enabled = 1
+let g:airline_skip_empty_sections = 1
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Files, backups and undo
