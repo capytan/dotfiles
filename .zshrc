@@ -33,6 +33,7 @@ setopt PROMPT_SUBST ; PROMPT='╭─○ %{$fg_bold[green]%}%n%{$reset_color%}:%{
 
 # aliases
 alias v='vim'
+alias editvimrc='vim ~/dotfiles/.vimrc'
 alias reload='source ~/.zshrc'
 alias g='git'
 alias gb='git branch'
