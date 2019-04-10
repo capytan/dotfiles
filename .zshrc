@@ -33,6 +33,16 @@ fbrm() {
   git checkout $(echo "$branch" | sed "s/.* //" | sed "s#remotes/[^/]*/##")
 }
 
+fzf-add() {
+	local selected
+	selected="$(git status -s | fzf | cut -c3-)"
+	if [ -n "$selected" ]; then
+		echo $selected
+		git add $selected
+	fi
+}
+alias fa="fzf-add"
+
 # editor
 export EDITOR=vim
 
@@ -52,6 +62,7 @@ setopt PROMPT_SUBST ; PROMPT='╭─○ %{$fg_bold[green]%}%n%{$reset_color%}:%{
 # aliases
 alias v='vim'
 alias editvimrc='vim ~/dotfiles/.vimrc'
+alias editzshrc='vim ~/dotfiles/.zshrc'
 alias reload='source ~/.zshrc'
 alias g='git'
 alias gb='git branch'
@@ -63,6 +74,9 @@ alias gp='git pull'
 alias dc='docker'
 alias dcc='docker-compose'
 alias dccr='docker-compose run --rm'
+alias be='bundle exec'
+alias ls='ls -G'
+alias ll='ls -alF'
 
 # other
 setopt auto_cd
