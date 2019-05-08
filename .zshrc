@@ -85,3 +85,6 @@ setopt correct
 
 # fzf
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+# nodebrew
+export PATH=$HOME/.nodebrew/current/bin:$PATH

@@ -1,4 +1,5 @@
 export EDITOR=atom
+export PATH=$HOME/.nodebrew/current/bin:$PATH
 
 # prompt
 # show git branch
