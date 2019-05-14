@@ -43,6 +43,14 @@ fzf-add() {
 }
 alias fa="fzf-add"
 
+# for cd completion
+fd() {
+  local dir
+  dir=$(find ${1:-.} -path '*/\.*' -prune \
+                        -o -type d -print 2> /dev/null | fzf +m) &&
+                      cd "$dir"
+                  }
+
 # editor
 export EDITOR=vim
 
