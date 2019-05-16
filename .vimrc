@@ -334,3 +334,11 @@ else
   let g:airline_symbols.readonly = ''
   let g:airline_symbols.linenr = ''
 endif
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" fzf.vim
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+" Files command
+command! -bang -nargs=? -complete=dir Files
+  \ call fzf#vim#files(<q-args>, fzf#vim#with_preview(), <bang>0)
