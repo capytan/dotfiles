@@ -97,3 +97,6 @@ setopt correct
 
 # nodebrew
 export PATH=$HOME/.nodebrew/current/bin:$PATH
+
+# direnv
+eval "$(direnv hook zsh)"

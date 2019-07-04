@@ -10,3 +10,6 @@ export PS1='╭─○ \[\033[1;32m\]\u\[\033[m\]:\[\033[1;36m\]\w \[\033[m\]$(__
 
 # fzf
 [ -f ~/.fzf.bash ] && source ~/.fzf.bash
+
+# direnv
+eval "$(direnv hook bash)"
