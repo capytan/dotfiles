@@ -172,8 +172,8 @@ set fenc=utf-8
 syntax on
 set ruler
 set number
-set cursorline
-set cursorcolumn
+" set cursorline
+" set cursorcolumn
 
 let no_buffers_menu=1
 if !exists('g:not_finish_vimplug')
