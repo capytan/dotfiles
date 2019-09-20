@@ -100,3 +100,5 @@ export PATH=$HOME/.nodebrew/current/bin:$PATH
 
 # direnv
 eval "$(direnv hook zsh)"
+export PATH="$HOME/.jenv/bin:$PATH"
+eval "$(jenv init -)"

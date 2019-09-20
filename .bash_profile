@@ -6,3 +6,5 @@ eval "$(rbenv init -)"
 export PATH="$HOME/.tfenv/bin:$PATH"
 
 test -r ~/.bashrc && . ~/.bashrc
+export PATH="$HOME/.jenv/bin:$PATH"
+eval "$(jenv init -)"
