@@ -308,6 +308,8 @@ set ignorecase
 set smartcase
 set wrapscan
 
+set clipboard+=unnamed
+
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Convenience variables
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
