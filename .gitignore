@@ -1,18 +1,19 @@
 # Ignore everything by default.
-*
-.*
+/*
+/.*
 
 # explicit list
-!.bash_profile
-!.bashrc
-!.git
-!.git-prompt.sh
-!.gitignore
-!.tmux.conf
-!.vimrc
-!.zprofile
-!.zshrc
-!._git
-!dotfileslink.sh
-!generate.vim
-!git-completion.bash
+!/.bash_profile
+!/.bashrc
+!/.git
+!/.git-prompt.sh
+!/.gitignore
+!/.tmux.conf
+!/.vimrc
+!/.zprofile
+!/.zshrc
+!/._git
+!/dotfileslink.sh
+!/generate.vim
+!/git-completion.bash
+!/vscode
