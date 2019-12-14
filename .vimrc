@@ -62,7 +62,8 @@ Plug 'tpope/vim-haml'
 Plug 'mattn/emmet-vim'
 
 " javascript
-Plug 'jelera/vim-javascript-syntax'
+" Plug 'jelera/vim-javascript-syntax'
+Plug 'othree/yajs.vim'
 
 " ruby
 Plug 'tpope/vim-rails'
