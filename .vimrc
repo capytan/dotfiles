@@ -65,6 +65,9 @@ Plug 'mattn/emmet-vim'
 " Plug 'jelera/vim-javascript-syntax'
 Plug 'othree/yajs.vim'
 
+" Vue.js
+Plug 'posva/vim-vue'
+
 " ruby
 Plug 'tpope/vim-rails'
 Plug 'tpope/vim-rake'
