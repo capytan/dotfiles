@@ -13,3 +13,7 @@ export PS1='╭─○ \[\033[1;32m\]\u\[\033[m\]:\[\033[1;36m\]\w \[\033[m\]$(__
 
 # direnv
 eval "$(direnv hook bash)"
+
+# nodenv
+source ~/.nodenv/completions/nodenv.bash
+
