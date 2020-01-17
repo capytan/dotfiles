@@ -101,6 +101,3 @@ export PATH="$HOME/.jenv/bin:$PATH"
 eval "$(jenv init -)"
 export PATH="/usr/local/opt/sphinx-doc/bin:$PATH"
 
-# nodenv
-source ~/.nodenv/completions/nodenv.zsh
-
