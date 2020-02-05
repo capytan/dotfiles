@@ -377,3 +377,9 @@ if executable('solargraph')
         \ 'whitelist': ['ruby'],
         \ })
 endif
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" key-bind
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+nnoremap <silent> <C-j> :bprev<CR>
+nnoremap <silent> <C-k> :bnext<CR>
