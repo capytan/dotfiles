@@ -10,6 +10,7 @@
 !/.gitignore
 !/.tmux.conf
 !/.vimrc
+!/.ideavimrc
 !/.zprofile
 !/.zshrc
 !/._git
