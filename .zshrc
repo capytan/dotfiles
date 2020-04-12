@@ -104,3 +104,4 @@ export PATH="$HOME/.jenv/bin:$PATH"
 eval "$(jenv init -)"
 export PATH="/usr/local/opt/sphinx-doc/bin:$PATH"
 
+export PATH="/usr/local/opt/mysql@5.7/bin:$PATH"

@@ -8,10 +8,11 @@ call plug#begin('~/.vim/plugged')
 
 " Make sure you use single quotes
 
-Plug 'scrooloose/nerdtree'
+Plug 'preservim/nerdtree'
 Plug 'jistr/vim-nerdtree-tabs'
 Plug 'tpope/vim-commentary'
 Plug 'tpope/vim-fugitive'
+Plug 'tpope/vim-surround'
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 Plug 'airblade/vim-gitgutter'
@@ -59,6 +60,7 @@ Plug 'tomasr/molokai'
 Plug 'hail2u/vim-css3-syntax'
 Plug 'gorodinskiy/vim-coloresque'
 Plug 'tpope/vim-haml'
+Plug 'slim-template/vim-slim'
 Plug 'mattn/emmet-vim'
 
 " javascript
