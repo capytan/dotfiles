@@ -30,5 +30,6 @@
     },
     "[yaml]": {
         "editor.defaultFormatter": "redhat.vscode-yaml"
-    }
+    },
+    "vim.useSystemClipboard": true
 }
