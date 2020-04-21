@@ -31,5 +31,8 @@
     "[yaml]": {
         "editor.defaultFormatter": "redhat.vscode-yaml"
     },
-    "vim.useSystemClipboard": true
+    "vim.useSystemClipboard": true,
+    "[markdown]": {
+        "editor.defaultFormatter": "fcrespo82.markdown-table-formatter"
+    }
 }
