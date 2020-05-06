@@ -83,7 +83,7 @@ Plug 'Shougo/unite.vim'
 " vim-lsp
 Plug 'prabirshrestha/async.vim'
 Plug 'prabirshrestha/vim-lsp'
-Plug 'mattn/vim-lsp-settings'
+Plug 'mattn/vim-lsp-settings', { 'commit': '3e48c84109192369bf509b7352c05b58d703768a' }
 Plug 'prabirshrestha/asyncomplete.vim'
 Plug 'prabirshrestha/asyncomplete-lsp.vim'
 
