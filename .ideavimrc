@@ -1,1 +1,6 @@
 set clipboard-=ideaput
+set hlsearch
+set ignorecase
+set smartcase
+set cmdheight=2
+set laststatus=2
