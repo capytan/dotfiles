@@ -83,7 +83,7 @@ Plug 'Shougo/unite.vim'
 " vim-lsp
 Plug 'prabirshrestha/async.vim'
 Plug 'prabirshrestha/vim-lsp'
-Plug 'mattn/vim-lsp-settings', { 'commit': '3e48c84109192369bf509b7352c05b58d703768a' }
+Plug 'mattn/vim-lsp-settings'
 Plug 'prabirshrestha/asyncomplete.vim'
 Plug 'prabirshrestha/asyncomplete-lsp.vim'
 
@@ -373,15 +373,7 @@ command! -bang -nargs=* Ag
 " vim-lsp
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-if executable('solargraph')
-    " gem install solargraph
-    au User lsp_setup call lsp#register_server({
-        \ 'name': 'solargraph',
-        \ 'cmd': {server_info->[&shell, &shellcmdflag, 'solargraph stdio']},
-        \ 'initialization_options': {"diagnostics": "true"},
-        \ 'whitelist': ['ruby'],
-        \ })
-endif
+let g:lsp_settings_servers_dir = expand('~/.local/share/vim-lsp-settings/servers')
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " key-bind
