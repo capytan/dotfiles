@@ -11,3 +11,5 @@ eval "$(nodenv init -)"
 test -r ~/.bashrc && . ~/.bashrc
 export PATH="$HOME/.jenv/bin:$PATH"
 eval "$(jenv init -)"
+
+export PATH="$HOME/.cargo/bin:$PATH"
