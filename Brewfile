@@ -1,5 +1,5 @@
 # cli tool
-brew "awscli", link: false
+brew "aws/tap/copilot-cli"
 brew "ghq"
 brew "git"
 brew "circleci"
@@ -64,11 +64,8 @@ brew "heroku/brew/heroku"
 # terraform tool
 brew "terraformer"
 
-# qmk_firmware
-brew "osx-cross/avr/avr-gcc@7", link: true
-
 # json
-# brew "jq"
+brew "jq"
 
 # cask
 cask "java"
