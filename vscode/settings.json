@@ -1,25 +1,25 @@
 {
-    "[javascript]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
-    },
-    "editor.formatOnType": false,
-    "editor.formatOnPaste": false,
-    "editor.formatOnSave": false,
-    "[typescript]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
-    },
+    "editor.formatOnType": true,
+    "editor.formatOnPaste": true,
+    "editor.formatOnSave": true,
     "editor.suggestSelection": "first",
     "editor.tabSize": 2,
     "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
     // prettier
     "vetur.format.defaultFormatter.ts": "prettier-tslint",
     "vetur.format.defaultFormatter.js": "prettier-eslint",
-    "breadcrumbs.enabled": true,
     "prettier.trailingComma": "es5",
+    "breadcrumbs.enabled": true,
     "[html]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
     "[css]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[javascript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[typescript]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
     "[vue]": {
@@ -31,8 +31,12 @@
     "[yaml]": {
         "editor.defaultFormatter": "redhat.vscode-yaml"
     },
-    "vim.useSystemClipboard": true,
     "[markdown]": {
         "editor.defaultFormatter": "fcrespo82.markdown-table-formatter"
-    }
+    },
+    "[json]": {
+        "editor.defaultFormatter": "vscode.json-language-features"
+    },
+    "vim.useSystemClipboard": true,
+    "editor.minimap.enabled": false
 }
