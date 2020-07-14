@@ -90,3 +90,6 @@ brew "pipenv"
 brew "protobuf"
 brew "pv"
 brew "sphinx-doc"
+
+# cask
+cask "grammarly"
