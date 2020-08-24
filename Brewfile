@@ -93,3 +93,5 @@ brew "sphinx-doc"
 
 # cask
 cask "grammarly"
+cask "blackhole"
+cask "raspberry-pi-imager"
