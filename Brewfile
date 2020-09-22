@@ -22,6 +22,7 @@ brew "clang-format"
 brew "go"
 brew "python@2"
 brew "ruby"
+brew "java"
 brew "sbt"
 
 # ctags
@@ -67,9 +68,6 @@ brew "terraformer"
 
 # json
 brew "jq"
-
-# cask
-cask "java"
 
 # no longer needed?
 tap "homebrew/cask"
