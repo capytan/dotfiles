@@ -103,6 +103,6 @@ eval "$(direnv hook zsh)"
 export PATH="$HOME/.jenv/bin:$PATH"
 eval "$(jenv init -)"
 export PATH="/usr/local/opt/sphinx-doc/bin:$PATH"
-
+export PATH="/usr/local/opt/libxml2/bin:$PATH"
 export PATH="/usr/local/opt/mysql@5.7/bin:$PATH"
 export PATH="/usr/local/opt/openjdk/bin:$PATH"
