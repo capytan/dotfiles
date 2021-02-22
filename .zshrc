@@ -69,10 +69,6 @@ setopt PROMPT_SUBST ; PROMPT='╭─○ %{$fg_bold[green]%}%n%{$reset_color%}:%{
 
 # aliases
 alias v='vim'
-alias editvimrc='vim ~/dotfiles/.vimrc'
-alias editzshrc='vim ~/dotfiles/.zshrc'
-alias reload='source ~/.zshrc'
-alias reloadtmux='tmux source-file ~/.tmux.conf'
 alias g='git'
 alias gb='git branch'
 alias gs='git switch'
@@ -83,9 +79,6 @@ alias gdh='git diff HEAD'
 alias gst='git status'
 alias gf='git fetch --prune'
 alias gp='git pull --prune'
-alias dc='docker'
-alias dcc='docker-compose'
-alias dccr='docker-compose run --rm'
 alias be='bundle exec'
 alias ls='ls -G'
 alias ll='ls -alF'
@@ -106,3 +99,5 @@ export PATH="/usr/local/opt/sphinx-doc/bin:$PATH"
 export PATH="/usr/local/opt/libxml2/bin:$PATH"
 export PATH="/usr/local/opt/mysql@5.7/bin:$PATH"
 export PATH="/usr/local/opt/openjdk/bin:$PATH"
+export PATH="$(brew --prefix qt@5.5)/bin:$PATH"
+export PATH="$(brew --prefix imagemagick@6)/bin:$PATH"

@@ -1,4 +1,4 @@
-export EDITOR=atom
+export EDITOR=vim
 export PATH=$HOME/.nodebrew/current/bin:$PATH
 
 # prompt
