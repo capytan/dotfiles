@@ -7,3 +7,4 @@ ln -sf ~/dotfiles/.vimrc ~/.vimrc
 ln -sf ~/dotfiles/.ideavimrc ~/.ideavimrc
 ln -sf ~/dotfiles/.tmux.conf ~/.tmux.conf
 ln -sf ~/dotfiles/vscode/settings.json ~/Library/ApplicationSupport/Code/User/settings.json
+ln -sf ~/dotfiles/init.vim ~/.config/nvim/init.vim
