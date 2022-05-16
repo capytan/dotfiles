@@ -114,3 +114,12 @@ export PATH="/usr/local/opt/icu4c/bin:$PATH"
 export PATH="/usr/local/opt/icu4c/sbin:$PATH"
 export PATH="/usr/local/opt/gnu-getopt/bin:$PATH"
 eval "$(perl -I$HOME/perl5/lib/perl5 -Mlocal::lib=$HOME/perl5)"
+
+# Elasticsearch@6
+export PATH="/usr/local/opt/elasticsearch@6/bin:$PATH"
+
+# The next line updates PATH for the Google Cloud SDK.
+if [ -f '/Users/ymizuguchi/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/ymizuguchi/google-cloud-sdk/path.zsh.inc'; fi
+
+# The next line enables shell command completion for gcloud.
+if [ -f '/Users/ymizuguchi/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/ymizuguchi/google-cloud-sdk/completion.zsh.inc'; fi
