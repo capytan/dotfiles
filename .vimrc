@@ -8,8 +8,7 @@ call plug#begin('~/.vim/plugged')
 
 " Make sure you use single quotes
 
-Plug 'preservim/nerdtree'
-Plug 'jistr/vim-nerdtree-tabs'
+Plug 'lambdalisue/fern.vim'
 Plug 'tpope/vim-commentary'
 Plug 'tpope/vim-endwise'
 Plug 'tpope/vim-fugitive'
@@ -22,9 +21,10 @@ Plug 'vim-scripts/CSApprox'
 Plug 'bronson/vim-trailing-whitespace'
 Plug 'Raimondi/delimitMate'
 Plug 'majutsushi/tagbar'
-Plug 'scrooloose/syntastic'
+Plug 'dense-analysis/ale'
 Plug 'Yggdroot/indentLine'
 Plug 'sheerun/vim-polyglot'
+
 
 if isdirectory('/usr/local/opt/fzf')
   Plug '/usr/local/opt/fzf' | Plug 'junegunn/fzf.vim'
@@ -32,7 +32,6 @@ else
   Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --bin' }
   Plug 'junegunn/fzf.vim'
 endif
-
 let g:make = 'gmake'
 if exists('make')
         let g:make = 'make'
@@ -181,9 +180,7 @@ set number
 " set cursorcolumn
 
 let no_buffers_menu=1
-if !exists('g:not_finish_vimplug')
-  colorscheme molokai
-endif
+colorscheme molokai
 
 set mousemodel=popup
 set t_Co=256
@@ -268,18 +265,9 @@ cnoreabbrev W w
 cnoreabbrev Q q
 cnoreabbrev Qall qall
 
-"" NERDTree configuration
-let g:NERDTreeChDirMode=2
-let g:NERDTreeIgnore=['\.rbc$', '\~$', '\.pyc$', '\.db$', '\.sqlite$', '__pycache__']
-let g:NERDTreeSortOrder=['^__\.py$', '\/$', '*', '\.swp$', '\.bak$', '\~$']
-let g:NERDTreeShowBookmarks=1
-let g:nerdtree_tabs_focus_on_files=1
-let g:NERDTreeMapOpenInTabSilent = '<RightMouse>'
-let g:NERDTreeWinSize = 50
-let g:NERDTreeShowHidden = 1
-set wildignore+=*/tmp/*,*.so,*.swp,*.zip,*.pyc,*.db,*.sqlite
-nnoremap <silent> <F2> :NERDTreeFind<CR>
-nnoremap <silent> <F3> :NERDTreeToggle<CR>
+"" fern
+nnoremap <silent> <Leader>3 :<C-u>Fern . -drawer<CR>
+nnoremap <silent> <Leader># :<C-u>Fern . -drawer -reveal=%<CR>
 
 " grep.vim
 nnoremap <silent> <leader>f :Rgrep<CR>
