@@ -17,5 +17,6 @@
 !/dotfileslink.sh
 !/generate.vim
 !/git-completion.bash
+!/init.vim
 !/vscode
 !/Brewfile
