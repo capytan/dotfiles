@@ -2,7 +2,7 @@
 /*
 /.*
 
-# explicit list
+# explicit list for global
 !/.bash_profile
 !/.bashrc
 !/.git
@@ -20,3 +20,11 @@
 !/init.vim
 !/vscode
 !/Brewfile
+
+# explicit list for ubuntu
+!/ubuntu
+!/ubuntu/.alacritty.yml
+!/ubuntu/.zshrc
+!/ubuntu/dotfileslink.sh
+!/ubuntu/init.vim
+!/ubuntu/.tmux.conf
