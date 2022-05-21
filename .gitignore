@@ -21,6 +21,13 @@
 !/vscode
 !/Brewfile
 
+# explicit list for osx
+!/osx
+!/osx/.tmux.conf
+!/osx/.vimrc
+!/osx/.zshrc
+!/osx/dotfileslink
+
 # explicit list for ubuntu
 !/ubuntu
 !/ubuntu/.alacritty.yml
