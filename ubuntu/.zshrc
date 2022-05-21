@@ -8,7 +8,7 @@ prompt adam1
 setopt histignorealldups sharehistory
 
 # Editor
-export EDITOR=vim
+export EDITOR=nvim
 
 # Golang
 export PATH=$PATH:/usr/local/go/bin
