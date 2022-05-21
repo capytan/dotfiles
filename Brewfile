@@ -55,10 +55,6 @@ brew "hugo"
 # JavaScript Engine
 # brew "spidermonkey"
 
-# node
-brew "node-build"
-brew "nodenv"
-
 # heroku cli
 tap "heroku/brew"
 brew "heroku/brew/heroku"
@@ -95,3 +91,4 @@ cask "grammarly"
 cask "blackhole"
 cask "raspberry-pi-imager"
 cask "libreoffice-language-pack"
+cask "deepl"
