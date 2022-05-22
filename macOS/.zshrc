@@ -104,7 +104,7 @@ bindkey '^]' peco-src
 ## 
 ## If you need to have mysql@5.7 first in your PATH, run:
 ##   echo 'export PATH="/usr/local/opt/mysql@5.7/bin:$PATH"' >> ~/.zshrc
-echo 'export PATH="/usr/local/opt/mysql@5.7/bin:$PATH"' >> ~/.zshrc
+export PATH="/usr/local/opt/mysql@5.7/bin:$PATH"
 ## 
 ## For compilers to find mysql@5.7 you may need to set:
 ##   export LDFLAGS="-L/usr/local/opt/mysql@5.7/lib"
@@ -114,12 +114,7 @@ export CPPFLAGS="-I/usr/local/opt/mysql@5.7/include"
 ## 
 ## For pkg-config to find mysql@5.7 you may need to set:
 ##   export PKG_CONFIG_PATH="/usr/local/opt/mysql@5.7/lib/pkgconfig"
-export PKG_CONFIG_PATH="/usr/local/opt/mysql@5.7/lib/pkgconfig"export PATH="/usr/local/opt/mysql@5.7/bin:$PATH"
-export PATH="/usr/local/opt/mysql@5.7/bin:$PATH"
+export PKG_CONFIG_PATH="/usr/local/opt/mysql@5.7/lib/pkgconfig"
 
 # gnu command
 PATH="/usr/local/opt/grep/libexec/gnubin:$PATH"
-export PATH="/usr/local/opt/mysql@5.7/bin:$PATH"
-export PATH="/usr/local/opt/mysql@5.7/bin:$PATH"
-export PATH="/usr/local/opt/mysql@5.7/bin:$PATH"
-export PATH="/usr/local/opt/mysql@5.7/bin:$PATH"
