@@ -22,11 +22,13 @@
 !/Brewfile
 
 # explicit list for osx
-!/osx
-!/osx/.tmux.conf
-!/osx/.vimrc
-!/osx/.zshrc
-!/osx/dotfileslink
+!/macOS
+!/macOS/.ideavimrc
+!/macOS/.tmux.conf
+!/macOS/.vimrc
+!/macOS/.zshrc
+!/macOS/defaults.sh
+!/macOS/dotfileslink
 
 # explicit list for ubuntu
 !/ubuntu

@@ -25,13 +25,12 @@ Plug 'dense-analysis/ale'
 Plug 'Yggdroot/indentLine'
 Plug 'sheerun/vim-polyglot'
 
+" fzf
+" If installed using Homebrew
+set rtp+=/usr/local/opt/fzf
+Plug '/usr/local/opt/fzf'
+Plug 'junegunn/fzf.vim'
 
-if isdirectory('/usr/local/opt/fzf')
-  Plug '/usr/local/opt/fzf' | Plug 'junegunn/fzf.vim'
-else
-  Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --bin' }
-  Plug 'junegunn/fzf.vim'
-endif
 let g:make = 'gmake'
 if exists('make')
         let g:make = 'make'
@@ -133,7 +132,7 @@ set shiftwidth=2
 set expandtab
 
 "" Map leader to ,
-let mapleader=','
+let mapleader='<Space>'
 
 "" Enable hidden buffers
 set hidden
