@@ -11,7 +11,7 @@ promptinit
 prompt adam1
 
 # editor
-export EDITOR=vim
+export EDITOR=nvim
 
 # direnv
 eval "$(direnv hook zsh)"
@@ -21,6 +21,13 @@ eval "$(rbenv init - zsh)"
 
 # ruby-build
 export RUBY_CONFIGURE_OPTS="--with-openssl-dir=$(brew --prefix openssl@1.1)"
+
+# pyenv, pyenv-virtualenv
+export PYENV_ROOT="$HOME/.pyenv"
+export PATH="$PYENV_ROOT/bin:$PATH"
+export PYENV_VIRTUALENV_DISABLE_PROMPT=1
+eval "$(pyenv init -)"
+eval "$(pyenv virtualenv-init -)"
 
 # Node Version Manager(nvm)
 export NVM_DIR="$HOME/.nvm"
@@ -34,7 +41,8 @@ SAVEHIST=10000
 setopt share_history
 
 # aliases
-alias v='vim'
+alias vim='nvim'
+alias v='nvim'
 alias g='git'
 alias gb='git branch'
 alias gs='git switch'
@@ -101,17 +109,17 @@ bindkey '^]' peco-src
 # brew keg-only
 ## mysql@5.7 is keg-only, which means it was not symlinked into /usr/local,
 ## because this is an alternate version of another formula.
-## 
+##
 ## If you need to have mysql@5.7 first in your PATH, run:
 ##   echo 'export PATH="/usr/local/opt/mysql@5.7/bin:$PATH"' >> ~/.zshrc
 export PATH="/usr/local/opt/mysql@5.7/bin:$PATH"
-## 
+##
 ## For compilers to find mysql@5.7 you may need to set:
 ##   export LDFLAGS="-L/usr/local/opt/mysql@5.7/lib"
 export LDFLAGS="-L/usr/local/opt/mysql@5.7/lib"
 ##   export CPPFLAGS="-I/usr/local/opt/mysql@5.7/include"
 export CPPFLAGS="-I/usr/local/opt/mysql@5.7/include"
-## 
+##
 ## For pkg-config to find mysql@5.7 you may need to set:
 ##   export PKG_CONFIG_PATH="/usr/local/opt/mysql@5.7/lib/pkgconfig"
 export PKG_CONFIG_PATH="/usr/local/opt/mysql@5.7/lib/pkgconfig"
