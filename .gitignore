@@ -23,6 +23,7 @@
 
 # explicit list for osx
 !/macOS
+!/macOS/.direnvrc
 !/macOS/.ideavimrc
 !/macOS/.tmux.conf
 !/macOS/.vimrc
