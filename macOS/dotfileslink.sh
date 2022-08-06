@@ -1,4 +1,5 @@
 #!/bin/sh
+ln -sf ~/dotfiles/macOS/.direnvrc ~/.direnvrc
 ln -sf ~/dotfiles/macOS/.ideavimrc ~/.ideavimrc
 ln -sf ~/dotfiles/macOS/.tmux.conf ~/.tmux.conf
 ln -sf ~/dotfiles/macOS/.vimrc ~/.vimrc
