@@ -29,6 +29,9 @@ SAVEHIST=10000
 HISTFILE=~/.zsh_history
 setopt share_history
 
+# zsh alias
+alias ll='ls -alF'
+
 # Use modern completion system
 autoload -Uz compinit
 compinit
@@ -89,3 +92,15 @@ fd() {
                         -o -type d -print 2> /dev/null | fzf +m) &&
                       cd "$dir"
 }
+
+# ghq with fzf
+function fzf-src () {
+  local selected_dir=$(ghq list -p | fzf --query "$LBUFFER")
+  if [ -n "$selected_dir" ]; then
+    BUFFER="cd ${selected_dir}"
+    zle accept-line
+  fi
+  zle clear-screen
+}
+zle -N fzf-src
+bindkey '^]' fzf-src
