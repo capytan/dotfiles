@@ -21,7 +21,15 @@
 !/vscode
 !/Brewfile
 
-# explicit list for osx
+# explicit list for Apple Silicon
+!/mac_silicon
+!/mac_silicon/.fzf.zsh
+!/mac_silicon/.zprofile
+!/mac_silicon/.zshrc
+!/mac_silicon/defaults.sh
+!/mac_silicon/dotfileslink.sh
+
+# explicit list for Intel Mac
 !/macOS
 !/macOS/.direnvrc
 !/macOS/.ideavimrc
