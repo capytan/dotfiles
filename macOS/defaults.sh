@@ -1,7 +1,5 @@
 # /usr/bin/sh
 
-defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false
-
 # Do not write RAM backup during sleep
 # See: https://aotamasaki.hatenablog.com/entry/intelmac_crash_during_sleep
 sudo pmset hibernatemode 0
