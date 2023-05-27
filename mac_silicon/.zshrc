@@ -81,3 +81,7 @@ function fzf-src () {
 }
 zle -N fzf-src
 bindkey '^]' fzf-src
+
+# Volta - The Hassle-Free JavaScript Tool Manager
+export VOLTA_HOME="$HOME/.volta"
+export PATH="$VOLTA_HOME/bin:$PATH"
