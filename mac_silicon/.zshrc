@@ -89,5 +89,15 @@ bindkey '^]' fzf-src
 export VOLTA_HOME="$HOME/.volta"
 export PATH="$VOLTA_HOME/bin:$PATH"
 
+# OpenSSL@1.1 の場合のセットアップ
+# export PATH="$HOMEBREW_PREFIX/opt/openssl@1.1/bin:$PATH"
+# export PKG_CONFIG_PATH="$HOMEBREW_PREFIX/opt/openssl@1.1/lib/pkgconfig"
+# export RUBY_CONFIGURE_OPTS="$RUBY_CONFIGURE_OPTS --with-openssl-dir=$HOMEBREW_PREFIX/opt/openssl@1.1"
+
+# OpenSSL@3 の場合のセットアップ
+# export PATH="$HOMEBREW_PREFIX/opt/openssl@3/bin:$PATH"
+# export PKG_CONFIG_PATH="$HOMEBREW_PREFIX/opt/openssl@3/lib/pkgconfig"
+# export RUBY_CONFIGURE_OPTS="$RUBY_CONFIGURE_OPTS --enable-yjit --with-openssl-dir=$HOMEBREW_PREFIX/opt/openssl@3"
+
 # CodeWhisperer post block. Keep at the bottom of this file.
 [[ -f "${HOME}/Library/Application Support/codewhisperer/shell/zshrc.post.zsh" ]] && builtin source "${HOME}/Library/Application Support/codewhisperer/shell/zshrc.post.zsh"
