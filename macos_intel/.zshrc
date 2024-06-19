@@ -1,3 +1,6 @@
+# Amazon Q pre block. Keep at the top of this file.
+[[ -f "${HOME}/Library/Application Support/amazon-q/shell/zshrc.pre.zsh" ]] && builtin source "${HOME}/Library/Application Support/amazon-q/shell/zshrc.pre.zsh"
+
 # setting environment variables
 ## encoding
 export LANG=ja_JP.UTF-8
@@ -150,3 +153,6 @@ if [ -f '/Users/capytan/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/capytan
 
 # The next line enables shell command completion for gcloud.
 if [ -f '/Users/capytan/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/capytan/google-cloud-sdk/completion.zsh.inc'; fi
+
+# Amazon Q post block. Keep at the bottom of this file.
+[[ -f "${HOME}/Library/Application Support/amazon-q/shell/zshrc.post.zsh" ]] && builtin source "${HOME}/Library/Application Support/amazon-q/shell/zshrc.post.zsh"
