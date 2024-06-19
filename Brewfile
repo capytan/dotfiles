@@ -12,7 +12,6 @@ brew "tig"
 brew "tmux"
 brew "vim"
 brew "wget"
-brew "youtube-dl"
 brew "zsh"
 
 # programming language
@@ -68,10 +67,6 @@ brew "jq"
 # no longer needed?
 tap "homebrew/cask"
 tap "homebrew/cask-drivers"
-
-# ping tool
-tap "nnao45/pexpo"
-brew "nnao45/pexpo/pexpo"
 
 brew "ffmpeg"
 brew "gawk"
