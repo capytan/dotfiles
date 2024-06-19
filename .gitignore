@@ -22,22 +22,24 @@
 !/Brewfile
 
 # explicit list for Apple Silicon
-!/mac_silicon
-!/mac_silicon/.fzf.zsh
-!/mac_silicon/.zprofile
-!/mac_silicon/.zshrc
-!/mac_silicon/defaults.sh
-!/mac_silicon/dotfileslink.sh
+!/macos
+!/macos/.fzf.zsh
+!/macos/.tmux.conf
+!/macos/.zprofile
+!/macos/.zshrc
+!/macos/defaults.sh
+!/macos/dotfileslink.sh
 
 # explicit list for Intel Mac
-!/macOS
-!/macOS/.direnvrc
-!/macOS/.ideavimrc
-!/macOS/.tmux.conf
-!/macOS/.vimrc
-!/macOS/.zshrc
-!/macOS/defaults.sh
-!/macOS/dotfileslink
+!/macos_intel
+!/macos_intel/.direnvrc
+!/macos_intel/.ideavimrc
+!/macos_intel/.tmux.conf
+!/macos_intel/.vimrc
+!/macos_intel/.zprofile
+!/macos_intel/.zshrc
+!/macos_intel/defaults.sh
+!/macos_intel/dotfileslink
 
 # explicit list for ubuntu
 !/ubuntu
