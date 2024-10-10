@@ -43,7 +43,7 @@
 
 # explicit list for ubuntu
 !/ubuntu
-!/ubuntu/.alacritty.yml
+!/ubuntu/.alacritty.toml
 !/ubuntu/.zshrc
 !/ubuntu/dotfileslink.sh
 !/ubuntu/init.vim
