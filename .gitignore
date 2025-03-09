@@ -1,50 +1,64 @@
-# Ignore everything by default.
-/*
-/.*
+# OS固有のファイル
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 
-# explicit list for global
-!/.bash_profile
-!/.bashrc
-!/.git
-!/.git-prompt.sh
-!/.gitignore
-!/.tmux.conf
-!/.vimrc
-!/.ideavimrc
-!/.zprofile
-!/.zshrc
-!/._git
-!/dotfileslink.sh
-!/generate.vim
-!/git-completion.bash
-!/init.vim
-!/vscode
-!/Brewfile
+# エディタ/IDE固有のファイル
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.swp
+*.swo
+*~
 
-# explicit list for Apple Silicon
-!/macos
-!/macos/.fzf.zsh
-!/macos/.tmux.conf
-!/macos/.zprofile
-!/macos/.zshrc
-!/macos/defaults.sh
-!/macos/dotfileslink.sh
+# 環境固有の設定ファイル
+.env
+.env.local
+.env.*.local
 
-# explicit list for Intel Mac
-!/macos_intel
-!/macos_intel/.direnvrc
-!/macos_intel/.ideavimrc
-!/macos_intel/.tmux.conf
-!/macos_intel/.vimrc
-!/macos_intel/.zprofile
-!/macos_intel/.zshrc
-!/macos_intel/defaults.sh
-!/macos_intel/dotfileslink
+# ログファイル
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# explicit list for ubuntu
-!/ubuntu
-!/ubuntu/.alacritty.yml
-!/ubuntu/.zshrc
-!/ubuntu/dotfileslink.sh
-!/ubuntu/init.vim
-!/ubuntu/.tmux.conf
+# 依存関係ディレクトリ
+node_modules/
+vendor/
+.bundle/
+
+# ビルド出力
+dist/
+build/
+out/
+*.pyc
+__pycache__/
+
+# バックアップファイル
+*.bak
+*.backup
+*.old
+
+# システム固有の一時ファイル
+.tmp/
+.temp/
+.cache/
+
+# ローカル設定ファイル（dotfilesプロジェクト以外）
+.local/
+.config/*
+!.config/git/
+!.config/nvim/
+
+# セキュリティ関連
+*.pem
+*.key
+*.cert
+*.crt
