@@ -14,7 +14,7 @@ promptinit
 prompt adam1
 
 # editor
-export EDITOR=vim
+export EDITOR=nvim
 
 # direnv
 eval "$(direnv hook zsh)"
@@ -29,8 +29,8 @@ SAVEHIST=10000
 setopt share_history
 
 # aliases
-alias vim='vim'
-alias v='vim'
+alias vim='nvim'
+alias v='nvim'
 alias g='git'
 alias gb='git branch'
 alias gs='git switch'
