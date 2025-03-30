@@ -17,7 +17,9 @@ prompt adam1
 export EDITOR=nvim
 
 # direnv
-eval "$(direnv hook zsh)"
+if type direnv &>/dev/null; then
+  eval "$(direnv hook zsh)"
+fi
 
 # rbenv
 # eval "$(rbenv init - zsh)"
@@ -30,6 +32,11 @@ eval "$(direnv hook zsh)"
 if type mise &>/dev/null; then
   eval "$(~/.local/bin/mise activate zsh)"
   eval "$(~/.local/bin/mise activate --shims)"
+fi
+
+# tenv
+if type tenv &>/dev/null; then
+  source $HOME/.tenv.completion.zsh
 fi
 
 # history
