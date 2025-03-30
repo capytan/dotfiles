@@ -63,7 +63,7 @@ setopt share_history
 # prompt
 # git-completion
 # https://github.com/git/git/blob/master/contrib/completion/git-prompt.sh
-source ~/dotfiles/.git-prompt.sh
+source ~/dotfiles/git-utils/.git-prompt.sh
 setopt PROMPT_SUBST ; PROMPT='╭─○ %{$fg_bold[green]%}%n%{$reset_color%}:%{$fg_bold[cyan]%}%~ %{$reset_color%}$(__git_ps1 " (%s)")
 ╰─○ '
 
