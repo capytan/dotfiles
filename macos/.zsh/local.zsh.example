@@ -1,0 +1,23 @@
+# Template for company-specific environment variables
+# Copy this file as `local.zsh` and set appropriate values
+# `local.zsh` is added to .gitignore and will not be tracked by Git
+
+# Example: Corporate proxy settings
+# export HTTP_PROXY="http://proxy.company.com:8080"
+# export HTTPS_PROXY="http://proxy.company.com:8080"
+# export NO_PROXY="localhost,127.0.0.1,.company.com"
+
+# Example: Internal npm registry
+# export NPM_REGISTRY="https://registry.company.com"
+
+# Example: Authentication for internal tools
+# export COMPANY_TOOL_TOKEN="your-token-here"
+# export COMPANY_API_KEY="your-api-key-here"
+
+# Example: Development environment specific settings
+# export DEV_DATABASE_URL="postgresql://localhost:5432/devdb"
+# export DEV_API_ENDPOINT="http://localhost:3000"
+
+# Example: Team-specific aliases
+# alias deploy-dev="your-deploy-command-here"
+# alias start-local="your-start-command-here" 

@@ -62,3 +62,6 @@ __pycache__/
 *.key
 *.cert
 *.crt
+
+# Local environment settings
+macos/.zsh/local.zsh
