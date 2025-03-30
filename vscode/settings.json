@@ -70,5 +70,8 @@
         "editor.formatOnSaveMode": "file"
     },
     "vim.useSystemClipboard": true,
-    "editor.minimap.enabled": false
+    "editor.minimap.enabled": false,
+    "workbench.colorTheme": "Spinel",
+    "rubyLsp.rubyVersionManager": "custom",
+    "rubyLsp.customRubyCommand": "eval \"$(mise env -s zsh)\""
 }
