@@ -20,7 +20,17 @@ export EDITOR=nvim
 eval "$(direnv hook zsh)"
 
 # rbenv
-eval "$(rbenv init - zsh)"
+# eval "$(rbenv init - zsh)"
+
+# Volta - The Hassle-Free JavaScript Tool Manager
+# export VOLTA_HOME="$HOME/.volta"
+# export PATH="$VOLTA_HOME/bin:$PATH"
+
+# mise
+if type mise &>/dev/null; then
+  eval "$(~/.local/bin/mise activate zsh)"
+  eval "$(~/.local/bin/mise activate --shims)"
+fi
 
 # history
 HISTFILE=~/.zsh_history
@@ -84,10 +94,6 @@ function fzf-src () {
 }
 zle -N fzf-src
 bindkey '^]' fzf-src
-
-# Volta - The Hassle-Free JavaScript Tool Manager
-export VOLTA_HOME="$HOME/.volta"
-export PATH="$VOLTA_HOME/bin:$PATH"
 
 # OpenSSL@1.1 の場合のセットアップ
 # export PATH="$HOMEBREW_PREFIX/opt/openssl@1.1/bin:$PATH"
