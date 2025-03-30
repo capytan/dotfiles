@@ -1,11 +1,33 @@
 {
+    "editor.accessibilitySupport": "off",
+    "terminal.integrated.env.osx": {
+        "Q_NEW_SESSION": "1"
+    },
+    "update.releaseTrack": "prerelease",
+    "window.commandCenter": 1,
     "editor.formatOnType": true,
     "editor.formatOnPaste": true,
     "editor.formatOnSave": true,
     "editor.suggestSelection": "first",
-    "editor.tabSize": 2,
     "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
-    // prettier
+    "editor.tabSize": 2,
+    "editor.fontSize": 14,
+    "editor.fontFamily": "JetBrainsMono Nerd Font",
+    "editor.lineHeight": 1.5,
+    "editor.lineNumbers": "on",
+    "editor.renderLineHighlight": "all",
+    "editor.wordWrap": "on",
+    "editor.bracketPairColorization.enabled": true,
+    "editor.guides.bracketPairs": true,
+    "files.exclude": {
+        "**/.idea": true
+    },
+    "files.autoSave": "afterDelay",
+    "files.autoSaveDelay": 1000,
+    "terminal.integrated.fontSize": 14,
+    "terminal.integrated.fontFamily": "JetBrainsMono Nerd Font",
+    "terminal.integrated.cursorStyle": "line",
+    "terminal.integrated.cursorBlinking": true,
     "vetur.format.defaultFormatter.ts": "prettier-tslint",
     "vetur.format.defaultFormatter.js": "prettier-eslint",
     "prettier.trailingComma": "es5",

@@ -7,10 +7,9 @@
 ├── macos/                        # macOS (Apple Silicon) 固有の設定
 ├── macos_intel/                  # macOS (Intel) 固有の設定
 ├── ubuntu/                       # Ubuntu固有の設定
-├── vscode/                       # VSCode関連の設定
+├── vscode/                       # VSCode / Cursor関連の設定
 │   ├── settings.json             # エディタ設定
-│   ├── keybindings.json          # キーバインド設定
-│   └── extensions.json           # 拡張機能リスト
+│   └── plugins.json              # 拡張機能リスト
 ├── .cursor/                      # Cursor IDE設定
 │   └── rules/                    # Cursor用ルール
 ├── Brewfile                      # Homebrewパッケージリスト
