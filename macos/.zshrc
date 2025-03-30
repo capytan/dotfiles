@@ -29,6 +29,7 @@ fi
 # export PATH="$VOLTA_HOME/bin:$PATH"
 
 # mise
+# https://github.com/jdx/mise
 if type mise &>/dev/null; then
   eval "$(~/.local/bin/mise activate zsh)"
   eval "$(~/.local/bin/mise activate --shims)"
