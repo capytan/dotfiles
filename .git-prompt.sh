@@ -1,3 +1,5 @@
+# https://github.com/git/git/blob/5b97a56fa0e7d580dc8865b73107407c9b3f0eff/contrib/completion/git-prompt.sh
+
 # bash/zsh git prompt support
 #
 # Copyright (C) 2006,2007 Shawn O. Pearce <spearce@spearce.org>
