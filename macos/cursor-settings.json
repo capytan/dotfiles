@@ -1,0 +1,8 @@
+{
+  "editor.accessibilitySupport": "off",
+  "terminal.integrated.env.osx": {
+    "Q_NEW_SESSION": "1"
+  },
+  "update.releaseTrack": "prerelease",
+  "window.commandCenter": 1
+}
