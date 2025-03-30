@@ -4,23 +4,21 @@
 
 ```
 /
+├── .cursor/                      # Cursor IDE設定
+│   └── rules/                    # Cursor用ルール
 ├── macos/                        # macOS (Apple Silicon) 固有の設定
 ├── macos_intel/                  # macOS (Intel) 固有の設定
 ├── ubuntu/                       # Ubuntu固有の設定
 ├── vscode/                       # VSCode / Cursor関連の設定
-│   ├── settings.json             # エディタ設定
-│   └── plugins.json              # 拡張機能リスト
-├── .cursor/                      # Cursor IDE設定
-│   └── rules/                    # Cursor用ルール
-├── Brewfile                      # Homebrewパッケージリスト
-├── dotfileslink.sh               # シンボリックリンク作成スクリプト
-├── init.vim                      # Neovim設定
-├── .tmux.conf                    # tmux設定
-├── .zshrc                        # Zsh設定
-├── .bashrc                       # Bash設定
-├── .zprofile                     # Zshプロファイル
-├── .bash_profile                 # Bashプロファイル
+│   ├── plugins.json              # 拡張機能リスト
+│   └── settings.json             # エディタ設定
 ├── .gitignore                    # Git除外設定
+├── .tmux.conf                    # tmux設定
+├── .zprofile                     # Zshプロファイル
+├── .zshrc                        # Zsh設定
+├── Brewfile                      # Homebrewパッケージリスト
+├── dotfileslink.sh              # シンボリックリンク作成スクリプト
+├── init.vim                      # Neovim設定
 └── README.md                     # プロジェクト説明
 ```
 
