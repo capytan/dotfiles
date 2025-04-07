@@ -15,6 +15,10 @@ export PATH=$PATH:/usr/local/go/bin
 
 # asdf
 . $HOME/.asdf/asdf.sh
+
+# mise
+eval "$(/home/capytan/.local/bin/mise activate zsh)"
+
 ## append completions to fpath
 fpath=(${ASDF_DIR}/completions $fpath)
 ## initialise completions with ZSH's compinit
