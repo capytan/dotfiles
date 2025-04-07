@@ -1,0 +1,51 @@
+[font]
+size = 18.0
+
+[font.bold]
+family = "JetBrains Mono"
+style = "Bold"
+
+[font.bold_italic]
+family = "monospace"
+style = "Bold Italic"
+
+[font.italic]
+family = "JetBrains Mono"
+style = "Italic"
+
+[font.normal]
+family = "JetBrains Mono"
+style = "Regular"
+
+[font.offset]
+x = 0
+y = 0
+
+[scrolling]
+history = 10000
+multiplier = 3
+
+[shell]
+program = "/usr/bin/zsh"
+
+[window]
+decorations = "full"
+dynamic_title = true
+opacity = 0.9
+startup_mode = "Windowed"
+title = "Alacritty"
+dimensions = { columns = 120, lines = 30 }
+position = { x = 50, y = 50 }
+padding = { x = 5, y = 5 }
+
+[colors.primary]
+background = "#282c34"
+foreground = "#abb2bf"
+
+[colors.cursor]
+text = "#282c34"
+cursor = "#528bff"
+
+[colors.selection]
+text = "#abb2bf"
+background = "#3e4451"
