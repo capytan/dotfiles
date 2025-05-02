@@ -14,10 +14,8 @@ fi
 
 # mise
 # https://github.com/jdx/mise
-if type mise &>/dev/null; then
-  eval "$(~/.local/bin/mise activate zsh)"
-  eval "$(~/.local/bin/mise activate --shims)"
-fi
+eval "$(~/.local/bin/mise activate zsh)"
+eval "$(~/.local/bin/mise activate --shims)"
 
 # tenv
 if type tenv &>/dev/null; then
