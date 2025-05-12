@@ -25,6 +25,7 @@
     },
     "files.autoSave": "afterDelay",
     "files.autoSaveDelay": 1000,
+    "files.insertFinalNewline": true,
     "terminal.integrated.fontSize": 14,
     "terminal.integrated.fontFamily": "JetBrainsMono Nerd Font",
     "terminal.integrated.cursorStyle": "line",
