@@ -13,19 +13,21 @@
     "editor.tabSize": 2,
     "editor.fontSize": 14,
     "editor.fontLigatures": true,
-    "editor.fontFamily": "JetBrainsMono Nerd Font",
+    "editor.fontFamily": "JetBrainsMonoNL Nerd Font",
     "editor.lineHeight": 1.5,
     "editor.lineNumbers": "on",
     "editor.renderLineHighlight": "all",
     "editor.wordWrap": "on",
     "editor.bracketPairColorization.enabled": true,
     "editor.guides.bracketPairs": true,
+    "editor.stickyScroll.enabled": true,
     "files.exclude": {
         "**/.idea": true
     },
     "files.autoSave": "afterDelay",
     "files.autoSaveDelay": 1000,
     "files.insertFinalNewline": true,
+    "files.trimTrailingWhitespace": true,
     "terminal.integrated.fontSize": 14,
     "terminal.integrated.fontFamily": "JetBrainsMono Nerd Font",
     "terminal.integrated.cursorStyle": "line",
@@ -56,7 +58,8 @@
         "editor.defaultFormatter": "redhat.vscode-yaml"
     },
     "[markdown]": {
-        "editor.defaultFormatter": "fcrespo82.markdown-table-formatter"
+        "editor.defaultFormatter": "fcrespo82.markdown-table-formatter",
+        "files.trimTrailingWhitespace": true
     },
     "[json]": {
         "editor.defaultFormatter": "vscode.json-language-features"
@@ -71,9 +74,23 @@
         "editor.formatOnSave": true,
         "editor.formatOnSaveMode": "file"
     },
+    "[ruby]": {
+        "editor.defaultFormatter": "Shopify.ruby-lsp",
+        "editor.formatOnSave": true
+    },
+    "rubyLsp.formatter": "rubocop",
+    "rubyLsp.rubyVersionManager": "custom",
+    "rubyLsp.customRubyCommand": "eval \"$(mise env -s zsh)\"",
+    "rubyLsp.enabledFeatures": {
+        "onTypeFormatting": false
+    }
     "vim.useSystemClipboard": true,
     "editor.minimap.enabled": false,
     "workbench.colorTheme": "Spinel",
-    "rubyLsp.rubyVersionManager": "custom",
-    "rubyLsp.customRubyCommand": "eval \"$(mise env -s zsh)\""
+    "github.copilot.enable": {
+        "*": true,
+        "plaintext": true,
+        "markdown": false,
+        "scminput": false
+    }
 }
