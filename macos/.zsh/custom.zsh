@@ -30,7 +30,7 @@ setopt hist_reduce_blanks    # delete extra spaces from history
 # aliases
 alias vim='nvim'
 alias v='nvim'
-alias gdcp='(echo "このdiffを元に、日本語で簡潔なコミットメッセージを作成してください。
+alias gdcp='(echo "以下のdiffを元に、日本語で簡潔なコミットメッセージを作成してください。
 
 形式：<type>(<optional scope>): <description>
 
@@ -58,7 +58,7 @@ feat(api)!: 認証APIのレスポンス形式を変更
 $(git diff --staged)
 \`\`\`
 "; git diff --staged) | pbcopy'
-alias gdcpe='(echo "Please write a simple commit message in English based on this diff.
+alias gdcpe='(echo "Please write a simple commit message in English based on the following diff.
 
 Format: <type>(<optional scope>): <description>
 
