@@ -1,10 +1,5 @@
 # setting environment variables
 
-# direnv
-if type direnv &>/dev/null; then
-  eval "$(direnv hook zsh)"
-fi
-
 # rbenv
 # eval "$(rbenv init - zsh)"
 
