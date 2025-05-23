@@ -17,11 +17,6 @@ fi
 eval "$(~/.local/bin/mise activate zsh)"
 eval "$(~/.local/bin/mise activate --shims)"
 
-# tenv
-if type tenv &>/dev/null; then
-  source $HOME/.tenv.completion.zsh
-fi
-
 # history
 HISTFILE=~/.zsh_history
 HISTSIZE=1000000
