@@ -1,0 +1,11 @@
+[tools]
+node = "22.14.0"
+pre-commit = "latest"
+python = "3.13.3"
+ruby = "3.4.4"
+tflint = "latest"
+trivy = "latest"
+uv = "latest"
+
+[settings]
+idiomatic_version_file_enable_tools = ["ruby"]
