@@ -1,0 +1,16 @@
+[window]
+padding = { x = 4, y = 2 }
+opacity = 0.75
+blur = true
+startup_mode = "Fullscreen"
+
+[scrolling]
+history = 100000
+multiplier = 5
+
+[font]
+size = 16.0
+offset = { x = 0, y = 4 }
+
+[terminal]
+shell = { program = "/bin/zsh", args = ["-l", "-c", "tmux a -t 0 || tmux"] }
