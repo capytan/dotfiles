@@ -3,7 +3,6 @@
     "terminal.integrated.env.osx": {
         "Q_NEW_SESSION": "1"
     },
-    "update.releaseTrack": "prerelease",
     "window.commandCenter": 1,
     "editor.formatOnType": true,
     "editor.formatOnPaste": true,
@@ -32,8 +31,6 @@
     "terminal.integrated.fontFamily": "JetBrainsMono Nerd Font",
     "terminal.integrated.cursorStyle": "line",
     "terminal.integrated.cursorBlinking": true,
-    "vetur.format.defaultFormatter.ts": "prettier-tslint",
-    "vetur.format.defaultFormatter.js": "prettier-eslint",
     "prettier.trailingComma": "es5",
     "breadcrumbs.enabled": true,
     "[html]": {
@@ -58,7 +55,6 @@
         "editor.defaultFormatter": "redhat.vscode-yaml"
     },
     "[markdown]": {
-        "editor.defaultFormatter": "fcrespo82.markdown-table-formatter",
         "files.trimTrailingWhitespace": true
     },
     "[json]": {
@@ -83,7 +79,7 @@
     "rubyLsp.customRubyCommand": "eval \"$(mise env -s zsh)\"",
     "rubyLsp.enabledFeatures": {
         "onTypeFormatting": false
-    }
+    },
     "vim.useSystemClipboard": true,
     "editor.minimap.enabled": false,
     "workbench.colorTheme": "Spinel",
