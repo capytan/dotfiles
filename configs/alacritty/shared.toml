@@ -3,6 +3,7 @@ padding = { x = 4, y = 2 }
 opacity = 0.75
 blur = true
 startup_mode = "Fullscreen"
+option_as_alt = "Both"
 
 [scrolling]
 history = 100000
@@ -13,4 +14,8 @@ size = 16.0
 offset = { x = 0, y = 4 }
 
 [terminal]
-shell = { program = "/bin/zsh", args = ["-l", "-c", "tmux a -t 0 || tmux"] }
+shell = { program = "/bin/zsh", args = [
+  "-l",
+  "-c",
+  "zellij attach --index 0 --create",
+] }
