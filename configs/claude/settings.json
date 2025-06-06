@@ -1,0 +1,26 @@
+{
+  "model": "opus",
+  "permissions": {
+    "allow": [
+      "Bash(npm run lint)",
+      "Bash(npm run test:*)",
+      "Bash(git:*)",
+      "Bash(terraform fmt:*)",
+      "Bash(terraform validate:*)",
+      "Bash(terraform plan:*)",
+      "Bash(tflint:*)",
+      "Read(./src/**)",
+      "Edit(./src/**)"
+    ],
+    "deny": [
+      "Bash(npm publish:*)",
+      "Bash(git push:*)",
+      "Bash(git reset:*)",
+      "Bash(terraform apply:*)",
+      "Bash(terraform refresh:*)",
+      "Bash(terraform import:*)",
+      "WebFetch(domain:*)"
+    ]
+  },
+  "includeCoAuthoredBy": false
+}
