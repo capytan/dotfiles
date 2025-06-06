@@ -25,7 +25,9 @@ setopt hist_reduce_blanks    # delete extra spaces from history
 # aliases
 alias vim='nvim'
 alias v='nvim'
-alias gdcp='(echo "以下のdiffを元に、日本語で簡潔なコミットメッセージを作成してください。
+# git diff to commit message functions
+gdcp() {
+  (echo "以下のdiffを元に、日本語で簡潔なコミットメッセージを作成してください。
 
 形式：<type>(<optional scope>): <description>
 
@@ -52,8 +54,11 @@ feat(api)!: 認証APIのレスポンス形式を変更
 \`\`\`diff
 $(git diff --staged)
 \`\`\`
-"; git diff --staged) | pbcopy'
-alias gdcpe='(echo "Please write a simple commit message in English based on the following diff.
+"; git diff --staged) | pbcopy
+}
+
+gdcpe() {
+  (echo "Please write a simple commit message in English based on the following diff.
 
 Format: <type>(<optional scope>): <description>
 
@@ -80,7 +85,8 @@ feat(api)!: change authentication API response format
 \`\`\`diff
 $(git diff --staged)
 \`\`\`
-"; git diff --staged) | pbcopy'
+"; git diff --staged) | pbcopy
+}
 
 # fzf completion
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
