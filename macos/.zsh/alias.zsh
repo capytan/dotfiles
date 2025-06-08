@@ -29,7 +29,6 @@ alias mv='mv -i'
 # Search and Filter
 alias grep='grep --color'
 alias sgrep='grep -R -n -H -C 5 --exclude-dir={.git,.svn,CVS} '
-alias fd='find . -type d -name'
 alias ff='find . -type f -name'
 
 # Process and System
