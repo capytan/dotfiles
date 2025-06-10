@@ -3,6 +3,7 @@
 
 source ~/dotfiles/macos/.zsh/alias.zsh
 source ~/dotfiles/macos/.zsh/custom.zsh
+source ~/dotfiles/macos/.zsh/tfj.zsh
 if [ -f ~/dotfiles/macos/.zsh/local.zsh ]; then
   source ~/dotfiles/macos/.zsh/local.zsh
 fi
