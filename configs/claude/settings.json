@@ -2,15 +2,23 @@
   "includeCoAuthoredBy": false,
   "permissions": {
     "allow": [
+      "Bash(git:*)",
+      "Bash(grep:*)",
+      "Bash(ls:*)",
+      "Bash(mkdir:*)",
       "Bash(npm run lint)",
       "Bash(npm run test:*)",
-      "Bash(git:*)",
+      "Bash(rm:*)",
       "Bash(terraform fmt:*)",
-      "Bash(terraform validate:*)",
       "Bash(terraform plan:*)",
+      "Bash(terraform validate:*)",
       "Bash(tflint:*)",
-      "Read(./src/**)",
-      "Edit(./src/**)"
+      "Bash(touch:*)",
+      "Bash(uv init:*)",
+      "Bash(uv run:*)",
+      "Bash(uv sync:*)",
+      "Edit(./src/**)",
+      "Read(./src/**)"
     ],
     "deny": [
       "Bash(npm publish:*)",
@@ -18,7 +26,7 @@
       "Bash(git reset:*)",
       "Bash(terraform apply:*)",
       "Bash(terraform refresh:*)",
-      "Bash(terraform import:*)",
+      "Bash(terraform import:*)"
     ]
   },
   "model": "sonnet"
