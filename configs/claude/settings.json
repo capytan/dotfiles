@@ -28,6 +28,7 @@
       "Bash(git reset:*)",
       "Bash(rm:*)",
       "Bash(terraform apply:*)",
+      "Bash(terraform destroy:*)",
       "Bash(terraform import:*)"
     ]
   },
