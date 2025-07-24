@@ -23,13 +23,30 @@
       "Read(./src/**)"
     ],
     "deny": [
+      "Bash(sudo:*)",
       "Bash(npm publish:*)",
       "Bash(git push:*)",
+      "Bash(git rebase:*)",
       "Bash(git reset:*)",
       "Bash(rm:*)",
+      "Bash(rm -rf:*)",
       "Bash(terraform apply:*)",
       "Bash(terraform destroy:*)",
-      "Bash(terraform import:*)"
+      "Bash(terraform import:*)",
+      "Read(.env.*)",
+      "Read(id_rsa)",
+      "Read(id_ed25519)",
+      "Read(**/*token*)",
+      "Read(**/*key*)",
+      "Write(.env*)",
+      "Write(**/secrets/**)",
+      "Bash(curl:*)",
+      "Bash(wget:*)",
+      "Bash(nc:*)",
+      "Bash(psql:*)",
+      "Bash(mysql:*)",
+      "Bash(mongod:*)",
+      "mcp__supabase__execute_sql"
     ]
   },
   "model": "opus"
