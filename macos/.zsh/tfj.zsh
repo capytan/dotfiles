@@ -12,7 +12,7 @@ tfj() {
 
     local selected_dir=$(
         cd "$git_root"
-        rg --files --hidden --glob '**/.terraform/terraform.tfstate' . 2>/dev/null | \
+        rg --files --hidden --no-ignore --glob '**/.terraform/terraform.tfstate' . 2>/dev/null | \
             sed 's|/\.terraform/terraform\.tfstate||' | \
             sort -u | \
             sed 's|^\./||' | \
