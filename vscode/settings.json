@@ -1,39 +1,53 @@
 {
+  // Editor Basic Settings
   "editor.accessibilitySupport": "off",
-  "terminal.integrated.env.osx": {
-    "Q_NEW_SESSION": "1"
-  },
-  "window.commandCenter": 1,
+  "editor.editContext": false,
+  "editor.lineNumbers": "on",
+  "editor.renderLineHighlight": "all",
+  "editor.wordWrap": "on",
+  "editor.minimap.enabled": false,
+  "editor.stickyScroll.enabled": true,
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": true,
+  "editor.suggestSelection": "first",
+  "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
+
+  // Editor Formatting
+  "editor.tabSize": 2,
   "editor.formatOnType": true,
   "editor.formatOnPaste": true,
   "editor.formatOnSave": true,
-  "editor.suggestSelection": "first",
-  "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
-  "editor.tabSize": 2,
+
+  // Editor Font Settings
   "editor.fontSize": 14,
   "editor.fontLigatures": true,
   "editor.fontFamily": "JetBrainsMonoNL Nerd Font",
   "editor.lineHeight": 1.5,
-  "editor.lineNumbers": "on",
-  "editor.renderLineHighlight": "all",
-  "editor.wordWrap": "on",
-  "editor.bracketPairColorization.enabled": true,
-  "editor.guides.bracketPairs": true,
-  "editor.stickyScroll.enabled": true,
-  "editor.editContext": false,
-  "files.exclude": {
-    "**/.idea": true
-  },
+
+  // File Settings
   "files.autoSave": "afterDelay",
   "files.autoSaveDelay": 1000,
   "files.insertFinalNewline": true,
   "files.trimTrailingWhitespace": true,
+  "files.exclude": {
+    "**/.idea": true
+  },
+
+  // Terminal Settings
   "terminal.integrated.fontSize": 14,
   "terminal.integrated.fontFamily": "JetBrainsMono Nerd Font",
   "terminal.integrated.cursorStyle": "line",
   "terminal.integrated.cursorBlinking": true,
-  "prettier.trailingComma": "es5",
+  "terminal.integrated.env.osx": {
+    "Q_NEW_SESSION": "1"
+  },
+
+  // UI/Workbench Settings
+  "window.commandCenter": 1,
   "breadcrumbs.enabled": true,
+  "workbench.colorTheme": "Spinel",
+
+  // Language-specific Formatters
   "[html]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
@@ -49,6 +63,9 @@
   "[vue]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
   "[jsonc]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
@@ -60,9 +77,6 @@
     "files.trimTrailingWhitespace": true,
     "editor.defaultFormatter": "yzhang.markdown-all-in-one",
     "editor.tabSize": 4
-  },
-  "[json]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "[terraform]": {
     "editor.defaultFormatter": "hashicorp.terraform",
@@ -78,18 +92,25 @@
     "editor.defaultFormatter": "Shopify.ruby-lsp",
     "editor.formatOnSave": true
   },
+
+  // Extension Settings - Prettier
+  "prettier.trailingComma": "es5",
+
+  // Extension Settings - Ruby LSP
   "rubyLsp.formatter": "rubocop",
   "rubyLsp.rubyVersionManager": "custom",
   "rubyLsp.customRubyCommand": "eval \"$(mise env -s zsh)\"",
   "rubyLsp.enabledFeatures": {
     "onTypeFormatting": false
   },
+
+  // Extension Settings - Vim
   "vim.useSystemClipboard": true,
-  "editor.minimap.enabled": false,
-  "workbench.colorTheme": "Spinel",
+
+  // Extension Settings - GitHub Copilot
   "github.copilot.enable": {
-    "*": true,
-    "plaintext": true,
+    "*": false,
+    "plaintext": false,
     "markdown": false,
     "scminput": false
   }
