@@ -6,4 +6,4 @@ ln -sf ~/dotfiles/macos_intel/.vimrc ~/.vimrc
 ln -sf ~/dotfiles/macos_intel/.zshrc ~/.zshrc
 
 # ln -sf ~/dotfiles/macos_intel/.zprofile ~/.zprofile
-# ln -sf ~/dotfiles/macos_intel/vscode/settings.json ~/Library/ApplicationSupport/Code/User/settings.json
+# ln -sf ~/dotfiles/macos_intel/.vscode/settings.json ~/Library/ApplicationSupport/Code/User/settings.json
