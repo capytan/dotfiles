@@ -1,92 +1,92 @@
 {
-    "editor.accessibilitySupport": "off",
-    "terminal.integrated.env.osx": {
-        "Q_NEW_SESSION": "1"
-    },
-    "window.commandCenter": 1,
-    "editor.formatOnType": true,
-    "editor.formatOnPaste": true,
+  "editor.accessibilitySupport": "off",
+  "terminal.integrated.env.osx": {
+    "Q_NEW_SESSION": "1"
+  },
+  "window.commandCenter": 1,
+  "editor.formatOnType": true,
+  "editor.formatOnPaste": true,
+  "editor.formatOnSave": true,
+  "editor.suggestSelection": "first",
+  "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
+  "editor.tabSize": 2,
+  "editor.fontSize": 14,
+  "editor.fontLigatures": true,
+  "editor.fontFamily": "JetBrainsMonoNL Nerd Font",
+  "editor.lineHeight": 1.5,
+  "editor.lineNumbers": "on",
+  "editor.renderLineHighlight": "all",
+  "editor.wordWrap": "on",
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": true,
+  "editor.stickyScroll.enabled": true,
+  "files.exclude": {
+    "**/.idea": true
+  },
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 1000,
+  "files.insertFinalNewline": true,
+  "files.trimTrailingWhitespace": true,
+  "terminal.integrated.fontSize": 14,
+  "terminal.integrated.fontFamily": "JetBrainsMono Nerd Font",
+  "terminal.integrated.cursorStyle": "line",
+  "terminal.integrated.cursorBlinking": true,
+  "prettier.trailingComma": "es5",
+  "breadcrumbs.enabled": true,
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[vue]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "[yaml]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml"
+  },
+  "[markdown]": {
+    "files.trimTrailingWhitespace": true
+  },
+  "[json]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "[terraform]": {
+    "editor.defaultFormatter": "hashicorp.terraform",
     "editor.formatOnSave": true,
-    "editor.suggestSelection": "first",
-    "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
-    "editor.tabSize": 2,
-    "editor.fontSize": 14,
-    "editor.fontLigatures": true,
-    "editor.fontFamily": "JetBrainsMonoNL Nerd Font",
-    "editor.lineHeight": 1.5,
-    "editor.lineNumbers": "on",
-    "editor.renderLineHighlight": "all",
-    "editor.wordWrap": "on",
-    "editor.bracketPairColorization.enabled": true,
-    "editor.guides.bracketPairs": true,
-    "editor.stickyScroll.enabled": true,
-    "files.exclude": {
-        "**/.idea": true
-    },
-    "files.autoSave": "afterDelay",
-    "files.autoSaveDelay": 1000,
-    "files.insertFinalNewline": true,
-    "files.trimTrailingWhitespace": true,
-    "terminal.integrated.fontSize": 14,
-    "terminal.integrated.fontFamily": "JetBrainsMono Nerd Font",
-    "terminal.integrated.cursorStyle": "line",
-    "terminal.integrated.cursorBlinking": true,
-    "prettier.trailingComma": "es5",
-    "breadcrumbs.enabled": true,
-    "[html]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
-    },
-    "[css]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
-    },
-    "[javascript]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
-    },
-    "[typescript]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
-    },
-    "[vue]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
-    },
-    "[jsonc]": {
-        "editor.defaultFormatter": "vscode.json-language-features"
-    },
-    "[yaml]": {
-        "editor.defaultFormatter": "redhat.vscode-yaml"
-    },
-    "[markdown]": {
-        "files.trimTrailingWhitespace": true
-    },
-    "[json]": {
-        "editor.defaultFormatter": "vscode.json-language-features"
-    },
-    "[terraform]": {
-        "editor.defaultFormatter": "hashicorp.terraform",
-        "editor.formatOnSave": true,
-        "editor.formatOnSaveMode": "file"
-    },
-    "[terraform-vars]": {
-        "editor.defaultFormatter": "hashicorp.terraform",
-        "editor.formatOnSave": true,
-        "editor.formatOnSaveMode": "file"
-    },
-    "[ruby]": {
-        "editor.defaultFormatter": "Shopify.ruby-lsp",
-        "editor.formatOnSave": true
-    },
-    "rubyLsp.formatter": "rubocop",
-    "rubyLsp.rubyVersionManager": "custom",
-    "rubyLsp.customRubyCommand": "eval \"$(mise env -s zsh)\"",
-    "rubyLsp.enabledFeatures": {
-        "onTypeFormatting": false
-    },
-    "vim.useSystemClipboard": true,
-    "editor.minimap.enabled": false,
-    "workbench.colorTheme": "Spinel",
-    "github.copilot.enable": {
-        "*": true,
-        "plaintext": true,
-        "markdown": false,
-        "scminput": false
-    }
+    "editor.formatOnSaveMode": "file"
+  },
+  "[terraform-vars]": {
+    "editor.defaultFormatter": "hashicorp.terraform",
+    "editor.formatOnSave": true,
+    "editor.formatOnSaveMode": "file"
+  },
+  "[ruby]": {
+    "editor.defaultFormatter": "Shopify.ruby-lsp",
+    "editor.formatOnSave": true
+  },
+  "rubyLsp.formatter": "rubocop",
+  "rubyLsp.rubyVersionManager": "custom",
+  "rubyLsp.customRubyCommand": "eval \"$(mise env -s zsh)\"",
+  "rubyLsp.enabledFeatures": {
+    "onTypeFormatting": false
+  },
+  "vim.useSystemClipboard": true,
+  "editor.minimap.enabled": false,
+  "workbench.colorTheme": "Spinel",
+  "github.copilot.enable": {
+    "*": true,
+    "plaintext": true,
+    "markdown": false,
+    "scminput": false
+  }
 }
