@@ -10,7 +10,6 @@
   "editor.bracketPairColorization.enabled": true,
   "editor.guides.bracketPairs": true,
   "editor.suggestSelection": "first",
-  "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
 
   // Editor Formatting
   "editor.tabSize": 2,
@@ -41,9 +40,10 @@
   },
 
   // UI/Workbench Settings
-  "window.commandCenter": 1,
+  "window.commandCenter": true,
   "breadcrumbs.enabled": true,
   "workbench.colorTheme": "Spinel",
+  "workbench.iconTheme": "vscode-icons",
 
   // Language-specific Formatters
   "[html]": {
@@ -95,8 +95,9 @@
 
   // Extension Settings - Ruby LSP
   "rubyLsp.formatter": "rubocop",
-  "rubyLsp.rubyVersionManager": "custom",
-  "rubyLsp.customRubyCommand": "eval \"$(mise env -s zsh)\"",
+  "rubyLsp.rubyVersionManager": {
+    "identifier": "auto"
+  },
   "rubyLsp.enabledFeatures": {
     "onTypeFormatting": false
   },
