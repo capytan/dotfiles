@@ -28,6 +28,7 @@
     "shopify.ruby-extensions-pack",
     "shopify.ruby-lsp",
     "sorbet.sorbet-vscode-extension",
-    "koichisasada.vscode-rdbg"
+    "koichisasada.vscode-rdbg",
+    "redhat.ansible"
   ]
 }
