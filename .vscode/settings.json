@@ -14,8 +14,6 @@
 
   // Editor Formatting
   "editor.tabSize": 2,
-  "editor.formatOnType": true,
-  "editor.formatOnPaste": true,
   "editor.formatOnSave": true,
 
   // Editor Font Settings
@@ -64,16 +62,13 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "[json]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.formatOnSave": true
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "[jsonc]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.formatOnSave": true
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "[yaml]": {
-    "editor.defaultFormatter": "redhat.vscode-yaml",
-    "editor.formatOnSave": true
+    "editor.defaultFormatter": "redhat.vscode-yaml"
   },
   "[markdown]": {
     "files.trimTrailingWhitespace": true,
@@ -82,17 +77,17 @@
   },
   "[terraform]": {
     "editor.defaultFormatter": "hashicorp.terraform",
-    "editor.formatOnSave": true,
     "editor.formatOnSaveMode": "file"
   },
   "[terraform-vars]": {
     "editor.defaultFormatter": "hashicorp.terraform",
-    "editor.formatOnSave": true,
     "editor.formatOnSaveMode": "file"
   },
   "[ruby]": {
-    "editor.defaultFormatter": "Shopify.ruby-lsp",
-    "editor.formatOnSave": true
+    "editor.defaultFormatter": "Shopify.ruby-lsp"
+  },
+  "[python]": {
+    "editor.tabSize": 4
   },
 
   // Extension Settings - Prettier
