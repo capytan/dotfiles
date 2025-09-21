@@ -1,27 +1,35 @@
-## cli tool
-### https://github.com/aws/copilot-cli
-brew "aws/tap/copilot-cli"
-brew "ghq"
+# Git & Version Control
 brew "git"
 brew "gh"
+brew "git-secrets"
 brew "tig"
 brew "lazygit"
-brew "circleci"
-brew "git-secrets"
+brew "ghq"
+
+# CLI Tools & Utilities
 brew "fzf"
 brew "peco"
 brew "the_silver_searcher"
-brew "tig"
-brew "tmux"
-brew "vim"
-brew "neovim"
+brew "jq"
 brew "wget"
-brew "zsh"
+brew "tmux"
 brew "gawk"
 brew "inetutils"
 brew "bitwarden-cli"
 
-# programming language
+# Editors
+brew "vim"
+brew "neovim"
+
+# Shells
+brew "zsh"
+brew "bash"
+
+# AWS & Cloud
+brew "aws/tap/copilot-cli"
+brew "circleci"
+
+# Programming Languages & Tools
 brew "python"
 brew "gcc"
 brew "clang-format"
@@ -29,32 +37,29 @@ brew "go"
 brew "java"
 brew "sbt"
 
-## Ruby
-### dependencies
-### ref: https://github.com/rbenv/ruby-build/wiki#suggested-build-environment
+# Ruby Build Dependencies
+# ref: https://github.com/rbenv/ruby-build/wiki#suggested-build-environment
 brew "openssl@3"
 brew "readline"
 brew "libyaml"
 brew "gmp"
 brew "autoconf"
 
-# Docker/Kubernetes
+# Docker & Kubernetes
 brew "docker"
 brew "hadolint"
 brew "kind"
 
-# static site generator
+# Development Tools
 brew "hugo"
-
-# json
-brew "jq"
-
-brew "ffmpeg"
 brew "mkcert"
 brew "protobuf"
+
+# Media & Audio
+brew "ffmpeg"
 brew "blackhole-2ch"
 
-## cask
+# GUI Applications (Casks)
 cask "libreoffice-language-pack"
 cask "deepl"
 cask "keepassxc"
