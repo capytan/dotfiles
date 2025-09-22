@@ -2,7 +2,6 @@
   "recommendations": [
     "CoenraadS.bracket-pair-colorizer",
     "dbaeumer.vscode-eslint",
-    "eg2.vscode-npm-script",
     "esbenp.prettier-vscode",
     "GitHub.vscode-pull-request-github",
     "hashicorp.terraform",
@@ -13,7 +12,6 @@
     "ms-vsliveshare.vsliveshare",
     "redhat.vscode-yaml",
     "scala-lang.scala",
-    "taichi.vscode-textlint",
     "vscode-icons-team.vscode-icons",
     "vscodevim.vim",
     "vscoss.vscode-ansible",
@@ -28,6 +26,8 @@
     "shopify.ruby-lsp",
     "sorbet.sorbet-vscode-extension",
     "koichisasada.vscode-rdbg",
-    "redhat.ansible"
+    "redhat.ansible",
+    "ms-kubernetes-tools.vscode-kubernetes-tools",
+    "3w36zj6.textlint"
   ]
 }
