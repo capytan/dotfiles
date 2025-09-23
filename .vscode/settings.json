@@ -111,5 +111,6 @@
     "plaintext": false,
     "markdown": false,
     "scminput": false
-  }
+  },
+  "docker.extension.enableComposeLanguageServer": false
 }
