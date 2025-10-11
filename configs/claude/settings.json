@@ -1,5 +1,4 @@
 {
-  "model": "claude-opus-4-1-20250805",
   "env": {
     "MAX_THINKING_TOKENS": "31999",
     "DISABLE_MICROCOMPACT": "1",
@@ -13,7 +12,10 @@
     "DISABLE_TELEMETRY": "1"
   },
   "includeCoAuthoredBy": false,
+  "cleanupPeriodDays": 365,
+  "model": "claude-sonnet-4-5-20250929",
   "permissions": {
+    "defaultMode": "acceptEdits",
     "allow": [
       "// Git operations",
       "Bash(git:*)",
