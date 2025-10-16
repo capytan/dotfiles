@@ -84,14 +84,13 @@ The repository follows a platform-specific organization:
 
 ## Claude Custom Commands
 
-Three custom commands are available in `configs/claude/commands/`:
+Two custom commands are available in `configs/claude/commands/`:
 1. **commit**: Analyzes staged changes and creates a Conventional Commits formatted commit message
 2. **switch**: Analyzes current changes and creates an appropriately named feature branch
-3. **security-review**: Reviews code for security vulnerabilities
 
 Setup and usage:
 ```bash
-# Setup commands (creates symlinks in ~/.claude/commands/)
+# Setup commands (creates symlinks in ~/.claude/commands/ and settings.json in ~/.claude/config/)
 ./configs/claude/setup-claude-commands.sh
 
 # Usage in Claude Code
@@ -99,7 +98,7 @@ Setup and usage:
 /switch  # Create feature branch
 ```
 
-Claude settings are configured in `configs/claude/settings.json`
+Claude settings are configured in `configs/claude/settings.json` (symlinked to `~/.claude/config/settings.json`)
 
 ## Important Guidelines
 
