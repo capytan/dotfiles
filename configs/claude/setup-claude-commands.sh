@@ -12,9 +12,8 @@ NC='\033[0m' # No Color
 
 # パスの定義
 CLAUDE_DIR="$HOME/.claude"
-CLAUDE_CONFIG_DIR="$CLAUDE_DIR/config"
 COMMANDS_LINK="$CLAUDE_DIR/commands"
-SETTINGS_LINK="$CLAUDE_CONFIG_DIR/settings.json"
+SETTINGS_LINK="$CLAUDE_DIR/settings.json"
 DOTFILES_CLAUDE="$HOME/dotfiles/configs/claude"
 DOTFILES_COMMANDS="$DOTFILES_CLAUDE/commands"
 DOTFILES_SETTINGS="$DOTFILES_CLAUDE/settings.json"
@@ -72,11 +71,6 @@ fi
 if [ ! -d "$CLAUDE_DIR" ]; then
     echo -e "${YELLOW}.claude ディレクトリを作成しています...${NC}"
     mkdir -p "$CLAUDE_DIR"
-fi
-
-if [ ! -d "$CLAUDE_CONFIG_DIR" ]; then
-    echo -e "${YELLOW}.claude/config ディレクトリを作成しています...${NC}"
-    mkdir -p "$CLAUDE_CONFIG_DIR"
 fi
 
 # 3. シンボリックリンクを作成
