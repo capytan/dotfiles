@@ -1,5 +1,6 @@
 {
   "alwaysThinkingEnabled": true,
+  "cleanupPeriodDays": 365,
   "env": {
     "MAX_THINKING_TOKENS": "31999",
     "DISABLE_MICROCOMPACT": "1",
@@ -13,10 +14,7 @@
     "DISABLE_TELEMETRY": "1"
   },
   "includeCoAuthoredBy": false,
-  "cleanupPeriodDays": 365,
-  "model": "claude-sonnet-4-5-20250929[1m]",
   "permissions": {
-    "defaultMode": "acceptEdits",
     "allow": [
       "// Git operations",
       "Bash(git:*)",
@@ -189,6 +187,8 @@
       "mcp__*__delete*",
       "mcp__*__drop*",
       "mcp__*__truncate*"
-    ]
-  }
+    ],
+    "defaultMode": "acceptEdits"
+  },
+  "model": "sonnet[1m]"
 }
