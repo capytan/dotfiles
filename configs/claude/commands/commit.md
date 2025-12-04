@@ -75,13 +75,13 @@ Please analyze the changes, generate an appropriate commit message, and execute 
 
 ### Breaking Changes
 
-- Append `!` after type/scope: `feat!:` or `feat(api)!:`
-- Or add `BREAKING CHANGE:` footer
+- Append exclamation mark after type/scope: feat! or feat(api)!
+- Or add BREAKING CHANGE: footer
 - Correlates with MAJOR in SemVer
 
 ### Specification Rules
 
-1. Commits MUST be prefixed with a type, followed by OPTIONAL scope, OPTIONAL `!`, and REQUIRED colon and space
+1. Commits MUST be prefixed with a type, followed by OPTIONAL scope, OPTIONAL "!", and REQUIRED colon and space
 2. A scope MUST be a noun describing a section of the codebase in parenthesis: `fix(parser):`
 3. A description MUST immediately follow the type/scope prefix
 4. A body MAY be provided after the description, beginning one blank line after
@@ -102,11 +102,11 @@ Dismiss incoming responses other than from latest request.
 ```
 
 ```
-feat!: send an email to the customer when a product is shipped
+feat(shipping)!: send email to customer when product is shipped
 ```
 
 ```
-chore!: drop support for Node 6
+chore(node)!: drop support for Node 6
 
 BREAKING CHANGE: use JavaScript features not available in Node 6.
 ```
