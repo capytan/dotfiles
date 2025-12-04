@@ -20,6 +20,8 @@
       "// GitHub CLI",
       "Bash(gh pr view:*)",
       "Bash(gh pr diff:*)",
+      "Bash(gh pr list:*)",
+      "Bash(gh issue view:*)",
       "// File system operations",
       "Bash(find:*)",
       "Bash(ls:*)",
