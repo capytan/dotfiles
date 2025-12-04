@@ -1,5 +1,4 @@
 {
-  "alwaysThinkingEnabled": true,
   "cleanupPeriodDays": 365,
   "env": {
     "MAX_THINKING_TOKENS": "31999",
@@ -193,5 +192,6 @@
     ],
     "defaultMode": "acceptEdits"
   },
-  "model": "sonnet[1m]"
+  "alwaysThinkingEnabled": true,
+  "model": "opus"
 }
