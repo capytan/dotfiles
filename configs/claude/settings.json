@@ -194,8 +194,7 @@
     ],
     "defaultMode": "acceptEdits"
   },
-  "alwaysThinkingEnabled": true,
-  "model": "opus",
+  "model": "claude-opus-4-5-20251101",
   "enabledPlugins": {
     "code-review@claude-code-plugins": true,
     "commit-commands@claude-code-plugins": true,
@@ -206,5 +205,6 @@
     "pr-review-toolkit@claude-code-plugins": true,
     "ralph-wiggum@claude-code-plugins": true,
     "security-guidance@claude-code-plugins": true
-  }
+  },
+  "alwaysThinkingEnabled": true
 }
