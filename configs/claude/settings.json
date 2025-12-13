@@ -96,7 +96,7 @@
       "Glob(**)",
       "Grep(**)"
     ],
-    "deny": [
+    "ask": [
       "// System operations",
       "Bash(sudo:*)",
       "Bash(su:*)",
