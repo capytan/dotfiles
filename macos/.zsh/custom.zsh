@@ -12,6 +12,14 @@
 eval "$(~/.local/bin/mise activate zsh)"
 eval "$(~/.local/bin/mise activate --shims)"
 
+# pnpm
+export PNPM_HOME="/Users/capytan/Library/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME:"*) ;;
+  *) export PATH="$PNPM_HOME:$PATH" ;;
+esac
+# pnpm end
+
 # history
 HISTFILE=~/.zsh_history
 HISTSIZE=1000000
