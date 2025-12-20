@@ -1,0 +1,41 @@
+shell-integration = zsh
+
+# Theme
+# theme = Catppuccin Frappe
+theme = tokyonight
+
+# Font
+# Using Nerd Font variant for powerline symbols and icon support in terminal apps
+font-family = JetBrainsMonoNL Nerd Font Mono
+font-size = 15
+# Increase line height for better readability without changing font size
+adjust-cell-height = 4
+
+# Window
+# Start with maximized window (not fullscreen - menu bar stays visible)
+# maximize = true doesn't work reliably on macOS, so use large dimensions instead
+# Values larger than screen size are automatically clamped to screen bounds
+window-width = 9999
+window-height = 9999
+window-padding-x = 4
+window-padding-y = 2
+# Semi-transparent background with blur creates a frosted glass effect on macOS
+# Allows desktop to show through while maintaining text readability
+background-opacity = 0.75
+# Blur intensity of 20 is the default; higher values may cause rendering issues
+background-blur-radius = 20
+
+# Scrollback
+# 100K lines allows reviewing extensive build logs and command history
+scrollback-limit = 100000
+
+# macOS specific
+# By default, Option key produces Unicode chars (e.g., ⌥+b → ∫)
+# Setting to true makes Option behave as Alt for terminal keybindings (zellij, tmux, etc.)
+# Use "left" or "right" to keep one Option key for special character input
+macos-option-as-alt = true
+
+# Shell
+# Each new tab/window creates a fresh zellij session
+# Use 'zellij attach' manually to reconnect to existing sessions
+command = /bin/zsh -l -c "zellij"
