@@ -13,9 +13,11 @@ NC='\033[0m' # No Color
 # パスの定義
 CLAUDE_DIR="$HOME/.claude"
 COMMANDS_LINK="$CLAUDE_DIR/commands"
+SKILLS_LINK="$CLAUDE_DIR/skills"
 SETTINGS_LINK="$CLAUDE_DIR/settings.json"
 DOTFILES_CLAUDE="$HOME/dotfiles/configs/claude"
 DOTFILES_COMMANDS="$DOTFILES_CLAUDE/commands"
+DOTFILES_SKILLS="$DOTFILES_CLAUDE/skills"
 DOTFILES_SETTINGS="$DOTFILES_CLAUDE/settings.json"
 
 echo -e "${GREEN}Claude Code コマンドのセットアップを開始します...${NC}"
@@ -67,6 +69,12 @@ if [ ! -f "$DOTFILES_SETTINGS" ]; then
     exit 1
 fi
 
+if [ ! -d "$DOTFILES_SKILLS" ]; then
+    echo -e "${RED}エラー: $DOTFILES_SKILLS が見つかりません。${NC}"
+    echo "dotfiles が正しくクローンされているか確認してください。"
+    exit 1
+fi
+
 # 2. 必要なディレクトリを作成
 if [ ! -d "$CLAUDE_DIR" ]; then
     echo -e "${YELLOW}.claude ディレクトリを作成しています...${NC}"
@@ -75,9 +83,10 @@ fi
 
 # 3. シンボリックリンクを作成
 create_symlink "$COMMANDS_LINK" "$DOTFILES_COMMANDS" "commands"
+create_symlink "$SKILLS_LINK" "$DOTFILES_SKILLS" "skills"
 create_symlink "$SETTINGS_LINK" "$DOTFILES_SETTINGS" "settings.json"
 
 # 4. 確認と完了メッセージ
 echo
 echo -e "${GREEN}✓ セットアップが完了しました！${NC}"
-echo -e "${GREEN}Claude Code でカスタムコマンドと設定が使用できるようになりました。${NC}"
+echo -e "${GREEN}Claude Code でカスタムコマンド、スキル、設定が使用できるようになりました。${NC}"
