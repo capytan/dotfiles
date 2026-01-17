@@ -13,6 +13,12 @@ Analyze the staged changes and create a commit following the Conventional Commit
 !git status --short
 ```
 
+## Recent Commits
+
+```bash
+!git log --oneline -5
+```
+
 ## Staged Changes
 
 ```bash
@@ -79,6 +85,21 @@ Please analyze the changes, generate an appropriate commit message, and execute 
 - Or add BREAKING CHANGE: footer
 - Correlates with MAJOR in SemVer
 
+### Scope Guidelines
+
+**When to use scope:**
+- Changes affect a specific area of the codebase
+- Helps reviewers understand the change context
+
+**How to choose scope:**
+- Use directory/module names: `auth`, `api`, `ui`
+- Use feature names: `login`, `checkout`, `cart`
+- Use config names: `claude`, `ghostty`, `zsh`
+
+**When to omit scope:**
+- Changes affect multiple areas
+- Very small or general changes
+
 ### Specification Rules
 
 1. Commits MUST be prefixed with a type, followed by OPTIONAL scope, OPTIONAL "!", and REQUIRED colon and space
@@ -88,11 +109,20 @@ Please analyze the changes, generate an appropriate commit message, and execute 
 5. Footers MAY be provided one blank line after the body, using `token: value` or `token #value` format
 6. BREAKING CHANGE MUST be uppercase when used as a footer token
 
-### Examples
+### Good Examples
 
-```
-feat(lang): add Polish language
-```
+| Commit Message | Why It's Good |
+|----------------|---------------|
+| `feat(auth): add OAuth2 login` | Clear scope and specific feature |
+| `fix: resolve null pointer in checkout` | Describes the bug location |
+| `docs(api): add endpoint examples` | Specific documentation target |
+| `refactor(utils): extract validation logic` | Explains the refactoring action |
+| `perf(query): add database index` | Clear optimization technique |
+| `test(auth): add login unit tests` | Identifies test coverage area |
+| `chore(deps): update dependencies` | Clear maintenance task |
+| `feat(api)!: change response format` | Breaking change clearly marked |
+
+### Multi-line Examples
 
 ```
 fix: prevent racing of requests
@@ -102,17 +132,18 @@ Dismiss incoming responses other than from latest request.
 ```
 
 ```
-feat(shipping)!: send email to customer when product is shipped
-```
-
-```
 chore(node)!: drop support for Node 6
 
 BREAKING CHANGE: use JavaScript features not available in Node 6.
 ```
 
-```
-revert: let us never again speak of the noodle incident
+### Bad Examples (Anti-patterns)
 
-Refs: 676104e, a215868
-```
+| Bad Message | Problem | Better Alternative |
+|-------------|---------|-------------------|
+| `fix bug` | Missing type format, too vague | `fix(cart): resolve total calculation` |
+| `updated code` | Past tense, not descriptive | `refactor: extract validation logic` |
+| `WIP` | Not descriptive, not commitworthy | `feat(checkout): add payment form` |
+| `feat: changes` | Too vague | `feat(auth): add password reset` |
+| `Fixed the thing` | Past tense, no type, vague | `fix(ui): correct button alignment` |
+| `asdf` / `temp` | Meaningless | `chore: update gitignore` |
