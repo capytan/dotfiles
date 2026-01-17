@@ -1,54 +1,100 @@
 {
+  "model": "claude-opus-4-5-20251101",
+  "alwaysThinkingEnabled": true,
   "cleanupPeriodDays": 365,
+  "includeCoAuthoredBy": false,
+  "plansDirectory": ".claude/plans",
+
   "env": {
     "MAX_THINKING_TOKENS": "31999",
     "DISABLE_MICROCOMPACT": "1",
-    "CLAUDE_CODE_AUTO_CONNECT_IDE": "0",
-    "CLAUDE_CODE_IDE_SKIP_AUTO_INSTALL": "1",
-    "CLAUDE_CODE_IDE_SKIP_VALID_CHECK": "1",
     "DISABLE_AUTOUPDATER": "1",
+    "DISABLE_TELEMETRY": "1",
+    "DISABLE_ERROR_REPORTING": "1",
     "CLAUDE_CODE_ENABLE_TELEMETRY": "0",
     "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
-    "DISABLE_ERROR_REPORTING": "1",
-    "DISABLE_TELEMETRY": "1"
+    "CLAUDE_CODE_AUTO_CONNECT_IDE": "0",
+    "CLAUDE_CODE_IDE_SKIP_AUTO_INSTALL": "1",
+    "CLAUDE_CODE_IDE_SKIP_VALID_CHECK": "1"
   },
-  "includeCoAuthoredBy": false,
+
+  "mcpServers": {
+    "github": {
+      "command": "gh",
+      "args": ["mcp-server"]
+    }
+  },
+
+  "enabledPlugins": {
+    "code-review@claude-plugins-official": true,
+    "commit-commands@claude-plugins-official": true,
+    "context7@claude-plugins-official": true,
+    "feature-dev@claude-plugins-official": true,
+    "frontend-design@claude-plugins-official": true,
+    "github@claude-plugins-official": true,
+    "gopls-lsp@claude-plugins-official": true,
+    "learning-output-style@claude-plugins-official": true,
+    "lua-lsp@claude-plugins-official": true,
+    "plugin-dev@claude-plugins-official": true,
+    "pr-review-toolkit@claude-plugins-official": true,
+    "pyright-lsp@claude-plugins-official": true,
+    "security-guidance@claude-plugins-official": true,
+    "sentry@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true
+  },
+
   "permissions": {
+    "defaultMode": "acceptEdits",
     "allow": [
+      "// File operations",
+      "Edit(**)",
+      "Read(**)",
+      "Write(**)",
+      "MultiEdit(**)",
+      "Glob(**)",
+      "Grep(**)",
+
       "// Git operations",
       "Bash(git:*)",
-      "// GitHub CLI",
+
+      "// GitHub CLI (read-only)",
       "Bash(gh pr view:*)",
       "Bash(gh pr diff:*)",
       "Bash(gh pr list:*)",
       "Bash(gh issue view:*)",
-      "// File system operations",
+
+      "// File system (read-only)",
       "Bash(find:*)",
       "Bash(ls:*)",
       "Bash(tree:*)",
-      "Bash(mkdir:*)",
-      "Bash(touch:*)",
       "Bash(cat:*)",
       "Bash(head:*)",
       "Bash(tail:*)",
       "Bash(pwd)",
-      "Bash(echo:*)",
       "Bash(which:*)",
       "Bash(date)",
       "Bash(diff:*)",
+
+      "// File system (write)",
+      "Bash(mkdir:*)",
+      "Bash(touch:*)",
+      "Bash(echo:*)",
+
       "// Search tools",
       "Bash(grep:*)",
       "Bash(rg:*)",
       "Bash(ag:*)",
-      "// Node.js & npm",
+
+      "// Node.js & package managers",
+      "Bash(node:*)",
       "Bash(npm install:*)",
       "Bash(npm run:*)",
       "Bash(npm test:*)",
       "Bash(npm list:*)",
-      "Bash(node:*)",
       "Bash(npx:*)",
       "Bash(yarn:*)",
       "Bash(pnpm:*)",
+
       "// Python",
       "Bash(python:*)",
       "Bash(python3:*)",
@@ -57,6 +103,7 @@
       "Bash(uv:*)",
       "Bash(poetry:*)",
       "Bash(pipenv:*)",
+
       "// Linters & Formatters",
       "Bash(eslint:*)",
       "Bash(prettier:*)",
@@ -65,36 +112,33 @@
       "Bash(flake8:*)",
       "Bash(mypy:*)",
       "Bash(pre-commit:*)",
+
       "// Build tools",
       "Bash(make:*)",
       "Bash(cmake:*)",
       "Bash(cargo:*)",
       "Bash(go:*)",
-      "// Docker",
+
+      "// Testing",
+      "Bash(jest:*)",
+      "Bash(vitest:*)",
+      "Bash(mocha:*)",
+
+      "// Docker (read & build)",
       "Bash(docker build:*)",
       "Bash(docker compose:*)",
       "Bash(docker run:*)",
       "Bash(docker ps:*)",
       "Bash(docker images:*)",
-      "// Terraform",
+
+      "// Terraform (safe operations)",
       "Bash(terraform fmt:*)",
       "Bash(terraform plan:*)",
       "Bash(terraform validate:*)",
       "Bash(terraform init:*)",
       "Bash(terraform get:*)",
       "Bash(terraform graph:*)",
-      "Bash(tflint:*)",
-      "// Testing",
-      "Bash(jest:*)",
-      "Bash(vitest:*)",
-      "Bash(mocha:*)",
-      "// File operations",
-      "Edit(**)",
-      "Read(**)",
-      "Write(**)",
-      "MultiEdit(**)",
-      "Glob(**)",
-      "Grep(**)"
+      "Bash(tflint:*)"
     ],
     "ask": [
       "// System operations",
@@ -102,23 +146,28 @@
       "Bash(su:*)",
       "Bash(chmod:*)",
       "Bash(chown:*)",
+
+      "// Destructive file operations",
       "Bash(rm:*)",
       "Bash(rm -rf:*)",
       "Bash(rmdir:*)",
       "Bash(mv /*:*)",
       "Bash(cp /*:*)",
-      "// Package publishing",
-      "Bash(npm publish:*)",
-      "Bash(pip upload:*)",
-      "Bash(cargo publish:*)",
-      "Bash(gem push:*)",
-      "// Git dangerous operations",
+
+      "// Git (push & destructive)",
       "Bash(git push:*)",
       "Bash(git push --force:*)",
       "Bash(git rebase:*)",
       "Bash(git reset:*)",
       "Bash(git merge:*)",
       "Bash(git force:*)",
+
+      "// Package publishing",
+      "Bash(npm publish:*)",
+      "Bash(pip upload:*)",
+      "Bash(cargo publish:*)",
+      "Bash(gem push:*)",
+
       "// Infrastructure changes",
       "Bash(terraform apply:*)",
       "Bash(terraform destroy:*)",
@@ -127,6 +176,7 @@
       "Bash(kubectl apply:*)",
       "Bash(helm install:*)",
       "Bash(helm upgrade:*)",
+
       "// Network operations",
       "Bash(curl:*)",
       "Bash(wget:*)",
@@ -136,22 +186,26 @@
       "Bash(scp:*)",
       "Bash(rsync:*)",
       "Bash(ftp:*)",
+
       "// Database operations",
       "Bash(psql:*)",
       "Bash(mysql:*)",
       "Bash(mongod:*)",
       "Bash(redis-cli:*)",
       "Bash(sqlite3:*)",
-      "// Docker dangerous operations",
+
+      "// Docker (destructive)",
       "Bash(docker push:*)",
       "Bash(docker rm:*)",
       "Bash(docker rmi:*)",
       "Bash(docker system prune:*)",
+
       "// Process management",
       "Bash(kill:*)",
       "Bash(killall:*)",
       "Bash(pkill:*)",
-      "// System modification",
+
+      "// System services & packages",
       "Bash(systemctl:*)",
       "Bash(service:*)",
       "Bash(apt:*)",
@@ -159,6 +213,7 @@
       "Bash(yum:*)",
       "Bash(brew:*)",
       "Bash(snap:*)",
+
       "// Sensitive file access",
       "Read(.env*)",
       "Read(**/.env*)",
@@ -176,6 +231,7 @@
       "Read(**/*.pfx)",
       "Read(**/*.p12)",
       "Read(**/*.jks)",
+
       "// Sensitive file writes",
       "Write(.env*)",
       "Write(**/.env*)",
@@ -186,41 +242,12 @@
       "Write(**/*key*)",
       "Write(**/*password*)",
       "Write(**/*secret*)",
+
       "// MCP restrictions",
       "mcp__supabase__execute_sql",
       "mcp__*__delete*",
       "mcp__*__drop*",
       "mcp__*__truncate*"
-    ],
-    "defaultMode": "acceptEdits"
-  },
-  "model": "claude-opus-4-5-20251101",
-  "enabledPlugins": {
-    "code-review@claude-code-plugins": false,
-    "commit-commands@claude-code-plugins": false,
-    "explanatory-output-style@claude-code-plugins": false,
-    "feature-dev@claude-code-plugins": false,
-    "frontend-design@claude-code-plugins": false,
-    "learning-output-style@claude-code-plugins": false,
-    "pr-review-toolkit@claude-code-plugins": false,
-    "ralph-wiggum@claude-code-plugins": false,
-    "security-guidance@claude-code-plugins": false,
-    "code-review@claude-plugins-official": true,
-    "commit-commands@claude-plugins-official": true,
-    "context7@claude-plugins-official": true,
-    "feature-dev@claude-plugins-official": true,
-    "frontend-design@claude-plugins-official": true,
-    "github@claude-plugins-official": true,
-    "learning-output-style@claude-plugins-official": true,
-    "plugin-dev@claude-code-plugins": false,
-    "plugin-dev@claude-plugins-official": true,
-    "pr-review-toolkit@claude-plugins-official": true,
-    "gopls-lsp@claude-plugins-official": true,
-    "security-guidance@claude-plugins-official": true,
-    "typescript-lsp@claude-plugins-official": true,
-    "pyright-lsp@claude-plugins-official": true,
-    "sentry@claude-plugins-official": true,
-    "lua-lsp@claude-plugins-official": true
-  },
-  "alwaysThinkingEnabled": true
+    ]
+  }
 }
