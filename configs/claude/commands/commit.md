@@ -65,19 +65,19 @@ Please analyze the changes, generate an appropriate commit message, and execute 
 
 ### Type Definitions
 
-| Type | Description | SemVer |
-|------|-------------|--------|
-| `feat` | Introduces a new feature | MINOR |
-| `fix` | Patches a bug | PATCH |
-| `docs` | Documentation only changes | - |
-| `style` | Code style changes (formatting, semicolons, etc.) | - |
-| `refactor` | Code change that neither fixes a bug nor adds a feature | - |
-| `perf` | Performance improvements | - |
-| `test` | Adding or correcting tests | - |
-| `build` | Changes to build system or dependencies | - |
-| `ci` | Changes to CI configuration | - |
-| `chore` | Other changes that don't modify src or test files | - |
-| `revert` | Reverts a previous commit | - |
+| Type       | Description                                             | SemVer |
+| ---------- | ------------------------------------------------------- | ------ |
+| `feat`     | Introduces a new feature                                | MINOR  |
+| `fix`      | Patches a bug                                           | PATCH  |
+| `docs`     | Documentation only changes                              | -      |
+| `style`    | Code style changes (formatting, semicolons, etc.)       | -      |
+| `refactor` | Code change that neither fixes a bug nor adds a feature | -      |
+| `perf`     | Performance improvements                                | -      |
+| `test`     | Adding or correcting tests                              | -      |
+| `build`    | Changes to build system or dependencies                 | -      |
+| `ci`       | Changes to CI configuration                             | -      |
+| `chore`    | Other changes that don't modify src or test files       | -      |
+| `revert`   | Reverts a previous commit                               | -      |
 
 ### Breaking Changes
 
@@ -88,15 +88,18 @@ Please analyze the changes, generate an appropriate commit message, and execute 
 ### Scope Guidelines
 
 **When to use scope:**
+
 - Changes affect a specific area of the codebase
 - Helps reviewers understand the change context
 
 **How to choose scope:**
+
 - Use directory/module names: `auth`, `api`, `ui`
 - Use feature names: `login`, `checkout`, `cart`
 - Use config names: `claude`, `ghostty`, `zsh`
 
 **When to omit scope:**
+
 - Changes affect multiple areas
 - Very small or general changes
 
@@ -111,16 +114,16 @@ Please analyze the changes, generate an appropriate commit message, and execute 
 
 ### Good Examples
 
-| Commit Message | Why It's Good |
-|----------------|---------------|
-| `feat(auth): add OAuth2 login` | Clear scope and specific feature |
-| `fix: resolve null pointer in checkout` | Describes the bug location |
-| `docs(api): add endpoint examples` | Specific documentation target |
-| `refactor(utils): extract validation logic` | Explains the refactoring action |
-| `perf(query): add database index` | Clear optimization technique |
-| `test(auth): add login unit tests` | Identifies test coverage area |
-| `chore(deps): update dependencies` | Clear maintenance task |
-| `feat(api)!: change response format` | Breaking change clearly marked |
+| Commit Message                              | Why It's Good                    |
+| ------------------------------------------- | -------------------------------- |
+| `feat(auth): add OAuth2 login`              | Clear scope and specific feature |
+| `fix: resolve null pointer in checkout`     | Describes the bug location       |
+| `docs(api): add endpoint examples`          | Specific documentation target    |
+| `refactor(utils): extract validation logic` | Explains the refactoring action  |
+| `perf(query): add database index`           | Clear optimization technique     |
+| `test(auth): add login unit tests`          | Identifies test coverage area    |
+| `chore(deps): update dependencies`          | Clear maintenance task           |
+| `feat(api)!: change response format`        | Breaking change clearly marked   |
 
 ### Multi-line Examples
 
@@ -139,11 +142,11 @@ BREAKING CHANGE: use JavaScript features not available in Node 6.
 
 ### Bad Examples (Anti-patterns)
 
-| Bad Message | Problem | Better Alternative |
-|-------------|---------|-------------------|
-| `fix bug` | Missing type format, too vague | `fix(cart): resolve total calculation` |
-| `updated code` | Past tense, not descriptive | `refactor: extract validation logic` |
-| `WIP` | Not descriptive, not commitworthy | `feat(checkout): add payment form` |
-| `feat: changes` | Too vague | `feat(auth): add password reset` |
-| `Fixed the thing` | Past tense, no type, vague | `fix(ui): correct button alignment` |
-| `asdf` / `temp` | Meaningless | `chore: update gitignore` |
+| Bad Message       | Problem                           | Better Alternative                     |
+| ----------------- | --------------------------------- | -------------------------------------- |
+| `fix bug`         | Missing type format, too vague    | `fix(cart): resolve total calculation` |
+| `updated code`    | Past tense, not descriptive       | `refactor: extract validation logic`   |
+| `WIP`             | Not descriptive, not commitworthy | `feat(checkout): add payment form`     |
+| `feat: changes`   | Too vague                         | `feat(auth): add password reset`       |
+| `Fixed the thing` | Past tense, no type, vague        | `fix(ui): correct button alignment`    |
+| `asdf` / `temp`   | Meaningless                       | `chore: update gitignore`              |

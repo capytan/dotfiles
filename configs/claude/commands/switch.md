@@ -58,18 +58,18 @@ Please analyze the changes and create an appropriate branch.
 
 ### Type Definitions
 
-| Type | Description | Use Case |
-|------|-------------|----------|
-| `feat` | New feature | Adding new functionality |
-| `fix` | Bug fix | Fixing broken behavior |
-| `docs` | Documentation | README, comments, API docs |
+| Type       | Description      | Use Case                              |
+| ---------- | ---------------- | ------------------------------------- |
+| `feat`     | New feature      | Adding new functionality              |
+| `fix`      | Bug fix          | Fixing broken behavior                |
+| `docs`     | Documentation    | README, comments, API docs            |
 | `refactor` | Code refactoring | Restructuring without behavior change |
-| `perf` | Performance | Optimization improvements |
-| `test` | Testing | Adding or fixing tests |
-| `build` | Build system | Dependencies, build scripts |
-| `ci` | CI/CD | Pipeline configuration |
-| `chore` | Maintenance | Cleanup, tooling, configs |
-| `hotfix` | Urgent fix | Critical production fixes |
+| `perf`     | Performance      | Optimization improvements             |
+| `test`     | Testing          | Adding or fixing tests                |
+| `build`    | Build system     | Dependencies, build scripts           |
+| `ci`       | CI/CD            | Pipeline configuration                |
+| `chore`    | Maintenance      | Cleanup, tooling, configs             |
+| `hotfix`   | Urgent fix       | Critical production fixes             |
 
 ### Naming Rules
 
@@ -81,25 +81,25 @@ Please analyze the changes and create an appropriate branch.
 
 ### Good Examples
 
-| Branch Name | Why It's Good |
-|-------------|---------------|
-| `feat/user-profile-page` | Clear type and specific feature |
-| `fix/null-pointer-checkout` | Describes the bug location |
+| Branch Name                     | Why It's Good                   |
+| ------------------------------- | ------------------------------- |
+| `feat/user-profile-page`        | Clear type and specific feature |
+| `fix/null-pointer-checkout`     | Describes the bug location      |
 | `refactor/extract-auth-service` | Explains the refactoring action |
-| `docs/api-endpoint-examples` | Specific documentation target |
-| `perf/lazy-load-images` | Clear optimization technique |
-| `test/payment-integration` | Identifies test coverage area |
-| `ci/add-lint-workflow` | Specific CI change |
-| `hotfix/payment-timeout` | Urgent issue identifier |
+| `docs/api-endpoint-examples`    | Specific documentation target   |
+| `perf/lazy-load-images`         | Clear optimization technique    |
+| `test/payment-integration`      | Identifies test coverage area   |
+| `ci/add-lint-workflow`          | Specific CI change              |
+| `hotfix/payment-timeout`        | Urgent issue identifier         |
 
 ### Bad Examples (Anti-patterns)
 
-| Branch Name | Problem | Better Alternative |
-|-------------|---------|-------------------|
-| `feature/update` | Too vague | `feat/add-user-search` |
-| `fix/bug` | Not descriptive | `fix/login-redirect-loop` |
-| `my-changes` | Missing type prefix | `feat/order-history` |
-| `feat/Add_New_Feature` | Wrong case, underscores | `feat/add-new-feature` |
-| `fix/issue-123` | Issue number alone not descriptive | `fix/cart-total-calculation` |
-| `wip` | No type, too vague | `feat/checkout-flow` |
-| `test` | Missing description | `test/user-service-unit` |
+| Branch Name            | Problem                            | Better Alternative           |
+| ---------------------- | ---------------------------------- | ---------------------------- |
+| `feature/update`       | Too vague                          | `feat/add-user-search`       |
+| `fix/bug`              | Not descriptive                    | `fix/login-redirect-loop`    |
+| `my-changes`           | Missing type prefix                | `feat/order-history`         |
+| `feat/Add_New_Feature` | Wrong case, underscores            | `feat/add-new-feature`       |
+| `fix/issue-123`        | Issue number alone not descriptive | `fix/cart-total-calculation` |
+| `wip`                  | No type, too vague                 | `feat/checkout-flow`         |
+| `test`                 | Missing description                | `test/user-service-unit`     |
