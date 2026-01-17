@@ -21,11 +21,6 @@ alias .....='cd ../../../..'
 alias ......='cd ../../../../..'
 alias zshrc='${=EDITOR} ${ZDOTDIR:-$HOME}/.zshrc'
 
-# File Operations (with safety)
-alias rm='rm -i'
-alias cp='cp -i'
-alias mv='mv -i'
-
 # Search and Filter
 alias grep='grep --color'
 alias sgrep='grep -R -n -H -C 5 --exclude-dir={.git,.svn,CVS} '
