@@ -3,7 +3,6 @@
   "alwaysThinkingEnabled": true,
   "cleanupPeriodDays": 365,
   "includeCoAuthoredBy": false,
-  "plansDirectory": ".claude/plans",
 
   "env": {
     "MAX_THINKING_TOKENS": "31999",
