@@ -57,7 +57,7 @@ The repository follows a platform-specific organization:
 - **Configuration files**: Root directory contains common dotfiles (.zshrc, .tmux.conf, .zprofile, init.vim, etc.)
 - **Tool configurations**:
   - `configs/alacritty/` - Alacritty terminal configuration with shared settings and fonts
-  - `configs/claude/` - Claude Code custom commands (commit, switch, security-review)
+  - `configs/claude/` - Claude Code commands, skills, and settings
   - `.vscode/` - VSCode/Cursor settings and extensions
   - `mise/` - mise (development environment manager) configuration
 - **Git utilities**: `git-utils/` - Contains git completion and prompt scripts
@@ -82,23 +82,29 @@ The repository follows a platform-specific organization:
 - Container tools: Docker, Kubernetes (kind)
 - Infrastructure: Terraform, AWS Copilot CLI
 
-## Claude Custom Commands
+## Claude Code Configuration
 
-Two custom commands are available in `configs/claude/commands/`:
-1. **commit**: Analyzes staged changes and creates a Conventional Commits formatted commit message
-2. **switch**: Analyzes current changes and creates an appropriately named feature branch
+### Custom Commands and Skills
 
-Setup and usage:
+Available in `configs/claude/`:
+
+| Command/Skill | Location | Description |
+|---------------|----------|-------------|
+| `/commit` | `commands/commit.md` | Creates Conventional Commits formatted commit message |
+| `/switch` | `commands/switch.md` | Creates appropriately named feature branch from changes |
+| `/magi` | `skills/magi-decision-support/` | Multi-perspective decision analysis (MELCHIOR/BALTHASAR/CASPER) |
+
+Setup:
 ```bash
-# Setup commands (creates symlinks in ~/.claude/commands/ and settings.json in ~/.claude/config/)
 ./configs/claude/setup-claude-commands.sh
-
-# Usage in Claude Code
-/commit  # Create conventional commit
-/switch  # Create feature branch
 ```
 
-Claude settings are configured in `configs/claude/settings.json` (symlinked to `~/.claude/config/settings.json`)
+### Settings (`configs/claude/settings.json`)
+
+- **Model**: claude-opus-4-5 with extended thinking enabled
+- **MCP Servers**: GitHub (`gh mcp-server`)
+- **Permissions**: Configured allow/ask rules for safe defaults
+- **Telemetry**: Disabled (DISABLE_TELEMETRY, DISABLE_ERROR_REPORTING)
 
 ## Important Guidelines
 
@@ -109,14 +115,10 @@ Claude settings are configured in `configs/claude/settings.json` (symlinked to `
 - Test link scripts on the target platform before committing
 - Preserve file permissions (especially for executable scripts)
 
-### Cursor AI Rules
-This repository includes Cursor AI rules in `.cursor/rules/`:
-- **global.mdc**: Contains Japanese instructions for task analysis, implementation, and quality control
-- **zunda.mdc**: Defines character speaking style (Zundamon)
-
-Key points from global rules:
+### Cursor AI Rules (`.cursor/rules/`)
+Key constraints from `global.mdc` (Japanese):
 - Never change technology stack versions without approval
-- Avoid duplicate implementations
+- Check for duplicate implementations before adding code
 - No UI/UX design changes without approval
 - Follow existing directory structure and naming conventions
 
