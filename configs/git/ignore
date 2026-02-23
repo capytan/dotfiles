@@ -22,3 +22,5 @@ Icon
 *.sublime-project
 *.sublime-workspace
 
+
+**/.claude/settings.local.json
