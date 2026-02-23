@@ -8,7 +8,6 @@ brew "ghq"
 
 # Terminal
 cask "ghostty"
-brew "zellij"
 
 # CLI Tools & Utilities
 brew "fzf"

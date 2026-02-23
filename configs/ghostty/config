@@ -31,14 +31,13 @@ scrollback-limit = 100000
 
 # macOS specific
 # By default, Option key produces Unicode chars (e.g., ⌥+b → ∫)
-# Setting to true makes Option behave as Alt for terminal keybindings (zellij, tmux, etc.)
+# Setting to true makes Option behave as Alt for terminal keybindings (tmux, vim, etc.)
 # Use "left" or "right" to keep one Option key for special character input
 macos-option-as-alt = true
 
 # Shell
-# Each new tab/window creates a fresh zellij session
-# Use 'zellij attach' manually to reconnect to existing sessions
-command = /bin/zsh -l -c "zellij"
+# Attach to existing tmux session or create new one named "main"
+command = /bin/zsh -l -c "tmux new-session -A -s main"
 
 # Keybindings
 # Send newline on Shift+Enter for multi-line input in Claude Code and other CLI tools
