@@ -1,14 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
-  "language": "ja",
-  "showTurnDuration": true,
   "alwaysThinkingEnabled": true,
   "cleanupPeriodDays": 365,
-  "attribution": {
-    "commits": "",
-    "pullRequests": ""
-  },
-
   "env": {
     "MAX_THINKING_TOKENS": "31999",
     "DISABLE_MICROCOMPACT": "1",
@@ -21,38 +14,11 @@
     "CLAUDE_CODE_IDE_SKIP_AUTO_INSTALL": "1",
     "CLAUDE_CODE_IDE_SKIP_VALID_CHECK": "1"
   },
-
-  "mcpServers": {
-    "github": {
-      "command": "gh",
-      "args": ["mcp-server"]
-    }
+  "attribution": {
+    "commit": "",
+    "pr": ""
   },
-
-  "enabledPlugins": {
-    "code-review@claude-plugins-official": true,
-    "commit-commands@claude-plugins-official": true,
-    "context7@claude-plugins-official": true,
-    "feature-dev@claude-plugins-official": true,
-    "frontend-design@claude-plugins-official": true,
-    "github@claude-plugins-official": true,
-    "gopls-lsp@claude-plugins-official": true,
-    "learning-output-style@claude-plugins-official": true,
-    "lua-lsp@claude-plugins-official": true,
-    "plugin-dev@claude-plugins-official": true,
-    "pr-review-toolkit@claude-plugins-official": true,
-    "pyright-lsp@claude-plugins-official": true,
-    "security-guidance@claude-plugins-official": true,
-    "sentry@claude-plugins-official": true,
-    "typescript-lsp@claude-plugins-official": true,
-    "aws-skills@smartbank-agent-skills": true,
-    "voltagent-core-dev@voltagent-subagents": true,
-    "voltagent-domains@voltagent-subagents": true,
-    "voltagent-lang@voltagent-subagents": true
-  },
-
   "permissions": {
-    "defaultMode": "acceptEdits",
     "allow": [
       "// File operations",
       "Edit(**)",
@@ -61,7 +27,6 @@
       "MultiEdit(**)",
       "Glob(**)",
       "Grep(**)",
-
       "// Git operations",
       "Bash(git status *)",
       "Bash(git log *)",
@@ -84,13 +49,11 @@
       "Bash(git worktree *)",
       "Bash(git ls-files *)",
       "Bash(git shortlog *)",
-
       "// GitHub CLI (read-only)",
       "Bash(gh pr view *)",
       "Bash(gh pr diff *)",
       "Bash(gh pr list *)",
       "Bash(gh issue view *)",
-
       "// File system (read-only)",
       "Bash(find *)",
       "Bash(ls *)",
@@ -102,17 +65,14 @@
       "Bash(which *)",
       "Bash(date)",
       "Bash(diff *)",
-
       "// File system (write)",
       "Bash(mkdir *)",
       "Bash(touch *)",
       "Bash(echo *)",
-
       "// Search tools",
       "Bash(grep *)",
       "Bash(rg *)",
       "Bash(ag *)",
-
       "// Node.js & package managers",
       "Bash(node *)",
       "Bash(npm install *)",
@@ -122,7 +82,6 @@
       "Bash(npx *)",
       "Bash(yarn *)",
       "Bash(pnpm *)",
-
       "// Python",
       "Bash(python *)",
       "Bash(python3 *)",
@@ -131,7 +90,6 @@
       "Bash(uv *)",
       "Bash(poetry *)",
       "Bash(pipenv *)",
-
       "// Linters & Formatters",
       "Bash(eslint *)",
       "Bash(prettier *)",
@@ -140,25 +98,21 @@
       "Bash(flake8 *)",
       "Bash(mypy *)",
       "Bash(pre-commit *)",
-
       "// Build tools",
       "Bash(make *)",
       "Bash(cmake *)",
       "Bash(cargo *)",
       "Bash(go *)",
-
       "// Testing",
       "Bash(jest *)",
       "Bash(vitest *)",
       "Bash(mocha *)",
-
       "// Docker (read & build)",
       "Bash(docker build *)",
       "Bash(docker compose *)",
       "Bash(docker run *)",
       "Bash(docker ps *)",
       "Bash(docker images *)",
-
       "// Terraform (safe operations)",
       "Bash(terraform fmt *)",
       "Bash(terraform plan *)",
@@ -174,26 +128,22 @@
       "Bash(su *)",
       "Bash(chmod *)",
       "Bash(chown *)",
-
       "// Destructive file operations",
       "Bash(rm *)",
       "Bash(rmdir *)",
       "Bash(mv *)",
       "Bash(cp *)",
-
       "// Git (push & destructive)",
       "Bash(git push *)",
       "Bash(git push --force *)",
       "Bash(git rebase *)",
       "Bash(git reset *)",
       "Bash(git merge *)",
-
       "// Package publishing",
       "Bash(npm publish *)",
       "Bash(pip upload *)",
       "Bash(cargo publish *)",
       "Bash(gem push *)",
-
       "// Infrastructure changes",
       "Bash(terraform apply *)",
       "Bash(terraform destroy *)",
@@ -202,7 +152,6 @@
       "Bash(kubectl apply *)",
       "Bash(helm install *)",
       "Bash(helm upgrade *)",
-
       "// Network operations",
       "Bash(curl *)",
       "Bash(wget *)",
@@ -212,25 +161,21 @@
       "Bash(scp *)",
       "Bash(rsync *)",
       "Bash(ftp *)",
-
       "// Database operations",
       "Bash(psql *)",
       "Bash(mysql *)",
       "Bash(mongod *)",
       "Bash(redis-cli *)",
       "Bash(sqlite3 *)",
-
       "// Docker (destructive)",
       "Bash(docker push *)",
       "Bash(docker rm *)",
       "Bash(docker rmi *)",
       "Bash(docker system prune *)",
-
       "// Process management",
       "Bash(kill *)",
       "Bash(killall *)",
       "Bash(pkill *)",
-
       "// System services & packages",
       "Bash(systemctl *)",
       "Bash(service *)",
@@ -239,7 +184,6 @@
       "Bash(yum *)",
       "Bash(brew *)",
       "Bash(snap *)",
-
       "// Sensitive file access",
       "Read(.env*)",
       "Read(**/.env*)",
@@ -262,7 +206,6 @@
       "Read(~/.docker/config.json)",
       "Read(~/.netrc)",
       "Read(**/*.tfvars)",
-
       "// Sensitive file writes",
       "Write(.env*)",
       "Write(**/.env*)",
@@ -277,12 +220,35 @@
       "Write(~/.kube/**)",
       "Write(~/.docker/config.json)",
       "Write(**/*.tfvars)",
-
       "// MCP restrictions",
       "mcp__supabase__execute_sql",
       "mcp__*__delete*",
       "mcp__*__drop*",
       "mcp__*__truncate*"
-    ]
-  }
+    ],
+    "defaultMode": "acceptEdits"
+  },
+  "enabledPlugins": {
+    "code-review@claude-plugins-official": true,
+    "commit-commands@claude-plugins-official": true,
+    "context7@claude-plugins-official": true,
+    "feature-dev@claude-plugins-official": true,
+    "frontend-design@claude-plugins-official": true,
+    "github@claude-plugins-official": true,
+    "gopls-lsp@claude-plugins-official": true,
+    "learning-output-style@claude-plugins-official": true,
+    "lua-lsp@claude-plugins-official": true,
+    "plugin-dev@claude-plugins-official": true,
+    "pr-review-toolkit@claude-plugins-official": true,
+    "pyright-lsp@claude-plugins-official": true,
+    "security-guidance@claude-plugins-official": true,
+    "sentry@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true,
+    "aws-skills@smartbank-agent-skills": true,
+    "voltagent-core-dev@voltagent-subagents": true,
+    "voltagent-domains@voltagent-subagents": true,
+    "voltagent-lang@voltagent-subagents": true
+  },
+  "language": "ja",
+  "showTurnDuration": true
 }
