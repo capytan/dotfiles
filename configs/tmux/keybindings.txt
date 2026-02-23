@@ -35,6 +35,14 @@
   prefix K        上に5行縮小
   prefix L        右に5文字拡大
 
+[prefix不要 高速操作 (Alt キー)]
+  Alt+h           左のペインへ (prefix不要)
+  Alt+j           下のペインへ (prefix不要)
+  Alt+k           上のペインへ (prefix不要)
+  Alt+l           右のペインへ (prefix不要)
+  Alt+H           前のウィンドウへ (prefix不要)
+  Alt+L           次のウィンドウへ (prefix不要)
+
 [コピーモード]
   prefix Enter    コピーモード開始
   prefix [        コピーモード開始 (デフォルト)
@@ -44,6 +52,8 @@
 
 [その他]
   prefix r        設定をリロード
+  prefix e        スクロールバックをエディタで開く
+  prefix Space    クイックメニュー
   prefix ?        このヘルプを表示
   prefix C-a      C-a を送信 (ネスト時など)
 
