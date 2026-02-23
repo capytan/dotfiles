@@ -101,10 +101,85 @@ Setup:
 
 ### Settings (`configs/claude/settings.json`)
 
-- **Model**: claude-opus-4-5 with extended thinking enabled
+- **Model**: claude-sonnet with extended thinking enabled
 - **MCP Servers**: GitHub (`gh mcp-server`)
 - **Permissions**: Configured allow/ask rules for safe defaults
 - **Telemetry**: Disabled (DISABLE_TELEMETRY, DISABLE_ERROR_REPORTING)
+
+## Claude Code Behavior
+
+This section defines how Claude Code should operate when working in this repository.
+
+### Core Principles
+
+- **Simplicity First**: Make every change as simple as possible. Minimize code impact.
+- **No Laziness**: Find root causes. No temporary fixes. Apply senior developer standards.
+- **Minimal Impact**: Only touch what is necessary. Avoid unrelated side effects.
+- **Verify Before Done**: Never consider a task complete without demonstrating it works.
+
+### Workflow
+
+**Plan First**: Enter plan mode for any non-trivial task (3+ steps or architectural decisions).
+If something goes sideways, stop and re-plan. Do not keep pushing forward.
+
+**Subagents**: Use subagents to keep the main context clean. One focused task per subagent.
+Offload research, exploration, and parallel analysis to subagents.
+
+**Verification**: Run tests and check logs before marking work complete.
+Ask: "Would a staff engineer approve this?"
+
+**Elegance**: For non-trivial changes, ask "Is there a more elegant way?"
+If a fix feels hacky, implement the clean solution. Skip for simple/obvious fixes.
+
+**Bug Fixing**: Fix autonomously when given a bug report. Use logs, errors, and failing
+tests as the entry point. No hand-holding required.
+
+### Task Management
+
+1. Write plan with checkable items before starting
+2. Confirm approach before implementation
+3. Mark items complete as you go
+4. Provide high-level summary at each step
+5. Update `tasks/lessons.md` after any user correction
+
+### Self-Improvement Loop
+
+After any user correction: update `tasks/lessons.md` with the pattern to prevent recurrence.
+Review `tasks/lessons.md` at session start for relevant context.
+
+### Agent Teams
+
+For tasks with parallel, independent workstreams, prefer agent teams over sequential work.
+
+**Use agent teams when:**
+- Research from multiple angles simultaneously (security + performance + test coverage)
+- Independent modules or features that don't share files
+- Debugging with competing hypotheses — let teammates disprove each other
+- Cross-layer changes (frontend / backend / tests) where each layer is independent
+
+**Use subagents (Task tool) when:**
+- Focused research that only needs to report results back
+- Sequential tasks with dependencies
+- Same-file edits or tightly coupled changes
+
+**Patterns:**
+```
+# Research team (3 perspectives)
+Create an agent team: one teammate on X, one on Y, one playing devil's advocate.
+
+# Parallel implementation
+Create a team with N teammates to implement these modules in parallel.
+
+# Hypothesis-driven debugging
+Spawn teammates to investigate different root causes. Have them challenge each other.
+```
+
+**Quality gates:** Require plan approval before implementation for risky tasks:
+```
+Spawn a teammate to refactor X. Require plan approval before they make changes.
+```
+
+**Cleanup:** Always tell the lead to clean up when done. Teammates must be shut down first.
 
 ## Important Guidelines
 
