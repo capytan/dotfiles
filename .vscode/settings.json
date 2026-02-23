@@ -126,5 +126,10 @@
   },
   "[github-actions-workflow]": {
     "editor.defaultFormatter": "redhat.vscode-yaml"
-  }
+  },
+  "claudeCode.preferredLocation": "panel",
+  "extensions.autoUpdate": false,
+  "editor.unicodeHighlight.nonBasicASCII": false,
+  "git.autofetch": true,
+  "githubPullRequests.pullBranch": "never"
 }
