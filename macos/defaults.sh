@@ -87,19 +87,6 @@ defaults -currentHost write NSGlobalDomain com.apple.mouse.tapBehavior -int 1
 defaults write NSGlobalDomain com.apple.trackpad.scaling -float 3
 
 # =============================================================================
-# Safari
-# =============================================================================
-
-# Show Safari debug menu (default: false)
-defaults write com.apple.Safari IncludeInternalDebugMenu -bool true
-
-# Show Safari Develop menu (default: false)
-defaults write com.apple.Safari IncludeDevelopMenu -bool true
-
-# Enable Safari Web Inspector (default: false)
-defaults write com.apple.Safari WebKitDeveloperExtrasEnabledPreferenceKey -bool true
-
-# =============================================================================
 # Apply changes (restart affected services)
 # =============================================================================
 
