@@ -65,3 +65,6 @@ __pycache__/
 
 # Local environment settings
 macos/.zsh/local.zsh
+
+# Claude Code project-local settings (auto-generated, may contain sensitive permissions)
+.claude/settings.local.json
