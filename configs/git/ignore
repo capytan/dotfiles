@@ -1,0 +1,24 @@
+# Global gitignore — applied to all repositories
+# Managed by dotfiles via ~/.config/git/ignore
+
+# =============================================================================
+# macOS
+# =============================================================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+.AppleDouble
+.LSOverride
+Icon
+
+# =============================================================================
+# Editor / IDE
+# =============================================================================
+*.swp
+*.swo
+*~
+*.sublime-project
+*.sublime-workspace
+

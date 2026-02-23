@@ -1,0 +1,28 @@
+# ~/.config/git/config
+# Managed by dotfiles. Personal settings (name, email) remain in ~/.gitconfig.
+
+[core]
+	# Global gitignore for common OS/editor artifacts
+	excludesfile = ~/.config/git/ignore
+	# Don't escape non-ASCII characters (e.g. Japanese filenames) in output
+	quotepath = false
+
+[pull]
+	# Only allow fast-forward merges on pull (no auto-merge commits)
+	ff = only
+
+[init]
+	# Use 'main' as the default branch name for new repositories
+	defaultBranch = main
+
+[push]
+	# Automatically set upstream when pushing a new branch
+	autoSetupRemote = true
+
+[fetch]
+	# Delete remote-tracking branches that no longer exist on the remote
+	prune = true
+
+[merge]
+	# Show original (base) in addition to both sides when resolving conflicts
+	conflictstyle = zdiff3

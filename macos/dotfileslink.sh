@@ -18,3 +18,6 @@ ln -sf ~/dotfiles/configs/alacritty/pane.toml ~/.config/alacritty/pane.toml
 ln -sf ~/dotfiles/configs/alacritty/fonts/JetBrainsMono.toml ~/.config/alacritty/fonts/JetBrainsMono.toml
 ln -sf ~/dotfiles/configs/claude/settings.json ~/.claude/settings.json
 ln -sf ~/dotfiles/configs/ghostty/config ~/.config/ghostty/config
+mkdir -p ~/.config/git
+ln -sf ~/dotfiles/configs/git/config ~/.config/git/config
+ln -sf ~/dotfiles/configs/git/ignore ~/.config/git/ignore
