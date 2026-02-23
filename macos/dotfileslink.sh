@@ -3,6 +3,7 @@
 ln -sf ~/dotfiles/macos/.fzf.zsh ~/.fzf.zsh
 mkdir -p ~/.config/tmux
 ln -sf ~/dotfiles/configs/tmux/tmux.conf ~/.config/tmux/tmux.conf
+ln -sf ~/dotfiles/configs/tmux/keybindings.txt ~/.config/tmux/keybindings.txt
 ln -sf ~/dotfiles/macos/.zprofile ~/.zprofile
 ln -sf ~/dotfiles/macos/.zshrc ~/.zshrc
 ln -sf ~/dotfiles/.vscode/settings.json ~/Library/Application\ Support/Cursor/User/settings.json
