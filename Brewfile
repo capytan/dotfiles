@@ -20,6 +20,16 @@ brew "gawk"
 brew "inetutils"
 brew "bitwarden-cli"
 
+# Modern CLI replacements
+brew "bat"       # cat with syntax highlighting
+brew "eza"       # ls with colors, icons, git status
+brew "fd"        # find, faster and user-friendly
+brew "ripgrep"   # grep, faster (rg)
+brew "dust"      # du with visual tree
+brew "bottom"    # top/htop replacement (btm)
+brew "procs"     # ps with colors and search
+brew "hyperfine" # command-line benchmarking tool
+
 # Editors
 brew "vim"
 brew "neovim"
