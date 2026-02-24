@@ -15,11 +15,13 @@ CLAUDE_DIR="$HOME/.claude"
 COMMANDS_LINK="$CLAUDE_DIR/commands"
 SKILLS_LINK="$CLAUDE_DIR/skills"
 AGENTS_LINK="$CLAUDE_DIR/agents"
+HOOKS_LINK="$CLAUDE_DIR/hooks"
 SETTINGS_LINK="$CLAUDE_DIR/settings.json"
 DOTFILES_CLAUDE="$HOME/dotfiles/configs/claude"
 DOTFILES_COMMANDS="$DOTFILES_CLAUDE/commands"
 DOTFILES_SKILLS="$DOTFILES_CLAUDE/skills"
 DOTFILES_AGENTS="$DOTFILES_CLAUDE/agents"
+DOTFILES_HOOKS="$DOTFILES_CLAUDE/hooks"
 DOTFILES_SETTINGS="$DOTFILES_CLAUDE/settings.json"
 
 echo -e "${GREEN}Claude Code コマンドのセットアップを開始します...${NC}"
@@ -83,6 +85,12 @@ if [ ! -d "$DOTFILES_AGENTS" ]; then
     exit 1
 fi
 
+if [ ! -d "$DOTFILES_HOOKS" ]; then
+    echo -e "${RED}エラー: $DOTFILES_HOOKS が見つかりません。${NC}"
+    echo "dotfiles が正しくクローンされているか確認してください。"
+    exit 1
+fi
+
 # 2. 必要なディレクトリを作成
 if [ ! -d "$CLAUDE_DIR" ]; then
     echo -e "${YELLOW}.claude ディレクトリを作成しています...${NC}"
@@ -93,6 +101,7 @@ fi
 create_symlink "$COMMANDS_LINK" "$DOTFILES_COMMANDS" "commands"
 create_symlink "$SKILLS_LINK" "$DOTFILES_SKILLS" "skills"
 create_symlink "$AGENTS_LINK" "$DOTFILES_AGENTS" "agents"
+create_symlink "$HOOKS_LINK" "$DOTFILES_HOOKS" "hooks"
 create_symlink "$SETTINGS_LINK" "$DOTFILES_SETTINGS" "settings.json"
 
 # 4. 確認と完了メッセージ
