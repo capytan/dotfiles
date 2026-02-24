@@ -1,0 +1,9 @@
+#!/bin/bash
+# Local tmux startup configuration (example/template)
+# Copy this file to tmux-start.local.sh and customize for your environment.
+# This file is sourced by tmux-start.sh on new session creation only.
+# The SESSION variable is available from the parent script.
+#
+# Example:
+#   tmux new-window -t "$SESSION" -n "my-project" -c "$HOME/path/to/project"
+#   tmux new-window -t "$SESSION" -n "work-repo"  -c "$HOME/ghq/github.com/org/repo"
