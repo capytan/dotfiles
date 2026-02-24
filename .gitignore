@@ -66,5 +66,8 @@ __pycache__/
 # Local environment settings
 macos/.zsh/local.zsh
 
+# tmux local startup config
+configs/tmux/tmux-start.local.sh
+
 # Claude Code project-local settings (auto-generated, may contain sensitive permissions)
 .claude/settings.local.json

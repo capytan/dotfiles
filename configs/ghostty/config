@@ -37,7 +37,7 @@ macos-option-as-alt = true
 
 # Shell
 # Attach to existing tmux session or create new one named "main"
-command = /bin/zsh -l -c "tmux new-session -A -s main"
+command = /bin/zsh -l -c "~/.config/tmux/tmux-start.sh"
 
 # Keybindings
 # Send newline on Shift+Enter for multi-line input in Claude Code and other CLI tools
