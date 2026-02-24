@@ -291,6 +291,11 @@
         "hooks": [{ "type": "command", "command": "bash ~/.claude/hooks/tmux-subagent-stop.sh" }]
       }
     ],
+    "SessionStart": [
+      {
+        "hooks": [{ "type": "command", "command": "bash ~/.claude/hooks/tmux-session-start.sh" }]
+      }
+    ],
     "SessionEnd": [
       {
         "hooks": [{ "type": "command", "command": "bash ~/.claude/hooks/tmux-session-end.sh" }]
