@@ -1,11 +1,6 @@
 #!/bin/bash
 # Stop hook: Claude Code 応答完了をtmuxウィンドウ名で通知
-if [ -n "$TMUX" ]; then
-  tmux set-window-option automatic-rename off
-  CURRENT_WIN=$(tmux display-message -p '#W')
-  # 既にマーク済みなら上書き（⚠️→✅ への更新も含む）
-  CLEAN_WIN="${CURRENT_WIN#✅ }"
-  CLEAN_WIN="${CLEAN_WIN#⚠️ }"
-  tmux rename-window "✅ ${CLEAN_WIN}"
-  printf '\a'
-fi
+source "$(dirname "$0")/tmux-lib.sh"
+tmux_guard || exit 0
+tmux_set_status "✅" "$(tmux_current_clean_name)"
+printf '\a'
