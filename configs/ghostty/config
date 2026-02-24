@@ -21,7 +21,7 @@ window-padding-x = 4
 window-padding-y = 2
 # Semi-transparent background with blur creates a frosted glass effect on macOS
 # Allows desktop to show through while maintaining text readability
-background-opacity = 0.75
+background-opacity = 1
 # Blur intensity of 20 is the default; higher values may cause rendering issues
 background-blur-radius = 20
 
