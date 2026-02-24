@@ -97,3 +97,9 @@ fi
 if command -v fd &>/dev/null; then
     alias ff='fd'
 fi
+if command -v dust &>/dev/null; then
+    alias du='dust'
+fi
+if command -v btm &>/dev/null; then
+    alias top='btm'
+fi
