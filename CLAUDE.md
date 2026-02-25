@@ -6,26 +6,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a personal dotfiles repository for macOS and Ubuntu systems. It contains configuration files for various development tools, shell environments, and system settings.
 
-## Common Commands
-
-### Initial Setup
-```bash
-# Clone repository to home directory
-git clone https://github.com/capytan/dotfiles.git ~/dotfiles
-cd ~/dotfiles
-
-# Setup dotfiles links (choose your platform)
-./macos/dotfileslink.sh      # macOS (Apple Silicon)
-./ubuntu/dotfileslink.sh      # Ubuntu
-./dotfileslink.sh            # Generic link script
-
-# Install dependencies (macOS)
-brew bundle --file=Brewfile
-
-# Setup Claude custom commands
-./configs/claude/setup-claude-commands.sh
-```
-
 ## Repository Architecture
 
 The repository follows a platform-specific organization:
@@ -42,48 +22,7 @@ The repository follows a platform-specific organization:
 
 ## Claude Code Configuration
 
-### Custom Commands
-
-Available in `configs/claude/commands/`:
-
-| Command | Location | Description |
-|---------|----------|-------------|
-| `/commit` | `commands/commit.md` | Creates Conventional Commits formatted commit message |
-| `/switch` | `commands/switch.md` | Creates appropriately named feature branch from changes |
-
-Setup:
-```bash
-./configs/claude/setup-claude-commands.sh
-```
-
-### Agents
-
-Available in `configs/claude/agents/`:
-
-| Agent | Description |
-|-------|-------------|
-| `agent-reviewer` | Reviews agent `.md` files against Anthropic best practices |
-| `claude-md-reviewer` | Audits CLAUDE.md for token efficiency and quality |
-| `skill-reviewer` | Reviews SKILL.md files against best practices |
-
-### Skills
-
-Available in `configs/claude/skills/`:
-
-| Skill | Description |
-|-------|-------------|
-| `/magi` | Multi-perspective decision analysis (MELCHIOR/BALTHASAR/CASPER) |
-
-### Hooks (Tmux Integration)
-
-Displays status icons in tmux window names automatically:
-- ⏳ Working / ✅ Done / 🤖 Subagent running / ❌ Error / ⚠️ Awaiting permission
-- All hooks in `configs/claude/hooks/`, shared logic in `tmux-lib.sh`
-
-### Settings
-
-- `settings.json` — Permissions, hooks, and plugin settings (auto-loaded by Claude Code)
-- `mcp.json` — MCP servers: Context7 (`@upstash/context7-mcp`) for library documentation lookup
+Custom commands, agents, skills, hooks, and settings are in `configs/claude/`. Setup: `./configs/claude/setup-claude-commands.sh`
 
 ## Claude Code Behavior
 
@@ -104,7 +43,7 @@ If something goes sideways, stop and re-plan. Do not keep pushing forward.
 **Subagents**: Use subagents to keep the main context clean. One focused task per subagent.
 Offload research, exploration, and parallel analysis to subagents.
 
-**Verification**: Run tests and check logs before marking work complete.
+**Verification**: Check that symlinks are intact (`ls -la ~ | grep "\-> .*dotfiles"`) and scripts are executable before marking work complete.
 Ask: "Would a staff engineer approve this?"
 
 **Elegance**: For non-trivial changes, ask "Is there a more elegant way?"
@@ -141,22 +80,7 @@ For tasks with parallel, independent workstreams, prefer agent teams over sequen
 - Sequential tasks with dependencies
 - Same-file edits or tightly coupled changes
 
-**Patterns:**
-```
-# Research team (3 perspectives)
-Create an agent team: one teammate on X, one on Y, one playing devil's advocate.
-
-# Parallel implementation
-Create a team with N teammates to implement these modules in parallel.
-
-# Hypothesis-driven debugging
-Spawn teammates to investigate different root causes. Have them challenge each other.
-```
-
-**Quality gates:** Require plan approval before implementation for risky tasks:
-```
-Spawn a teammate to refactor X. Require plan approval before they make changes.
-```
+**Quality gates:** Require plan approval before implementation for risky tasks.
 
 **Cleanup:** Always tell the lead to clean up when done. Teammates must be shut down first.
 
@@ -169,10 +93,6 @@ Spawn a teammate to refactor X. Require plan approval before they make changes.
 - Test link scripts on the target platform before committing
 - Preserve file permissions (especially for executable scripts)
 
-### Cursor AI Rules (`.cursor/rules/`)
-Key constraints from `global.mdc` (Japanese):
-- Never change technology stack versions without approval
-- Check for duplicate implementations before adding code
-- No UI/UX design changes without approval
-- Follow existing directory structure and naming conventions
+### Cursor AI Rules
+See `.cursor/rules/global.mdc` for Cursor-specific constraints.
 
