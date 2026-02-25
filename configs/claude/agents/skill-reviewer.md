@@ -29,6 +29,15 @@ description: |
   The user wants a thorough audit, which this agent specializes in.
   </commentary>
   </example>
+
+  <example>
+  Context: The assistant has just helped the user write a new skill and the session is wrapping up.
+  user: "Okay, I think the skill is done. Let's commit it."
+  assistant: "Before committing, I'll proactively use the skill-reviewer agent to verify the file meets all best practices."
+  <commentary>
+  Proactive trigger: the assistant auto-invokes the skill-reviewer after completing a skill file, without the user explicitly requesting a review.
+  </commentary>
+  </example>
 model: inherit
 color: cyan
 tools: ["Read", "Grep", "Glob"]
@@ -188,6 +197,14 @@ Test this skill across model tiers to verify behavior:
 2. [Second priority]
 3. [Third priority]
 ```
+
+## Edge Cases
+
+Handle these scenarios gracefully:
+
+- **Skill file not found**: If the skill name or path does not resolve to an existing file, report the locations searched and suggest the user verify the skill name or path. Do not produce a review report.
+- **Broken YAML frontmatter**: If the YAML frontmatter cannot be parsed (e.g., missing `---` delimiters, invalid YAML syntax), report the parse error with the relevant lines and mark all frontmatter checks as FAIL.
+- **Referenced file missing**: If the SKILL.md references external files (e.g., `./instructions.md`) that do not exist, note each missing file under Check [D] as a FAIL with the expected path.
 
 ## How to Find Skills
 
