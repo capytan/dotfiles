@@ -40,6 +40,9 @@ Based on the staged changes above:
    - Do NOT include `Co-Authored-By` footer
    - Do NOT include `🤖 Generated with Claude Code` footer
    - Use only the commit message itself, without any signatures or attributions
+   - Use multiple `-m` flags (NOT heredoc): `git commit -m "title" -m "body"`
+     (heredoc creates multi-line commands that break permission pattern matching)
+   - If body has multiple paragraphs, use one `-m` per paragraph
 
 Examples:
 
