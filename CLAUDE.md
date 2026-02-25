@@ -16,7 +16,6 @@ cd ~/dotfiles
 
 # Setup dotfiles links (choose your platform)
 ./macos/dotfileslink.sh      # macOS (Apple Silicon)
-./macos_intel/dotfileslink.sh # macOS (Intel) - deprecated
 ./ubuntu/dotfileslink.sh      # Ubuntu
 ./dotfileslink.sh            # Generic link script
 
@@ -27,84 +26,64 @@ brew bundle --file=Brewfile
 ./configs/claude/setup-claude-commands.sh
 ```
 
-### Verify Setup
-```bash
-# Check if links are created correctly
-ls -la ~ | grep "^l.*dotfiles"
-
-# Verify zsh configuration loaded
-echo $SHELL  # Should show /bin/zsh or similar
-source ~/.zshrc  # Reload shell configuration
-
-# Test git aliases are working
-g status  # Should run git status
-```
-
-### Update Dependencies
-```bash
-# Update Homebrew packages
-brew update && brew upgrade
-
-# Update mise/asdf tools
-mise upgrade
-```
-
 ## Repository Architecture
 
 The repository follows a platform-specific organization:
 
-- **Platform-specific directories**: `macos/`, `macos_intel/`, `ubuntu/` - contain OS-specific configurations and link scripts
+- **Platform-specific directories**: `macos/`, `ubuntu/` - contain OS-specific configurations and link scripts
 - **Configuration files**: Root directory contains common dotfiles (.zshrc, .tmux.conf, .zprofile, init.vim, etc.)
 - **Tool configurations**:
   - `configs/alacritty/` - Alacritty terminal configuration with shared settings and fonts
-  - `configs/claude/` - Claude Code commands, skills, and settings
+  - `configs/claude/` - Claude Code commands, agents, skills, hooks, and settings
   - `.vscode/` - VSCode/Cursor settings and extensions
   - `mise/` - mise (development environment manager) configuration
 - **Git utilities**: `git-utils/` - Contains git completion and prompt scripts
 - **Package management**: `Brewfile` - Homebrew packages for macOS
 
-## Key Configurations
-
-### Shell Environment
-- Primary shell: zsh with custom prompt showing git status
-- Key aliases configured in .zshrc:
-  - Git shortcuts (g, gb, gs, gd, gst, etc.)
-  - FZF functions for interactive git branch switching (fbr, fbrm)
-  - Interactive file staging with fzf (fa)
-
-### Editor
-- Primary editor: vim/neovim (configuration in init.vim)
-- VSCode/Cursor with vim extension and specific formatting settings
-
-### Development Tools
-- Version management: mise, jenv, direnv
-- Language support: Python, Ruby, Go, Java, Node.js
-- Container tools: Docker, Kubernetes (kind)
-- Infrastructure: Terraform, AWS Copilot CLI
-
 ## Claude Code Configuration
 
-### Custom Commands and Skills
+### Custom Commands
 
-Available in `configs/claude/`:
+Available in `configs/claude/commands/`:
 
-| Command/Skill | Location | Description |
-|---------------|----------|-------------|
+| Command | Location | Description |
+|---------|----------|-------------|
 | `/commit` | `commands/commit.md` | Creates Conventional Commits formatted commit message |
 | `/switch` | `commands/switch.md` | Creates appropriately named feature branch from changes |
-| `/magi` | `skills/magi-decision-support/` | Multi-perspective decision analysis (MELCHIOR/BALTHASAR/CASPER) |
 
 Setup:
 ```bash
 ./configs/claude/setup-claude-commands.sh
 ```
 
-### Settings (`configs/claude/settings.json`)
+### Agents
 
-- **Model**: claude-sonnet with extended thinking enabled
-- **MCP Servers**: GitHub (`gh mcp-server`)
-- **Permissions**: Configured allow/ask rules for safe defaults
-- **Telemetry**: Disabled (DISABLE_TELEMETRY, DISABLE_ERROR_REPORTING)
+Available in `configs/claude/agents/`:
+
+| Agent | Description |
+|-------|-------------|
+| `agent-reviewer` | Reviews agent `.md` files against Anthropic best practices |
+| `claude-md-reviewer` | Audits CLAUDE.md for token efficiency and quality |
+| `skill-reviewer` | Reviews SKILL.md files against best practices |
+
+### Skills
+
+Available in `configs/claude/skills/`:
+
+| Skill | Description |
+|-------|-------------|
+| `/magi` | Multi-perspective decision analysis (MELCHIOR/BALTHASAR/CASPER) |
+
+### Hooks (Tmux Integration)
+
+Displays status icons in tmux window names automatically:
+- ⏳ Working / ✅ Done / 🤖 Subagent running / ❌ Error / ⚠️ Awaiting permission
+- All hooks in `configs/claude/hooks/`, shared logic in `tmux-lib.sh`
+
+### Settings
+
+- `settings.json` — Permissions, hooks, and plugin settings (auto-loaded by Claude Code)
+- `mcp.json` — MCP servers: Context7 (`@upstash/context7-mcp`) for library documentation lookup
 
 ## Claude Code Behavior
 
@@ -197,28 +176,3 @@ Key constraints from `global.mdc` (Japanese):
 - No UI/UX design changes without approval
 - Follow existing directory structure and naming conventions
 
-## Troubleshooting
-
-### Common Issues
-```bash
-# If dotfiles links are broken
-ls -la ~ | grep "dotfiles"  # Check existing links
-rm ~/.zshrc ~/.tmux.conf    # Remove broken links if needed
-./dotfileslink.sh           # Re-run setup
-
-# If shell aliases not working
-source ~/.zshrc             # Reload configuration
-which g                     # Check if alias exists
-type g                      # Show alias definition
-
-# If mise/asdf commands not found
-export PATH="$HOME/.local/share/mise/shims:$PATH"
-mise doctor                 # Check mise installation
-```
-
-## File Locations
-- Shell configs: `~/.zshrc`, `~/.zprofile` (symlinked from repo)
-- Neovim config: `~/.config/nvim/init.vim` (symlinked)
-- VSCode settings: `~/Library/Application Support/Code/User/settings.json` (macOS)
-- Claude commands: `~/.claude/commands/` (symlinked)
-- Alacritty config: Platform-specific in `configs/alacritty/`
