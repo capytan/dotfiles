@@ -38,14 +38,56 @@ Use the `/magi` command with the decision question:
 
 Or simply describe the decision - Claude will automatically recognize when MAGI analysis would be helpful and suggest using it.
 
+## Execution Process
+
+When invoked, follow this process:
+
+1. **Parse the question**: Extract the decision topic and any relevant context from the user's message.
+
+2. **Launch all three agents in parallel** using the Task tool with `subagent_type: "general-purpose"`:
+   - MELCHIOR: "Analyze [question] from a technical accuracy and best practices perspective. Provide your verdict: APPROVE, REJECT, or CONDITIONAL (with specific condition). Be rigorous and cite concrete trade-offs."
+   - BALTHASAR: "Analyze [question] from a developer experience, team health, and sustainability perspective. Provide your verdict: APPROVE, REJECT, or CONDITIONAL (with specific condition). Consider human factors and long-term maintainability."
+   - CASPER: "Analyze [question] from a practical implementation perspective: cost, timeline, feasibility, and real-world constraints. Provide your verdict: APPROVE, REJECT, or CONDITIONAL (with specific condition). Be pragmatic and ground your assessment in reality."
+
+3. **Collect all three responses** before proceeding to synthesis.
+
+4. **Synthesize the results** and produce the final report in the Output Format below.
+
+## Verdict Criteria
+
+Each agent assigns one of three verdicts:
+
+- **APPROVE**: The approach is sound from this perspective with no significant concerns
+- **CONDITIONAL**: The approach can work, but requires specific conditions to be met (state them explicitly)
+- **REJECT**: The approach has fundamental problems from this perspective that outweigh the benefits
+
+REJECT triggers:
+- MELCHIOR: Technically infeasible, violates core best practices, introduces unacceptable security/performance risk
+- BALTHASAR: Unsustainable long-term, causes significant team harm, ethical concerns
+- CASPER: Not implementable within realistic constraints, cost/complexity far exceeds benefit
+
+## Consensus Rules
+
+Determine consensus from the three verdicts (APPROVE=1, CONDITIONAL=0.5, REJECT=0):
+
+| Verdicts | Result |
+|----------|--------|
+| 3× APPROVE | **UNANIMOUS APPROVAL** — Proceed confidently |
+| 2× APPROVE + 1× CONDITIONAL | **MAJORITY APPROVAL** — Proceed with noted conditions |
+| 2× APPROVE + 1× REJECT | **MAJORITY APPROVAL (contested)** — Proceed, but address the dissent |
+| 1× APPROVE + 2× CONDITIONAL | **CONDITIONAL APPROVAL** — Proceed only if conditions are met |
+| Any 2× REJECT | **MAJORITY REJECTION** — Do not proceed without major revision |
+| 3× REJECT | **UNANIMOUS REJECTION** — Abandon this approach |
+| 1× each APPROVE/CONDITIONAL/REJECT | **SPLIT DECISION** — No consensus; present trade-offs and let user decide |
+
 ## Output Format
 
 MAGI produces a structured analysis report:
 
-1. **Individual Agent Analysis**: Each agent provides their perspective and verdict (APPROVE/REJECT/CONDITIONAL)
-2. **Consensus**: UNANIMOUS APPROVAL, MAJORITY APPROVAL, SPLIT DECISION, or MAJORITY REJECTION
-3. **Key Trade-offs**: Areas where perspectives differ
-4. **Final Recommendation**: Synthesized recommendation with reasoning
+1. **Individual Agent Analysis**: Each agent provides their perspective and verdict (APPROVE/REJECT/CONDITIONAL with reasoning)
+2. **Consensus**: Apply the Consensus Rules table above to determine the result
+3. **Key Trade-offs**: Areas where perspectives differ significantly
+4. **Final Recommendation**: Synthesized recommendation with reasoning and next steps
 
 ## Best Practices
 
