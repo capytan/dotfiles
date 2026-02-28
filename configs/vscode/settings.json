@@ -8,8 +8,9 @@
   "editor.minimap.enabled": false,
   "editor.stickyScroll.enabled": true,
   "editor.bracketPairColorization.enabled": true,
-  "editor.guides.bracketPairs": true,
+  "editor.guides.bracketPairs": "active",
   "editor.suggestSelection": "first",
+  "editor.cursorSurroundingLines": 8,
 
   // Editor Formatting
   "editor.tabSize": 2,
@@ -27,7 +28,11 @@
   "files.insertFinalNewline": true,
   "files.trimTrailingWhitespace": true,
   "files.exclude": {
-    "**/.idea": true
+    "**/.idea": true,
+    "**/.DS_Store": true,
+    "**/node_modules": true,
+    "**/__pycache__": true,
+    "**/*.pyc": true
   },
 
   // Terminal Settings
@@ -39,11 +44,20 @@
     "Q_NEW_SESSION": "1"
   },
 
+  // Search Settings
+  "search.exclude": {
+    "**/dist": true,
+    "**/.next": true,
+    "**/coverage": true,
+    "**/.cache": true
+  },
+
   // UI/Workbench Settings
   "window.commandCenter": true,
   "breadcrumbs.enabled": true,
   "workbench.colorTheme": "Spinel",
   "workbench.iconTheme": "vscode-icons",
+  "workbench.editor.enablePreview": false,
 
   // Language-specific Formatters
   "[html]": {
@@ -87,8 +101,15 @@
     "editor.defaultFormatter": "Shopify.ruby-lsp"
   },
   "[python]": {
-    "editor.tabSize": 4
+    "editor.tabSize": 4,
+    "editor.defaultFormatter": "charliermarsh.ruff"
   },
+
+  // TypeScript / JavaScript Settings
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "typescript.inlayHints.parameterNames.enabled": "literals",
+  "javascript.inlayHints.parameterNames.enabled": "literals",
 
   // Extension Settings - Prettier
   "prettier.trailingComma": "es5",
@@ -131,5 +152,6 @@
   "extensions.autoUpdate": false,
   "editor.unicodeHighlight.nonBasicASCII": false,
   "git.autofetch": true,
+  "git.pruneOnFetch": true,
   "githubPullRequests.pullBranch": "never"
 }
