@@ -21,6 +21,7 @@ brew "inetutils"
 brew "bitwarden-cli"
 
 # Modern CLI replacements
+brew "rtk"       # CLI output compressor for Claude Code (token reduction)
 brew "bat"       # cat with syntax highlighting
 brew "eza"       # ls with colors, icons, git status
 brew "fd"        # find, faster and user-friendly
