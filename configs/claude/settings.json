@@ -333,6 +333,7 @@
     ],
     "defaultMode": "acceptEdits"
   },
+  "model": "sonnet",
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "context7"
@@ -460,11 +461,15 @@
     "voltagent-core-dev@voltagent-subagents": false,
     "voltagent-domains@voltagent-subagents": false,
     "voltagent-lang@voltagent-subagents": false,
-    "skill-creator@claude-plugins-official": true
+    "skill-creator@claude-plugins-official": true,
+    "clarify@kuu-marketplace": true,
+    "decomposition@kuu-marketplace": true,
+    "deslop@kuu-marketplace": false,
+    "dig@kuu-marketplace": true,
+    "fix-ci@kuu-marketplace": false
   },
   "language": "ja",
   "alwaysThinkingEnabled": true,
   "teammateMode": "auto",
-  "showTurnDuration": true,
-  "model": "sonnet"
+  "showTurnDuration": true
 }
