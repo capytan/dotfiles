@@ -1,6 +1,6 @@
 #!/usr/bin/env zsh
 # Git aliases and helper functions
-# Sourced from .zshrc via alias.zsh
+# Sourced from zshrc via shared modules
 
 # =============================================================================
 # Helper functions (required by aliases below)

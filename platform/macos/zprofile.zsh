@@ -1,17 +1,19 @@
+#!/usr/bin/env zsh
+# macOS-specific login shell settings
 # Kiro CLI pre block. Keep at the top of this file.
 [[ -f "${HOME}/Library/Application Support/kiro-cli/shell/zprofile.pre.zsh" ]] && builtin source "${HOME}/Library/Application Support/kiro-cli/shell/zprofile.pre.zsh"
-# homebrew
+
+# Homebrew
 eval "$(/opt/homebrew/bin/brew shellenv)"
 
 # Rye
-source "$HOME/.rye/env"
+[[ -f "$HOME/.rye/env" ]] && source "$HOME/.rye/env"
 
-# Added by Toolbox App
-export PATH="$PATH:/Users/capytan/Library/Application Support/JetBrains/Toolbox/scripts"
+# JetBrains Toolbox
+export PATH="$PATH:$HOME/Library/Application Support/JetBrains/Toolbox/scripts"
 
-# Added by OrbStack: command-line tools and integration
-# This won't be added again if you remove it.
-source ~/.orbstack/shell/init.zsh 2>/dev/null || :
+# OrbStack
+[[ -f ~/.orbstack/shell/init.zsh ]] && source ~/.orbstack/shell/init.zsh 2>/dev/null
 
 # Kiro CLI post block. Keep at the bottom of this file.
 [[ -f "${HOME}/Library/Application Support/kiro-cli/shell/zprofile.post.zsh" ]] && builtin source "${HOME}/Library/Application Support/kiro-cli/shell/zprofile.post.zsh"

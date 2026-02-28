@@ -1,4 +1,4 @@
-# Template for company-specific environment variables
+# Template for machine-specific environment variables
 # Copy this file as `local.zsh` and set appropriate values
 # `local.zsh` is added to .gitignore and will not be tracked by Git
 
@@ -20,4 +20,4 @@
 
 # Example: Team-specific aliases
 # alias deploy-dev="your-deploy-command-here"
-# alias start-local="your-start-command-here" 
+# alias start-local="your-start-command-here"
