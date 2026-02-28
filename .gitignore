@@ -66,3 +66,7 @@ configs/tmux/tmux-start.local.sh
 
 # Claude Code project-local settings (auto-generated, may contain sensitive permissions)
 .claude/settings.local.json
+
+# タスク管理ファイル（個人メモ、追跡不要）
+tasks/lessons.md
+tasks/todo.md

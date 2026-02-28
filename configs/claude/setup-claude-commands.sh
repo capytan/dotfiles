@@ -108,6 +108,9 @@ create_symlink "$SETTINGS_LINK" "$DOTFILES_SETTINGS" "settings.json"
 create_symlink "$CLAUDE_DIR/statusline.sh" "$DOTFILES_CLAUDE/statusline.sh" "statusline.sh"
 chmod +x "$DOTFILES_CLAUDE/statusline.sh"
 
+# RTK.md: rtk (Rust Token Killer) のガイドファイル
+create_symlink "$CLAUDE_DIR/RTK.md" "$DOTFILES_CLAUDE/RTK.md" "RTK.md"
+
 # 4. 確認と完了メッセージ
 echo
 echo -e "${GREEN}✓ セットアップが完了しました！${NC}"

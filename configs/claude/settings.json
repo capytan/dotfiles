@@ -338,6 +338,21 @@
     "context7"
   ],
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/pretooluse-validate-command.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/rtk-rewrite.sh"
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "hooks": [
