@@ -1,6 +1,6 @@
 #!/usr/bin/env zsh
 # Shell aliases (non-git)
-# Git aliases and helper functions → git-aliases.zsh
+# Git aliases and helper functions -> git-aliases.zsh
 
 # =============================================================================
 # File Listing
