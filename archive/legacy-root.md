@@ -1,3 +1,15 @@
+# Legacy Root Files Archive
+
+Archived: 2026-02-28
+Reason: Intel Mac era files, no longer linked from any active configuration.
+
+---
+
+## .zshrc (root)
+
+Full content of the root-level `.zshrc` used during the Intel Mac era.
+
+```zsh
 # encoding
 export LANG=ja_JP.UTF-8
 
@@ -62,10 +74,8 @@ setopt share_history
 
 # prompt
 # git-completion
-# https://github.com/git/git/blob/master/contrib/completion/git-prompt.sh
 source ~/dotfiles/git-utils/.git-prompt.sh
-setopt PROMPT_SUBST ; PROMPT='╭─○ %{$fg_bold[green]%}%n%{$reset_color%}:%{$fg_bold[cyan]%}%~ %{$reset_color%}$(__git_ps1 " (%s)")
-╰─○ '
+setopt PROMPT_SUBST ; PROMPT='...' # custom prompt with git info
 
 # aliases
 alias v='vim'
@@ -99,27 +109,66 @@ export PATH="/usr/local/opt/sphinx-doc/bin:$PATH"
 export PATH="/usr/local/opt/libxml2/bin:$PATH"
 export PATH="/usr/local/opt/mysql@5.7/bin:$PATH"
 export PATH="/usr/local/opt/openjdk/bin:$PATH"
-# export PATH="$(brew --prefix qt@5.5)/bin:$PATH"
 export PATH="$(brew --prefix imagemagick@6)/bin:$PATH"
 export PKG_CONFIG_PATH="/usr/local/opt/imagemagick@6/lib/pkgconfig"
-
 export PATH="/usr/local/opt/m4/bin:$PATH"
 export PATH="/usr/local/opt/openssl@1.1/bin:$PATH"
 export PATH="/usr/local/opt/sqlite/bin:$PATH"
 export PATH="/usr/local/opt/python@3.8/bin:$PATH"
 export PATH="/usr/local/opt/krb5/bin:$PATH"
 export PATH="/usr/local/opt/krb5/sbin:$PATH"
-export PATH="/usr/local/opt/sphinx-doc/bin:$PATH"
 export PATH="/usr/local/opt/icu4c/bin:$PATH"
 export PATH="/usr/local/opt/icu4c/sbin:$PATH"
 export PATH="/usr/local/opt/gnu-getopt/bin:$PATH"
 eval "$(perl -I$HOME/perl5/lib/perl5 -Mlocal::lib=$HOME/perl5)"
-
-# Elasticsearch@6
 export PATH="/usr/local/opt/elasticsearch@6/bin:$PATH"
+# Google Cloud SDK
+if [ -f '/Users/ymizuguchi/google-cloud-sdk/path.zsh.inc' ]; then . '...'; fi
+if [ -f '/Users/ymizuguchi/google-cloud-sdk/completion.zsh.inc' ]; then . '...'; fi
+```
 
-# The next line updates PATH for the Google Cloud SDK.
-if [ -f '/Users/ymizuguchi/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/ymizuguchi/google-cloud-sdk/path.zsh.inc'; fi
+### Settings rescued to new structure:
+- `fzf-add()` + `fa` alias -> `shell/zsh/fzf-functions.zsh`
+- `setopt auto_cd auto_pushd correct` -> `shell/zsh/history.zsh`
+- `export LANG=ja_JP.UTF-8` -> `shell/zprofile`
+- `export EDITOR=vim` -> updated to `nvim` in `shell/zsh/tools.zsh`
 
-# The next line enables shell command completion for gcloud.
-if [ -f '/Users/ymizuguchi/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/ymizuguchi/google-cloud-sdk/completion.zsh.inc'; fi
+---
+
+## .zprofile (root)
+
+```zsh
+# rbenv
+export PATH="$HOME/.rbenv/bin:$PATH"
+eval "$(rbenv init -)"
+
+# tfenv
+export PATH="$HOME/.tfenv/bin:$PATH"
+
+# nodenv
+eval "$(nodenv init -)"
+
+# phpenv
+export PATH="$HOME/.phpenv/bin:$PATH"
+eval "$(phpenv init -)"
+
+export PATH="$HOME/.cargo/bin:$PATH"
+```
+
+All version managers (rbenv, tfenv, nodenv, phpenv) replaced by `mise` in current setup.
+
+---
+
+## dotfileslink.sh (root)
+
+```sh
+#!/bin/sh
+ln -sf ~/dotfiles/.zprofile ~/.zprofile
+ln -sf ~/dotfiles/.zshrc ~/.zshrc
+ln -sf ~/dotfiles/.ideavimrc ~/.ideavimrc
+ln -sf ~/dotfiles/.tmux.conf ~/.tmux.conf
+ln -sf ~/dotfiles/.vscode/settings.json ~/Library/Application\ Support/Code/User/settings.json
+ln -sf ~/dotfiles/init.vim ~/.config/nvim/init.vim
+```
+
+Replaced by `macos/dotfileslink.sh` (now `install.sh`).
