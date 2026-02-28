@@ -9,11 +9,6 @@ Thumbs.db
 
 # エディタ/IDE固有のファイル
 .idea/
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
 *.swp
 *.swo
 *~
@@ -63,8 +58,8 @@ __pycache__/
 *.cert
 *.crt
 
-# Local environment settings
-macos/.zsh/local.zsh
+# Local environment settings (machine-specific, not tracked)
+shell/zsh/local.zsh
 
 # tmux local startup config
 configs/tmux/tmux-start.local.sh

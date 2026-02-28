@@ -333,11 +333,10 @@
     ],
     "defaultMode": "acceptEdits"
   },
-  "statusLine": {
-    "type": "command",
-    "command": "~/.claude/statusline.sh"
-  },
-  "model": "sonnet",
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "context7"
+  ],
   "hooks": {
     "Stop": [
       {
@@ -438,6 +437,10 @@
       }
     ]
   },
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/statusline.sh"
+  },
   "enabledPlugins": {
     "code-review@claude-plugins-official": true,
     "commit-commands@claude-plugins-official": true,
@@ -456,12 +459,12 @@
     "typescript-lsp@claude-plugins-official": false,
     "voltagent-core-dev@voltagent-subagents": false,
     "voltagent-domains@voltagent-subagents": false,
-    "voltagent-lang@voltagent-subagents": false
+    "voltagent-lang@voltagent-subagents": false,
+    "skill-creator@claude-plugins-official": true
   },
   "language": "ja",
   "alwaysThinkingEnabled": true,
   "teammateMode": "auto",
   "showTurnDuration": true,
-  "enabledMcpjsonServers": ["context7"],
-  "enableAllProjectMcpServers": true
+  "model": "sonnet"
 }
