@@ -333,7 +333,6 @@
     ],
     "defaultMode": "acceptEdits"
   },
-  "model": "sonnet",
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "context7"
@@ -465,11 +464,12 @@
     "clarify@kuu-marketplace": true,
     "decomposition@kuu-marketplace": true,
     "deslop@kuu-marketplace": false,
-    "dig@kuu-marketplace": true,
+    "dig@kuu-marketplace": false,
     "fix-ci@kuu-marketplace": false
   },
   "language": "ja",
   "alwaysThinkingEnabled": true,
   "teammateMode": "auto",
-  "showTurnDuration": true
+  "showTurnDuration": true,
+  "model": "sonnet"
 }
