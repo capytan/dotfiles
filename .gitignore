@@ -64,6 +64,9 @@ shell/zsh/local.zsh
 # tmux local startup config
 configs/tmux/tmux-start.local.sh
 
+# Ghostty machine-specific overrides
+configs/ghostty/local.conf
+
 # Claude Code project-local settings (auto-generated, may contain sensitive permissions)
 .claude/settings.local.json
 

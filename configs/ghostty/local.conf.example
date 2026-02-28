@@ -1,0 +1,28 @@
+# Ghostty machine-specific overrides
+# Copy to local.conf and customize:
+#   cp local.conf.example local.conf
+#
+# This file is loaded via config-file in the main config.
+# local.conf is gitignored — safe for machine-specific tweaks.
+
+# Theme override
+# theme = catppuccin-mocha
+
+# Font override
+# font-family = FiraCode Nerd Font Mono
+# font-size = 14
+# font-thicken = false
+
+# Transparency / blur
+# background-opacity = 0.9
+# background-blur-radius = 30
+
+# Window size (if window-save-state isn't enough)
+# window-width = 200
+# window-height = 60
+
+# Scrollback
+# scrollback-limit = 50000
+
+# Extra keybindings
+# keybind = ctrl+shift+t=new_tab
