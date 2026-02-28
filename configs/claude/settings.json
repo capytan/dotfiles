@@ -333,6 +333,10 @@
     ],
     "defaultMode": "acceptEdits"
   },
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/statusline.sh"
+  },
   "model": "sonnet",
   "hooks": {
     "Stop": [
@@ -424,6 +428,11 @@
           {
             "type": "command",
             "command": "bash ~/.claude/hooks/tmux-session-end.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/tmux-session-end-usage.sh",
+            "async": true
           }
         ]
       }

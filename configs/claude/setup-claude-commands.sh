@@ -104,6 +104,10 @@ create_symlink "$AGENTS_LINK" "$DOTFILES_AGENTS" "agents"
 create_symlink "$HOOKS_LINK" "$DOTFILES_HOOKS" "hooks"
 create_symlink "$SETTINGS_LINK" "$DOTFILES_SETTINGS" "settings.json"
 
+# statusline.sh: 個別ファイルのシンボリックリンク
+create_symlink "$CLAUDE_DIR/statusline.sh" "$DOTFILES_CLAUDE/statusline.sh" "statusline.sh"
+chmod +x "$DOTFILES_CLAUDE/statusline.sh"
+
 # 4. 確認と完了メッセージ
 echo
 echo -e "${GREEN}✓ セットアップが完了しました！${NC}"
