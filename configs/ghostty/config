@@ -9,7 +9,9 @@ window-theme = auto
 
 # Font
 font-family = JetBrainsMonoNL Nerd Font Mono
+font-family = Hiragino Sans W4
 font-size = 15
+font-feature = -dlig
 adjust-cell-height = 4
 
 # Window
