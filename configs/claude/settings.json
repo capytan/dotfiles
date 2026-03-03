@@ -333,6 +333,7 @@
     ],
     "defaultMode": "acceptEdits"
   },
+  "model": "opus",
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "context7"
@@ -485,6 +486,5 @@
   "language": "ja",
   "alwaysThinkingEnabled": true,
   "teammateMode": "auto",
-  "showTurnDuration": true,
-  "model": "sonnet"
+  "showTurnDuration": true
 }
