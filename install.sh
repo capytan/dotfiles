@@ -104,8 +104,8 @@ link_file "$DOTFILES_DIR/configs/mise/config.toml" "$HOME/.config/mise/config.to
 # 9. Claude Code configuration
 # =============================================================================
 info "Setting up Claude Code configuration..."
-if [[ -x "$DOTFILES_DIR/configs/claude/setup-claude-commands.sh" ]]; then
-  "$DOTFILES_DIR/configs/claude/setup-claude-commands.sh"
+if [[ -x "$DOTFILES_DIR/configs/claude/setup-claude.sh" ]]; then
+  "$DOTFILES_DIR/configs/claude/setup-claude.sh"
 fi
 
 # =============================================================================

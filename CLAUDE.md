@@ -41,7 +41,7 @@ dotfiles/
 
 ## Claude Code Configuration
 
-Custom commands, agents, skills, hooks, and settings are in `configs/claude/`. Setup: `./configs/claude/setup-claude-commands.sh`
+Custom agents, skills, hooks, and settings are in `configs/claude/`. Setup: `./configs/claude/setup-claude.sh`
 
 ## Claude Code Behavior
 

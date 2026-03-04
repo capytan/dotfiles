@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Claude Code コマンドの初期セットアップスクリプト（Mac用）
+# Claude Code の初期セットアップスクリプト（skills, agents, hooks, settings）
 
 set -e  # エラーが発生したら即座に終了
 
@@ -12,19 +12,17 @@ NC='\033[0m' # No Color
 
 # パスの定義
 CLAUDE_DIR="$HOME/.claude"
-COMMANDS_LINK="$CLAUDE_DIR/commands"
 SKILLS_LINK="$CLAUDE_DIR/skills"
 AGENTS_LINK="$CLAUDE_DIR/agents"
 HOOKS_LINK="$CLAUDE_DIR/hooks"
 SETTINGS_LINK="$CLAUDE_DIR/settings.json"
 DOTFILES_CLAUDE="$HOME/dotfiles/configs/claude"
-DOTFILES_COMMANDS="$DOTFILES_CLAUDE/commands"
 DOTFILES_SKILLS="$DOTFILES_CLAUDE/skills"
 DOTFILES_AGENTS="$DOTFILES_CLAUDE/agents"
 DOTFILES_HOOKS="$DOTFILES_CLAUDE/hooks"
 DOTFILES_SETTINGS="$DOTFILES_CLAUDE/settings.json"
 
-echo -e "${GREEN}Claude Code コマンドのセットアップを開始します...${NC}"
+echo -e "${GREEN}Claude Code のセットアップを開始します...${NC}"
 
 # シンボリックリンク作成用の関数
 create_symlink() {
@@ -61,12 +59,6 @@ create_symlink() {
 }
 
 # 1. dotfiles のファイルが存在するか確認
-if [ ! -d "$DOTFILES_COMMANDS" ]; then
-    echo -e "${RED}エラー: $DOTFILES_COMMANDS が見つかりません。${NC}"
-    echo "dotfiles が正しくクローンされているか確認してください。"
-    exit 1
-fi
-
 if [ ! -f "$DOTFILES_SETTINGS" ]; then
     echo -e "${RED}エラー: $DOTFILES_SETTINGS が見つかりません。${NC}"
     echo "dotfiles が正しくクローンされているか確認してください。"
@@ -98,7 +90,6 @@ if [ ! -d "$CLAUDE_DIR" ]; then
 fi
 
 # 3. シンボリックリンクを作成
-create_symlink "$COMMANDS_LINK" "$DOTFILES_COMMANDS" "commands"
 create_symlink "$SKILLS_LINK" "$DOTFILES_SKILLS" "skills"
 create_symlink "$AGENTS_LINK" "$DOTFILES_AGENTS" "agents"
 create_symlink "$HOOKS_LINK" "$DOTFILES_HOOKS" "hooks"
