@@ -486,5 +486,6 @@
   "language": "ja",
   "alwaysThinkingEnabled": true,
   "teammateMode": "auto",
-  "showTurnDuration": true
+  "showTurnDuration": true,
+  "effortLevel": "high"
 }
