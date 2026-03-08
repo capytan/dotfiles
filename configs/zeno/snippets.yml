@@ -1,0 +1,504 @@
+snippets:
+  # =============================================================================
+  # Git Status
+  # =============================================================================
+  - keyword: "gst"
+    snippet: "git status"
+  - keyword: "gss"
+    snippet: "git status -s"
+  - keyword: "gsb"
+    snippet: "git status -sb"
+
+  # =============================================================================
+  # Git Add
+  # =============================================================================
+  - keyword: "g"
+    snippet: "git"
+  - keyword: "ga"
+    snippet: "git add"
+  - keyword: "gaa"
+    snippet: "git add --all"
+  - keyword: "gapa"
+    snippet: "git add --patch"
+  - keyword: "gau"
+    snippet: "git add --update"
+  - keyword: "gav"
+    snippet: "git add --verbose"
+  - keyword: "gap"
+    snippet: "git apply"
+  - keyword: "gapt"
+    snippet: "git apply --3way"
+
+  # =============================================================================
+  # Git Branch
+  # =============================================================================
+  - keyword: "gb"
+    snippet: "git branch"
+  - keyword: "gba"
+    snippet: "git branch --all"
+  - keyword: "gbd"
+    snippet: "git branch --delete"
+  - keyword: "gbD"
+    snippet: "git branch --delete --force"
+  - keyword: "gbm"
+    snippet: "git branch --move"
+  - keyword: "gbnm"
+    snippet: "git branch --no-merged"
+  - keyword: "gbr"
+    snippet: "git branch --remote"
+
+  # =============================================================================
+  # Git Checkout
+  # =============================================================================
+  - keyword: "gco"
+    snippet: "git checkout {{}}"
+  - keyword: "gcb"
+    snippet: "git checkout -b {{}}"
+  - keyword: "gcB"
+    snippet: "git checkout -B {{}}"
+  - keyword: "gcd"
+    snippet: "git checkout $(git_develop_branch)"
+    evaluate: true
+  - keyword: "gcm"
+    snippet: "git checkout $(git_main_branch)"
+    evaluate: true
+  - keyword: "gcp"
+    snippet: "git cherry-pick {{}}"
+  - keyword: "gcpa"
+    snippet: "git cherry-pick --abort"
+  - keyword: "gcpc"
+    snippet: "git cherry-pick --continue"
+
+  # =============================================================================
+  # Git Commit
+  # =============================================================================
+  - keyword: "gc"
+    snippet: "git commit --verbose"
+  - keyword: "gc!"
+    snippet: "git commit --verbose --amend"
+  - keyword: "gca"
+    snippet: "git commit --verbose --all"
+  - keyword: "gca!"
+    snippet: "git commit --verbose --all --amend"
+  - keyword: "gcan!"
+    snippet: "git commit --verbose --all --no-edit --amend"
+  - keyword: "gcans!"
+    snippet: "git commit --verbose --all --signoff --no-edit --amend"
+  - keyword: "gcam"
+    snippet: "git commit --all --message '{{message}}'"
+  - keyword: "gcas"
+    snippet: "git commit --all --signoff"
+  - keyword: "gcasm"
+    snippet: "git commit --all --signoff --message '{{message}}'"
+  - keyword: "gcsm"
+    snippet: "git commit --signoff --message '{{message}}'"
+  - keyword: "gcmsg"
+    snippet: "git commit --message '{{message}}'"
+  - keyword: "gcs"
+    snippet: "git commit --gpg-sign"
+
+  # =============================================================================
+  # Git Clone
+  # =============================================================================
+  - keyword: "gcl"
+    snippet: "git clone --recurse-submodules {{}}"
+  - keyword: "gclean"
+    snippet: "git clean --interactive -d"
+
+  # =============================================================================
+  # Git Diff
+  # =============================================================================
+  - keyword: "gd"
+    snippet: "git diff"
+  - keyword: "gdca"
+    snippet: "git diff --cached"
+  - keyword: "gdcw"
+    snippet: "git diff --cached --word-diff"
+  - keyword: "gds"
+    snippet: "git diff --staged"
+  - keyword: "gdt"
+    snippet: "git diff-tree --no-commit-id --name-only -r"
+  - keyword: "gdup"
+    snippet: "git diff @{upstream}"
+  - keyword: "gdw"
+    snippet: "git diff --word-diff"
+
+  # =============================================================================
+  # Git Fetch
+  # =============================================================================
+  - keyword: "gf"
+    snippet: "git fetch"
+  - keyword: "gfa"
+    snippet: "git fetch --all --prune --jobs=10"
+  - keyword: "gfo"
+    snippet: "git fetch origin"
+
+  # =============================================================================
+  # Git Log
+  # =============================================================================
+  - keyword: "glg"
+    snippet: "git log --stat"
+  - keyword: "glgp"
+    snippet: "git log --stat --patch"
+  - keyword: "glgg"
+    snippet: "git log --graph"
+  - keyword: "glgga"
+    snippet: "git log --graph --decorate --all"
+  - keyword: "glgm"
+    snippet: "git log --graph --max-count=10"
+  - keyword: "glo"
+    snippet: "git log --oneline --decorate"
+  - keyword: "glol"
+    snippet: >-
+      git log --graph --pretty="%Cred%h%Creset -%C(auto)%d%Creset %s %Cgreen(%ar) %C(bold blue)<%an>%Creset"
+  - keyword: "glols"
+    snippet: >-
+      git log --graph --pretty="%Cred%h%Creset -%C(auto)%d%Creset %s %Cgreen(%ar) %C(bold blue)<%an>%Creset" --stat
+  - keyword: "glod"
+    snippet: >-
+      git log --graph --pretty="%Cred%h%Creset -%C(auto)%d%Creset %s %Cgreen(%ad) %C(bold blue)<%an>%Creset"
+  - keyword: "glods"
+    snippet: >-
+      git log --graph --pretty="%Cred%h%Creset -%C(auto)%d%Creset %s %Cgreen(%ad) %C(bold blue)<%an>%Creset" --date=short
+  - keyword: "glola"
+    snippet: >-
+      git log --graph --pretty="%Cred%h%Creset -%C(auto)%d%Creset %s %Cgreen(%ar) %C(bold blue)<%an>%Creset" --all
+  - keyword: "glog"
+    snippet: "git log --oneline --decorate --graph"
+  - keyword: "gloga"
+    snippet: "git log --oneline --decorate --graph --all"
+
+  # =============================================================================
+  # Git Merge
+  # =============================================================================
+  - keyword: "gm"
+    snippet: "git merge"
+  - keyword: "gma"
+    snippet: "git merge --abort"
+  - keyword: "gmom"
+    snippet: "git merge origin/$(git_main_branch)"
+    evaluate: true
+  - keyword: "gmtl"
+    snippet: "git mergetool --no-prompt"
+  - keyword: "gmtlvim"
+    snippet: "git mergetool --no-prompt --tool=vimdiff"
+  - keyword: "gmum"
+    snippet: "git merge upstream/$(git_main_branch)"
+    evaluate: true
+
+  # =============================================================================
+  # Git Pull
+  # =============================================================================
+  - keyword: "gl"
+    snippet: "git pull"
+  - keyword: "glr"
+    snippet: "git pull --rebase"
+  - keyword: "glrv"
+    snippet: "git pull --rebase -v"
+  - keyword: "glra"
+    snippet: "git pull --rebase --autostash"
+  - keyword: "glrav"
+    snippet: "git pull --rebase --autostash -v"
+  - keyword: "glrom"
+    snippet: "git pull --rebase origin $(git_main_branch)"
+    evaluate: true
+  - keyword: "glrum"
+    snippet: "git pull --rebase upstream $(git_main_branch)"
+    evaluate: true
+  - keyword: "gluc"
+    snippet: "git pull upstream $(git_current_branch)"
+    evaluate: true
+  - keyword: "glum"
+    snippet: "git pull upstream $(git_main_branch)"
+    evaluate: true
+
+  # =============================================================================
+  # Git Push
+  # =============================================================================
+  - keyword: "gp"
+    snippet: "git push"
+  - keyword: "gpd"
+    snippet: "git push --dry-run"
+  - keyword: "gpf"
+    snippet: "git push --force-with-lease --force-if-includes"
+  - keyword: "gpf!"
+    snippet: "git push --force"
+  - keyword: "gpoat"
+    snippet: "git push origin --all && git push origin --tags"
+  - keyword: "gpr"
+    snippet: "git pull --rebase"
+  - keyword: "gpu"
+    snippet: "git push upstream"
+  - keyword: "gpv"
+    snippet: "git push --verbose"
+  - keyword: "gpsup"
+    snippet: "git push --set-upstream origin $(git_current_branch)"
+    evaluate: true
+
+  # =============================================================================
+  # Git Rebase
+  # =============================================================================
+  - keyword: "grb"
+    snippet: "git rebase"
+  - keyword: "grba"
+    snippet: "git rebase --abort"
+  - keyword: "grbc"
+    snippet: "git rebase --continue"
+  - keyword: "grbd"
+    snippet: "git rebase $(git_develop_branch)"
+    evaluate: true
+  - keyword: "grbi"
+    snippet: "git rebase --interactive {{}}"
+  - keyword: "grbm"
+    snippet: "git rebase $(git_main_branch)"
+    evaluate: true
+  - keyword: "grbom"
+    snippet: "git rebase origin/$(git_main_branch)"
+    evaluate: true
+  - keyword: "grbo"
+    snippet: "git rebase --onto"
+  - keyword: "grbs"
+    snippet: "git rebase --skip"
+
+  # =============================================================================
+  # Git Remote
+  # =============================================================================
+  - keyword: "gr"
+    snippet: "git remote"
+  - keyword: "gra"
+    snippet: "git remote add"
+  - keyword: "grmv"
+    snippet: "git remote rename"
+  - keyword: "grrm"
+    snippet: "git remote remove"
+  - keyword: "grset"
+    snippet: "git remote set-url"
+  - keyword: "grup"
+    snippet: "git remote update"
+  - keyword: "grv"
+    snippet: "git remote --verbose"
+
+  # =============================================================================
+  # Git Reset
+  # =============================================================================
+  - keyword: "grh"
+    snippet: "git reset"
+  - keyword: "grhh"
+    snippet: "git reset --hard"
+  - keyword: "grhk"
+    snippet: "git reset --keep"
+  - keyword: "grhs"
+    snippet: "git reset --soft"
+  - keyword: "groh"
+    snippet: "git reset origin/$(git_current_branch) --hard"
+    evaluate: true
+  - keyword: "grok"
+    snippet: "git reset origin/$(git_current_branch) --keep"
+    evaluate: true
+  - keyword: "gros"
+    snippet: "git reset origin/$(git_current_branch) --soft"
+    evaluate: true
+
+  # =============================================================================
+  # Git Restore
+  # =============================================================================
+  - keyword: "grs"
+    snippet: "git restore"
+  - keyword: "grss"
+    snippet: "git restore --source"
+  - keyword: "grst"
+    snippet: "git restore --staged"
+
+  # =============================================================================
+  # Git Remove
+  # =============================================================================
+  - keyword: "grm"
+    snippet: "git rm"
+  - keyword: "grmc"
+    snippet: "git rm --cached"
+
+  # =============================================================================
+  # Git Stash
+  # =============================================================================
+  - keyword: "gsta"
+    snippet: "git stash push"
+  - keyword: "gstaa"
+    snippet: "git stash apply"
+  - keyword: "gstc"
+    snippet: "git stash clear"
+  - keyword: "gstd"
+    snippet: "git stash drop"
+  - keyword: "gstl"
+    snippet: "git stash list"
+  - keyword: "gstp"
+    snippet: "git stash pop"
+  - keyword: "gsts"
+    snippet: "git stash show"
+  - keyword: "gstu"
+    snippet: "git stash --include-untracked"
+  - keyword: "gstall"
+    snippet: "git stash --all"
+
+  # =============================================================================
+  # Git Show
+  # =============================================================================
+  - keyword: "gsh"
+    snippet: "git show"
+  - keyword: "gsps"
+    snippet: "git show --pretty=short --show-signature"
+
+  # =============================================================================
+  # Git Switch
+  # =============================================================================
+  - keyword: "gsw"
+    snippet: "git switch {{}}"
+  - keyword: "gswc"
+    snippet: "git switch --create {{}}"
+  - keyword: "gswm"
+    snippet: "git switch $(git_main_branch)"
+    evaluate: true
+  - keyword: "gswd"
+    snippet: "git switch $(git_develop_branch)"
+    evaluate: true
+
+  # =============================================================================
+  # Git Tag
+  # =============================================================================
+  - keyword: "gts"
+    snippet: "git tag --sign"
+  - keyword: "gtv"
+    snippet: "git tag | sort -V"
+
+  # =============================================================================
+  # Git Other
+  # =============================================================================
+  - keyword: "gignore"
+    snippet: "git update-index --assume-unchanged"
+  - keyword: "gunignore"
+    snippet: "git update-index --no-assume-unchanged"
+  - keyword: "gignored"
+    snippet: "git ls-files -v | grep \"^[[:lower:]]\""
+  - keyword: "gfg"
+    snippet: "git ls-files | grep {{}}"
+  - keyword: "gke"
+    snippet: "\\gitk --all $(git log --walk-reflogs --pretty=%h) &!"
+  - keyword: "gcount"
+    snippet: "git shortlog --summary --numbered"
+  - keyword: "gwip"
+    snippet: "git add -A; git rm $(git ls-files --deleted) 2> /dev/null; git commit --no-verify --no-gpg-sign --message \"--wip-- [skip ci]\""
+  - keyword: "gunwip"
+    snippet: "git rev-list --max-count=1 --format=\"%s\" HEAD | grep -q \"\\-\\-wip\\-\\-\" && git reset HEAD~1"
+
+  # =============================================================================
+  # Pipe Operators (context-aware: only expand after existing content)
+  # =============================================================================
+  - keyword: "G"
+    snippet: "| grep"
+    context:
+      lbuffer: '.+\s'
+  - keyword: "L"
+    snippet: "| less"
+    context:
+      lbuffer: '.+\s'
+  - keyword: "H"
+    snippet: "| head"
+    context:
+      lbuffer: '.+\s'
+  - keyword: "T"
+    snippet: "| tail"
+    context:
+      lbuffer: '.+\s'
+  - keyword: "NUL"
+    snippet: "> /dev/null 2>&1"
+    context:
+      lbuffer: '.+\s'
+  - keyword: "NE"
+    snippet: "2> /dev/null"
+    context:
+      lbuffer: '.+\s'
+  - keyword: "CA"
+    snippet: "2>&1 | cat -A"
+    context:
+      lbuffer: '.+\s'
+  - keyword: "LL"
+    snippet: "2>&1 | less"
+    context:
+      lbuffer: '.+\s'
+  - keyword: "M"
+    snippet: "| most"
+    context:
+      lbuffer: '.+\s'
+  - keyword: "J"
+    snippet: "| jq '.'"
+    context:
+      lbuffer: '.+\s'
+  - keyword: "X"
+    snippet: "| xargs"
+    context:
+      lbuffer: '.+\s'
+
+  # =============================================================================
+  # Docker Compose
+  # =============================================================================
+  - keyword: "dcu"
+    snippet: "docker compose up -d"
+  - keyword: "dcd"
+    snippet: "docker compose down"
+  - keyword: "dcl"
+    snippet: "docker compose logs -f"
+  - keyword: "dce"
+    snippet: "docker compose exec {{service}}"
+  - keyword: "dcr"
+    snippet: "docker compose restart"
+
+  # =============================================================================
+  # kubectl
+  # =============================================================================
+  - keyword: "kgp"
+    snippet: "kubectl get pods"
+  - keyword: "kgs"
+    snippet: "kubectl get svc"
+  - keyword: "kdp"
+    snippet: "kubectl describe pod {{pod}}"
+  - keyword: "kl"
+    snippet: "kubectl logs -f {{pod}}"
+  - keyword: "ke"
+    snippet: "kubectl exec -it {{pod}} -- /bin/sh"
+  - keyword: "kaf"
+    snippet: "kubectl apply -f {{file}}"
+  - keyword: "kns"
+    snippet: "kubectl config set-context --current --namespace={{namespace}}"
+
+  # =============================================================================
+  # Terraform
+  # =============================================================================
+  - keyword: "tfi"
+    snippet: "terraform init"
+  - keyword: "tfp"
+    snippet: "terraform plan"
+  - keyword: "tfa"
+    snippet: "terraform apply"
+  - keyword: "tfd"
+    snippet: "terraform destroy"
+  - keyword: "tfw"
+    snippet: "terraform workspace select {{workspace}}"
+
+  # =============================================================================
+  # Utilities
+  # =============================================================================
+  - keyword: "h"
+    snippet: "history"
+  - keyword: "hgrep"
+    snippet: "fc -El 0 | grep"
+  - keyword: "dud"
+    snippet: "du -d 1 -h"
+  - keyword: "duf"
+    snippet: "du -sh *"
+  - keyword: "sortnr"
+    snippet: "sort -n -r"
+  - keyword: "unexport"
+    snippet: "unset"
+  - keyword: "help"
+    snippet: "man"
+  - keyword: "mkdir"
+    snippet: "mkdir -p {{dir}}"

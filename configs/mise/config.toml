@@ -1,6 +1,7 @@
 [tools]
 node = "22.22.0"
 "npm:@devcontainers/cli" = "latest"
+deno = "latest"
 pre-commit = "latest"
 python = "3.14.3"
 ruby = "4.0.1"

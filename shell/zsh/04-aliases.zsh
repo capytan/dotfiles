@@ -1,6 +1,13 @@
 #!/usr/bin/env zsh
-# Shell aliases (non-git)
-# Git aliases and helper functions -> git-aliases.zsh
+# Shell aliases (non-git, non-zeno)
+# Git aliases → zeno snippets (configs/zeno/snippets.yml)
+# Global aliases (pipes) → zeno context snippets
+
+# =============================================================================
+# Editor
+# =============================================================================
+alias vim='nvim'
+alias v='nvim'
 
 # =============================================================================
 # File Listing
@@ -41,38 +48,6 @@ alias p='ps -f'
 alias t='tail -f'
 alias k9='kill -9'
 alias killall='killall -9'
-
-# =============================================================================
-# History
-# =============================================================================
-alias h='history'
-alias hgrep='fc -El 0 | grep'
-
-# =============================================================================
-# Disk Usage
-# =============================================================================
-alias dud='du -d 1 -h'
-alias duf='du -sh *'
-
-# =============================================================================
-# Miscellaneous
-# =============================================================================
-alias sortnr='sort -n -r'
-alias unexport='unset'
-alias help='man'
-
-# =============================================================================
-# Global Aliases
-# =============================================================================
-alias -g G='| grep'
-alias -g L='| less'
-alias -g NUL='> /dev/null 2>&1'
-alias -g CA='2>&1 | cat -A'
-alias -g H='| head'
-alias -g T='| tail'
-alias -g LL='2>&1 | less'
-alias -g M='| most'
-alias -g NE='2> /dev/null'
 
 # =============================================================================
 # macOS specific

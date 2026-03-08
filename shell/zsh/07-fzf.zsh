@@ -1,4 +1,10 @@
-# fzf setup - platform-specific source paths
+#!/usr/bin/env zsh
+# fzf setup (platform-specific paths + default options)
+
+# Default options
+export FZF_DEFAULT_OPTS='--height 40% --layout=reverse --border'
+
+# Platform-specific fzf initialization
 if [[ "$DOTFILES_PLATFORM" == "macos" ]]; then
   # Homebrew fzf
   if [[ ! "$PATH" == */opt/homebrew/opt/fzf/bin* ]]; then
