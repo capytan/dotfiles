@@ -100,6 +100,10 @@
   "[ruby]": {
     "editor.defaultFormatter": "Shopify.ruby-lsp"
   },
+  "[dockerfile]": {
+    "editor.tabSize": 4,
+    "editor.detectIndentation": false
+  },
   "[python]": {
     "editor.tabSize": 4,
     "editor.defaultFormatter": "charliermarsh.ruff"
