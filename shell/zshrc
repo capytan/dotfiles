@@ -1,18 +1,14 @@
 #!/usr/bin/env zsh
-# Thin loader - sources shared modules then platform-specific config
+# Thin loader - sources numbered modules then platform-specific config
 # Kiro CLI pre block. Keep at the top of this file.
 [[ -f "${HOME}/Library/Application Support/kiro-cli/shell/zshrc.pre.zsh" ]] && builtin source "${HOME}/Library/Application Support/kiro-cli/shell/zshrc.pre.zsh"
 
 DOTFILES_DIR="${DOTFILES_DIR:-$HOME/dotfiles}"
 
-# Shared modules (alphabetical order, local.zsh excluded)
-for f in "$DOTFILES_DIR"/shell/zsh/*.zsh(N); do
-  [[ "$(basename $f)" == "local.zsh" ]] && continue
+# Shared modules (numbered prefix order: 01-options → 08-zeno)
+for f in "$DOTFILES_DIR"/shell/zsh/[0-9]*.zsh(N); do
   source "$f"
 done
-
-# fzf setup (platform-specific paths, shared functions already loaded above)
-[[ -f "$DOTFILES_DIR/shell/fzf.zsh" ]] && source "$DOTFILES_DIR/shell/fzf.zsh"
 
 # Platform-specific settings
 [[ -f "$DOTFILES_DIR/platform/$DOTFILES_PLATFORM/zshrc.zsh" ]] && \

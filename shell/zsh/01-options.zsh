@@ -1,5 +1,5 @@
 #!/usr/bin/env zsh
-# History settings and shell options
+# Shell options and history settings
 
 HISTFILE=~/.zsh_history
 HISTSIZE=1000000
