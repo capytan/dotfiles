@@ -1,0 +1,25 @@
+completions:
+  # tfj - Terraform directory fuzzy finder
+  - name: tfj
+    patterns:
+      - "^tfj$"
+    sourceCommand: >
+      cd $(git rev-parse --show-toplevel 2>/dev/null || echo '.') &&
+      rg --files --hidden --no-ignore --glob '**/.terraform/terraform.tfstate' . 2>/dev/null |
+      sed 's|/\.terraform/terraform\.tfstate||' |
+      sort -u |
+      sed 's|^\./||'
+    options:
+      --prompt: "Select Terraform directory: "
+      --height: "40%"
+      --reverse: ""
+    callback: "cd $(git rev-parse --show-toplevel 2>/dev/null || echo '.')/{}"
+
+  # git fixup - select commit for fixup
+  - name: git-fixup
+    patterns:
+      - "^git fixup$"
+    sourceCommand: "git log --oneline -20"
+    options:
+      --prompt: "Fixup commit: "
+    callback: "git commit --fixup={1}"
