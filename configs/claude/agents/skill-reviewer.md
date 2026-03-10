@@ -75,6 +75,22 @@ When given a skill name or path, locate and read the SKILL.md and all referenced
 - Written in third person
 - Must cover BOTH: what the skill does AND when to use it (trigger conditions)
 - Should include example phrases that would trigger the skill
+- Recommended structure: `[What it does] + [When to use it] + [Key capabilities] + [Negative triggers]` — WARNING if missing 2+ components
+
+**name-folder match:**
+- The `name` field value must exactly match the containing folder name — FAIL if mismatch
+
+**No README.md:**
+- The skill directory must NOT contain a README.md file — FAIL if present (conflicts with SKILL.md)
+
+**Optional fields validation:**
+- `compatibility`: If present, must be 1-500 characters — WARNING if out of range
+- `metadata`: If present, must be valid key-value pairs
+- `license`: If present, should be a recognized SPDX identifier — WARNING if unrecognized
+
+**Triggering analysis:**
+- Undertriggering risk: description lacks trigger phrases or is too vague — WARNING
+- Overtriggering risk: description uses overly broad terms ("help", "fix", "create") without negative triggers — WARNING
 
 ### [B] Conciseness ("Concise is key")
 
@@ -94,15 +110,23 @@ When given a skill name or path, locate and read the SKILL.md and all referenced
 ### [D] SKILL.md Structure
 
 - **Line count must be under 500 lines** (count actual lines, not words)
+- **Word count must be under 5,000 words** across SKILL.md and all referenced files — WARNING if exceeded
 - Are complex details appropriately split into separate referenced files?
 - File references must be one level deep from SKILL.md only (no nested references like `file_a.md` referencing `file_b.md`)
 - Is the structure logical and easy to follow?
+- **Progressive disclosure**: If SKILL.md exceeds 300 lines and has no `references/` directory — WARNING (should split content)
+- **Recommended structure**: Check for presence of key sections — WARNING if missing 2+:
+  - Title / overview
+  - Workflow or instructions
+  - Output format or examples
+  - Error handling or troubleshooting
 
 ### [E] Content Guidelines
 
 - **No time-sensitive information**: Check for patterns like "before [month/year]", "after [date]", "as of [date]", "currently", "recently", "deprecated since"
 - **Consistent terminology**: Identify if the same concept is referred to by multiple names (e.g., "endpoint" vs "URL" vs "route", "function" vs "method" vs "procedure")
 - Does the skill avoid making assumptions about future behavior?
+- **Specific and actionable instructions**: Detect vague directives like "validate the data", "check if things look right", "review carefully" without concrete criteria — WARNING for each instance
 
 ### [F] Workflows & Feedback Loops
 
@@ -110,6 +134,8 @@ When given a skill name or path, locate and read the SKILL.md and all referenced
 - Do quality-critical tasks include validation or verification steps?
 - Are there feedback loops where Claude checks its own work?
 - Is the workflow recoverable if a step fails?
+- **Error handling specificity**: Error handling sections must include concrete solutions, not just "handle errors gracefully" — WARNING if generic
+- **Bundled resource references**: If `scripts/`, `references/`, or `assets/` directories exist, SKILL.md must explicitly reference them with clear paths — WARNING if resources exist but are not referenced
 
 ### [G] Anti-patterns
 
@@ -117,6 +143,9 @@ Check for these specific anti-patterns:
 - **Windows-style paths**: Backslashes in file paths (e.g., `C:\Users\...`, `.\folder\file`)
 - **Option listing without default**: Lists of multiple options/approaches without clearly indicating which to use by default and how to escape to alternatives
 - **Ambiguous instructions**: Instructions that could be interpreted multiple ways
+- **Instructions too verbose/buried**: Critical rules or constraints placed deep in the file (past line 200) instead of early — WARNING
+- **Ambiguous hedging language**: Required actions using "might", "could", "consider" instead of imperative "must", "always", "never" — WARNING for each instance
+- **Model laziness risk**: Unstructured prose exceeding 3,000 words without headings, lists, or checklists — WARNING (models may skip or skim)
 
 ### [H] Script Quality (if scripts are present in referenced files)
 
@@ -149,6 +178,10 @@ Produce a review using this exact structure:
 
 ### [A] Frontmatter Validation
 [PASS/FAIL/WARNING for each sub-item with specific details]
+- Name-folder match: [PASS/FAIL]
+- No README.md: [PASS/FAIL]
+- Optional fields: [N/A or PASS/WARNING with details]
+- Triggering analysis: [PASS/WARNING — undertrigger/overtrigger risk]
 
 ### [B] Conciseness
 [Assessment with specific examples of over-explanation if found]
@@ -158,8 +191,10 @@ Produce a review using this exact structure:
 
 ### [D] SKILL.md Structure
 - Line count: [N] lines ([PASS: under 500 / FAIL: over 500])
+- Word count: [N] words ([PASS: under 5,000 / WARNING: over 5,000])
 - File reference depth: [PASS/FAIL]
-- [Other structural observations]
+- Progressive disclosure: [PASS/WARNING — if >300 lines without references/]
+- Recommended structure: [PASS/WARNING — missing sections listed]
 
 ### [E] Content Guidelines
 - Time-sensitive info: [PASS/FAIL with specific lines if failed]
