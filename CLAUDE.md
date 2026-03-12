@@ -46,6 +46,28 @@ dotfiles/
 ./install.sh              # Auto-detects macOS/Ubuntu, creates symlinks
 ```
 
+### Key Symlink Mappings
+
+| Source | Destination |
+|--------|------------|
+| `shell/zshrc` | `~/.zshrc` |
+| `shell/zprofile` | `~/.zprofile` |
+| `configs/git/` | `~/.config/git/` |
+| `configs/tmux/` | `~/.config/tmux/` |
+| `configs/alacritty/` | `~/.config/alacritty/` |
+| `configs/ghostty/` | `~/.config/ghostty/` |
+| `configs/mise/` | `~/.config/mise/` |
+| `configs/zeno/` | `~/.config/zeno/` |
+
+macOS のみ: `configs/vscode/` → `~/Library/Application Support/{Cursor,Code}/User/`
+
+### After Editing Configs
+
+```bash
+source ~/.zshrc           # Reload shell config (or open new terminal)
+tmux source ~/.config/tmux/tmux.conf  # Reload tmux config (inside tmux)
+```
+
 ## Claude Code Configuration
 
 Custom agents, skills, hooks, and settings are in `configs/claude/`. Setup: `./configs/claude/setup-claude.sh`
@@ -120,4 +142,5 @@ For tasks with parallel, independent workstreams, prefer agent teams over sequen
 - Preserve file permissions (especially for executable scripts)
 
 ### Cursor AI Rules
-See `configs/cursor/rules/global.mdc` for Cursor-specific constraints.
+
+See `configs/cursor/rules/global.mdc` for Cursor-specific constraints. Cursor rules are separate from Claude Code instructions and do not need to be kept in sync.
