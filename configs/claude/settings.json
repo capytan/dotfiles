@@ -21,12 +21,12 @@
   "permissions": {
     "allow": [
       "// File operations",
-      "Edit(**)",
-      "Read(**)",
-      "Write(**)",
-      "MultiEdit(**)",
-      "Glob(**)",
-      "Grep(**)",
+      "Edit",
+      "Read",
+      "Write",
+      "MultiEdit",
+      "Glob",
+      "Grep",
       "// Git operations",
       "Bash(git status *)",
       "Bash(git log *)",
