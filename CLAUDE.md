@@ -20,15 +20,16 @@ dotfiles/
 │   ├── nvim/            # Neovim config (legacy vim-plug, reference only)
 │   ├── tmux/            # tmux config, keybindings, startup scripts
 │   ├── vim/             # Vim config (legacy, reference only)
-│   └── vscode/          # VSCode/Cursor settings and extensions
+│   ├── vscode/          # VSCode/Cursor settings and extensions
+│   └── zeno/            # zeno.zsh completions and snippets
 ├── shell/               # Shell configuration (shared layer)
 │   ├── zshrc            # Thin loader (auto-detects platform)
 │   ├── zprofile         # Login shell settings
-│   ├── fzf.zsh          # fzf setup (platform-aware)
-│   └── zsh/             # Shared modules (aliases, git, fzf, history, tools)
+│   └── zsh/             # Numbered modules (01-options … 08-zeno)
 ├── platform/            # Platform-specific layer
 │   ├── macos/           # Brewfile, defaults.sh, zprofile.zsh, zshrc.zsh
 │   └── ubuntu/          # zprofile.zsh, zshrc.zsh, alacritty.toml
+├── tasks/               # Session learnings (lessons.md) and cross-session TODO
 ├── archive/             # Legacy config records
 ├── install.sh           # Single setup entry point
 └── CLAUDE.md
@@ -38,6 +39,12 @@ dotfiles/
 - `shell/zsh/local.zsh` — Shell machine-specific settings
 - `configs/tmux/tmux-start.local.sh` — tmux machine-specific window layout
 - `.claude/settings.local.json` — Claude Code machine-specific settings
+
+## Quick Start
+
+```bash
+./install.sh              # Auto-detects macOS/Ubuntu, creates symlinks
+```
 
 ## Claude Code Configuration
 
