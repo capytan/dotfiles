@@ -1,9 +1,9 @@
 ---
 name: agent-team-review
 description: |
-  Parallel multi-agent code review using Agent Teams. Four specialized reviewers
-  (logic errors, security vulnerabilities, edge cases, regressions) analyze code
-  in parallel with broadcast cross-validation to eliminate false positives.
+  Parallel multi-agent code review using Agent Teams. Five specialized reviewers
+  (logic errors, security vulnerabilities, edge cases, regressions, infra/config)
+  analyze code in parallel with broadcast cross-validation to eliminate false positives.
   Triggers on "team review", "deep review", "thorough review", "agent team review",
   "team review this PR". Use when deeper cross-validation is needed beyond
   code-review plugin or pr-review-toolkit. Supports both PRs (gh pr diff) and
@@ -12,7 +12,7 @@ description: |
 
 # Agent Team Code Review
 
-Parallel multi-agent code review using Agent Teams. Four specialized reviewers analyze code independently, then cross-validate via broadcast to eliminate false positives.
+Parallel multi-agent code review using Agent Teams. Five specialized reviewers analyze code independently, then cross-validate via broadcast to eliminate false positives.
 
 ## Prerequisites
 
@@ -50,12 +50,13 @@ Gather review context.
    - `reviewer-security.md` — for SECURITY reviewer
    - `reviewer-edge-cases.md` — for EDGE reviewer
    - `reviewer-regression.md` — for REGRESSION reviewer
+   - `reviewer-infra-config.md` — for INFRA reviewer
    - `false-positives.md` — shared by all reviewers
    - `verification-protocol.md` — used in Phase 5
 
 ## Phase 3: Launch Agent Team
 
-Create a team and launch four Opus reviewers in parallel.
+Create a team and launch five Opus reviewers in parallel.
 
 ### Team Setup
 
@@ -67,7 +68,7 @@ TeamCreate:
 
 ### Teammate Launch
 
-Launch all four teammates **simultaneously** via Agent tool (four calls in a single message).
+Launch all five teammates **simultaneously** via Agent tool (five calls in a single message).
 
 Common settings for all teammates:
 - model: opus
@@ -231,9 +232,49 @@ Agent:
     Same as LOGIC (ID prefix: REG-)
 ```
 
+#### INFRA Reviewer
+
+Same prompt structure as LOGIC. Replace the checklist with reviewer-infra-config.md:
+
+```
+Agent:
+  name: "infra-reviewer"
+  team_name: "code-review-team"
+  model: opus
+  prompt: |
+    You are the INFRA reviewer. You specialize in detecting missing infrastructure
+    configuration, environment variable gaps, and deployment readiness issues.
+
+    ## Diff
+    <paste full diff>
+
+    ## Changed Files
+    <paste file list>
+
+    ## Project Rules
+    <paste CLAUDE.md summary>
+
+    ## Checklist
+    <paste reviewer-infra-config.md content>
+
+    ## False Positive Patterns (do NOT report these)
+    <paste false-positives.md content>
+
+    ## Instructions
+    1-6 same as LOGIC. Additional:
+    - Scan for new environment variable references and config file changes
+    - Cross-reference with IaC repos and secrets management when accessible
+    - Check if new external resources (storage, queues, databases, etc.) are provisioned
+    - Verify feature flags exist in management system
+    - Identify deployment ordering requirements
+
+    ## Output Format
+    Same as LOGIC (ID prefix: INFRA-)
+```
+
 ### Waiting for Results
 
-Wait for completion messages from all four teammates. Messages are delivered automatically.
+Wait for completion messages from all five teammates. Messages are delivered automatically.
 
 ## Phase 4: Cross-Validation
 
@@ -306,7 +347,7 @@ Output a structured markdown report in the session language.
 
 **Target**: PR #42 / Local uncommitted changes (staged/unstaged/both)
 **Files reviewed**: N files, M lines changed
-**Reviewers**: LOGIC, SECURITY, EDGE, REGRESSION
+**Reviewers**: LOGIC, SECURITY, EDGE, REGRESSION, INFRA
 **Cross-validation**: Performed / Skipped (< 5 findings)
 
 ### 🔴 Normal (N issues)
@@ -343,7 +384,7 @@ If zero findings:
 
 **Target**: PR #42 / Local uncommitted changes
 **Files reviewed**: N files, M lines changed
-**Reviewers**: LOGIC, SECURITY, EDGE, REGRESSION
+**Reviewers**: LOGIC, SECURITY, EDGE, REGRESSION, INFRA
 
 No issues found. All reviewers confirmed the changes look correct.
 ```
@@ -359,7 +400,7 @@ SendMessage:
   content: "Review complete. Shutting down."
 ```
 
-2. Repeat for all four (logic-reviewer, security-reviewer, edge-reviewer, regression-reviewer)
+2. Repeat for all five (logic-reviewer, security-reviewer, edge-reviewer, regression-reviewer, infra-reviewer)
 
 ## Error Handling
 
