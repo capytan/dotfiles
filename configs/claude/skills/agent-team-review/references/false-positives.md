@@ -58,3 +58,10 @@ Shared catalog for all reviewers. Do not report findings matching these patterns
 ### REGRESSION
 - Intentional code replacement via refactoring (functionally equivalent rewrites)
 - Deletion due to migration from deprecated APIs
+
+### INFRA
+- Environment variables already managed by existing CI/CD pipeline (confirmed in deployment configs)
+- Infrastructure changes tracked in separate PRs/repos with linked issues
+- Development/test-only configuration (test service, local storage, in-memory adapters)
+- Environment variables with sensible defaults or fallback behavior in code
+- Existing resources being reused (no new provisioning needed)
