@@ -476,7 +476,7 @@
     "voltagent-core-dev@voltagent-subagents": false,
     "voltagent-domains@voltagent-subagents": false,
     "voltagent-lang@voltagent-subagents": false,
-    "skill-creator@claude-plugins-official": false,
+    "skill-creator@claude-plugins-official": true,
     "clarify@kuu-marketplace": true,
     "decomposition@kuu-marketplace": true,
     "deslop@kuu-marketplace": false,
