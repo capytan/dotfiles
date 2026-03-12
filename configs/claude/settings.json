@@ -1,7 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "cleanupPeriodDays": 365,
-  "additionalDirectories": ["~/ghq", "~/dev"],
   "env": {
     "MAX_THINKING_TOKENS": "31999",
     "DISABLE_MICROCOMPACT": "1",
@@ -471,15 +470,20 @@
     "voltagent-domains@voltagent-subagents": false,
     "voltagent-lang@voltagent-subagents": false,
     "skill-creator@claude-plugins-official": true,
-    "clarify@kuu-marketplace": true,
     "decomposition@kuu-marketplace": true,
     "deslop@kuu-marketplace": false,
     "dig@kuu-marketplace": false,
-    "fix-ci@kuu-marketplace": false
+    "fix-ci@kuu-marketplace": false,
+    "code-simplifier@claude-plugins-official": true,
+    "claude-md-management@claude-plugins-official": true
   },
   "language": "ja",
   "alwaysThinkingEnabled": true,
+  "effortLevel": "high",
+  "additionalDirectories": [
+    "~/ghq",
+    "~/dev"
+  ],
   "teammateMode": "auto",
-  "showTurnDuration": true,
-  "effortLevel": "high"
+  "showTurnDuration": true
 }
