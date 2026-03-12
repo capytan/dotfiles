@@ -1,6 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "cleanupPeriodDays": 365,
+  "additionalDirectories": ["~/ghq", "~/dev"],
   "env": {
     "MAX_THINKING_TOKENS": "31999",
     "DISABLE_MICROCOMPACT": "1",
@@ -20,13 +21,6 @@
   },
   "permissions": {
     "allow": [
-      "// File operations",
-      "Edit",
-      "Read",
-      "Write",
-      "MultiEdit",
-      "Glob",
-      "Grep",
       "// Git operations",
       "Bash(git status *)",
       "Bash(git log *)",
