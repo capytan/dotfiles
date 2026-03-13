@@ -73,3 +73,6 @@ configs/ghostty/local.conf
 # タスク管理ファイル（個人メモ、追跡不要）
 tasks/lessons.md
 tasks/todo.md
+
+# Claude Code スキルのレポート出力（自動生成、追跡不要）
+configs/claude/skills/prompt-review/reports/
