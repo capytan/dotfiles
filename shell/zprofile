@@ -1,4 +1,8 @@
 #!/usr/bin/env zsh
+
+# Kiro CLI pre block. Keep at the top of this file.
+[[ -f "${HOME}/Library/Application Support/kiro-cli/shell/zprofile.pre.zsh" ]] && builtin source "${HOME}/Library/Application Support/kiro-cli/shell/zprofile.pre.zsh"
+
 # Login shell settings - sourced once at login
 
 export LANG=ja_JP.UTF-8
@@ -14,3 +18,7 @@ export DOTFILES_DIR="${DOTFILES_DIR:-$HOME/dotfiles}"
 # Platform-specific login settings
 [[ -f "$DOTFILES_DIR/platform/$DOTFILES_PLATFORM/zprofile.zsh" ]] && \
   source "$DOTFILES_DIR/platform/$DOTFILES_PLATFORM/zprofile.zsh"
+
+
+# Kiro CLI post block. Keep at the bottom of this file.
+[[ -f "${HOME}/Library/Application Support/kiro-cli/shell/zprofile.post.zsh" ]] && builtin source "${HOME}/Library/Application Support/kiro-cli/shell/zprofile.post.zsh"
