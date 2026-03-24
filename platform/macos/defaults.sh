@@ -87,6 +87,13 @@ defaults -currentHost write NSGlobalDomain com.apple.mouse.tapBehavior -int 1
 defaults write NSGlobalDomain com.apple.trackpad.scaling -float 3
 
 # =============================================================================
+# Sound
+# =============================================================================
+
+# Disable startup chime (default: unmuted)
+sudo nvram StartupMute=%01
+
+# =============================================================================
 # Apply changes (restart affected services)
 # =============================================================================
 
