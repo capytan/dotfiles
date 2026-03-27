@@ -2,7 +2,7 @@
 # macOS-specific interactive shell settings
 
 # Starship prompt
-eval "$(starship init zsh)"
+command -v starship &>/dev/null && eval "$(starship init zsh)"
 
 # Kiro IDE integration
 [[ "$TERM_PROGRAM" == "kiro" ]] && . "$(kiro --locate-shell-integration-path zsh)"

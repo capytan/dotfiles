@@ -11,7 +11,7 @@ if [[ "$DOTFILES_PLATFORM" == "macos" ]]; then
     PATH="${PATH:+${PATH}:}/opt/homebrew/opt/fzf/bin"
   fi
   [[ $- == *i* ]] && source "/opt/homebrew/opt/fzf/shell/completion.zsh" 2> /dev/null
-  source "/opt/homebrew/opt/fzf/shell/key-bindings.zsh"
+  source "/opt/homebrew/opt/fzf/shell/key-bindings.zsh" 2>/dev/null
 elif [[ "$DOTFILES_PLATFORM" == "ubuntu" ]]; then
   # apt fzf
   source /usr/share/doc/fzf/examples/key-bindings.zsh 2>/dev/null
