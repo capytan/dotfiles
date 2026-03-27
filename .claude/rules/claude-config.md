@@ -5,7 +5,7 @@ paths:
 
 # Claude Code Config Rules
 
-- hooks は `configs/claude/hooks/tmux-lib.sh` の共有関数を使う
-- settings.json の permissions コメント (`// Git operations` 等) を維持する
-- 新しいシンボリックリンク対象を追加したら `setup-claude.sh` も更新する
-- hooks スクリプトには `set -euo pipefail` を使う
+- Hooks must use shared functions from `configs/claude/hooks/tmux-lib.sh`
+- Keep permissions comments in settings.json (`// Git operations` etc.)
+- Update `setup-claude.sh` when adding new symlink targets
+- Use `set -euo pipefail` in hook scripts
