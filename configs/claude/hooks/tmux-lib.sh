@@ -23,6 +23,7 @@ tmux_current_clean_name() {
 
 # 絵文字付きでウィンドウ名を設定する
 tmux_set_status() {
-    tmux set-window-option automatic-rename off
-    tmux rename-window "$1 $2"
+    tmux set-window-option automatic-rename off 2>/dev/null
+    tmux rename-window "$1 $2" 2>/dev/null
+    return 0
 }
