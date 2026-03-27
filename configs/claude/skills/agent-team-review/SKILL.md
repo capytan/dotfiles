@@ -23,7 +23,7 @@ Five reviewers, each using a **distinct methodology and information source**, an
 
 ## Phase 1: Preparation (Parallel Haiku)
 
-Launch 2–3 Haiku agents in parallel:
+Launch 2 Haiku agents in parallel:
 
 ### 1a. Eligibility & Context (Haiku)
 
@@ -54,11 +54,11 @@ Return: summary of what changed and why, full diff, changed file list
 Launch all five simultaneously in a single message via Agent tool.
 
 Each agent receives: full diff + changed file list + CLAUDE.md content.
-Each returns a list of issues in the following **common format** (required for Phase 3 scoring):
+Each returns a list of findings in the following **common format** (required for Phase 3 scoring):
 
 ```
 - **File**: path/to/file.ts:45
-- **Summary**: one-line description of the issue
+- **Summary**: one-line description of the finding
 - **Reason**: why this was flagged (see agent-specific format below)
 - **Detail**: full description, evidence, and fix suggestion
 - **Pre-existing**: yes/no (is this on unchanged lines?)
@@ -135,11 +135,11 @@ Read code comments in modified files and check if changes **comply with in-code 
 
 ## Phase 3: Independent Scoring (Parallel Haiku)
 
-For **each issue** found in Phase 2, launch a parallel Haiku agent to score confidence.
+For **each finding** from Phase 2, launch a parallel Haiku agent to score confidence.
 
 Each scoring agent receives:
-- The full diff (or relevant excerpt around the issue)
-- The issue description and reason flagged
+- The full diff (or relevant excerpt around the finding)
+- The finding description and reason flagged
 - All CLAUDE.md files from Phase 1
 - `references/false-positives.md` content
 
@@ -226,7 +226,7 @@ Output structured markdown in the session language:
 - Filtered: N issues (confidence < 80)
 ```
 
-Zero findings:
+Zero issues:
 
 ```markdown
 ## Code Review Report
@@ -254,19 +254,9 @@ No issues found. All reviewers confirmed the changes look correct.
    <sub>- If this code review was useful, please react with 👍. Otherwise, react with 👎.</sub>
    ```
 
-## False Positive Examples
+## False Positives
 
-These are false positives for Phases 2 and 3 — do NOT report:
-
-- Pre-existing issues (bugs on lines not modified in this change)
-- Issues a linter, typechecker, or compiler would catch (imports, type errors, formatting, broken tests)
-- Pedantic nitpicks that a senior engineer wouldn't call out
-- General quality issues (test coverage, general security, documentation) unless required by CLAUDE.md
-- Issues called out in CLAUDE.md but silenced in code (lint-ignore, type-ignore)
-- Intentional functionality changes directly related to the broader change
-- Real issues, but on lines the user did not modify
-
-Additional patterns are in `references/false-positives.md`.
+Give `references/false-positives.md` to all reviewers (Phase 2) and scoring agents (Phase 3). Do not report pre-existing issues, linter-catchable issues, or pedantic nitpicks. See the reference file for the full catalog.
 
 ## Error Handling
 
