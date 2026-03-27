@@ -36,7 +36,10 @@
       "Bash(git tag *)",
       "Bash(git remote *)",
       "Bash(git rev-parse *)",
-      "Bash(git config *)",
+      "Bash(git config --get *)",
+      "Bash(git config --get-all *)",
+      "Bash(git config --list *)",
+      "Bash(git config -l *)",
       "Bash(git blame *)",
       "Bash(git cherry-pick *)",
       "Bash(git worktree *)",
@@ -326,8 +329,7 @@
     ],
     "defaultMode": "acceptEdits"
   },
-  "model": "opus",
-  "enableAllProjectMcpServers": true,
+  "enableAllProjectMcpServers": false,
   "enabledMcpjsonServers": [
     "context7"
   ],
@@ -440,7 +442,8 @@
           {
             "type": "command",
             "command": "bash ~/.claude/hooks/tmux-session-end-usage.sh",
-            "async": true
+            "async": true,
+            "timeout": 10000
           }
         ]
       }
@@ -475,7 +478,20 @@
     "dig@kuu-marketplace": false,
     "fix-ci@kuu-marketplace": false,
     "code-simplifier@claude-plugins-official": true,
-    "claude-md-management@claude-plugins-official": true
+    "claude-md-management@claude-plugins-official": true,
+    "superpowers@claude-plugins-official": true,
+    "playwright@claude-plugins-official": true,
+    "ruby-lsp@claude-plugins-official": true,
+    "pagerduty@claude-plugins-official": true,
+    "terraform@claude-plugins-official": true
+  },
+  "extraKnownMarketplaces": {
+    "agent-plugins-for-aws": {
+      "source": {
+        "source": "github",
+        "repo": "awslabs/agent-plugins"
+      }
+    }
   },
   "language": "ja",
   "alwaysThinkingEnabled": true,
