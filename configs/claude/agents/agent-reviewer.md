@@ -43,6 +43,8 @@ description: |
 model: inherit
 color: blue
 tools: ["Read", "Grep", "Glob"]
+memory: user
+effort: high
 ---
 
 You are a Claude Code agent file reviewer specializing in validating agent definitions against Anthropic's official best practices.
