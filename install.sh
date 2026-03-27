@@ -86,6 +86,8 @@ link_file "$DOTFILES_DIR/configs/tmux/scripts/claude-usage-status.sh" \
 info "Setting up Alacritty configuration..."
 link_file "$DOTFILES_DIR/configs/alacritty/alacritty.toml"       "$HOME/.config/alacritty/alacritty.toml"
 link_file "$DOTFILES_DIR/configs/alacritty/shared.toml"          "$HOME/.config/alacritty/shared.toml"
+link_file "$DOTFILES_DIR/configs/alacritty/theme.toml"           "$HOME/.config/alacritty/theme.toml"
+link_file "$DOTFILES_DIR/configs/alacritty/font.toml"            "$HOME/.config/alacritty/font.toml"
 link_file "$DOTFILES_DIR/configs/alacritty/font-size.toml"       "$HOME/.config/alacritty/font-size.toml"
 link_file "$DOTFILES_DIR/configs/alacritty/pane.toml"            "$HOME/.config/alacritty/pane.toml"
 link_file "$DOTFILES_DIR/configs/alacritty/fonts/JetBrainsMono.toml" "$HOME/.config/alacritty/fonts/JetBrainsMono.toml"
