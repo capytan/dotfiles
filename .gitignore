@@ -76,3 +76,6 @@ tasks/todo.md
 
 # Claude Code スキルのレポート出力（自動生成、追跡不要）
 configs/claude/skills/prompt-review/reports/
+
+# RTK hook integrity hash（rtk init -g が自動生成）
+configs/claude/hooks/.rtk-hook.sha256
