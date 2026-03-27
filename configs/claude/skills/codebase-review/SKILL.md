@@ -1,7 +1,7 @@
 ---
 name: codebase-review
 description: |
-  Full codebase review with seven methodology-based Opus reviewers and independent
+  Full codebase review with seven methodology-based reviewers (Opus or Sonnet) and independent
   confidence scoring. Covers rules compliance, bugs, git hotspots, code comments,
   architecture, security (OWASP), and dependency analysis.
   Triggers on "codebase review", "audit codebase", "review the codebase",
@@ -19,7 +19,7 @@ Seven reviewers, each using a **distinct methodology and information source**, a
 
 - **Methodology diversity**: Each reviewer uses a different information source — findings don't overlap
 - **Independent scoring**: Findings are scored by separate agents, not by the reviewer that found them
-- **Graduated models**: Haiku for prep/scoring, Opus for review
+- **Graduated models**: Haiku for prep/scoring, user-selected model (Opus or Sonnet) for review
 - **High threshold**: Only findings scoring 80+ survive
 - **Scoped execution**: User selects review scope to keep analysis tractable
 
@@ -36,14 +36,20 @@ Launch 2 Haiku agents in parallel:
 
 ### 1b. Scope Selection (Haiku)
 
-Present the user with scope options via AskUserQuestion:
+Present the user with scope and model options via AskUserQuestion (2 questions in one call):
 
+**Question 1: Review scope**
 ```
-Review scope:
 (1) Full scan — all source files (small repos, < 100 files)
 (2) Git hotspot — auto-prioritize by change frequency and bug-fix history (recommended)
 (3) Directory scope — specify directories to review
 (4) Hybrid — git hotspot priority + you add/exclude paths
+```
+
+**Question 2: Reviewer model**
+```
+(1) Opus — highest quality, slower and more expensive (recommended for critical reviews)
+(2) Sonnet — good quality, faster and cheaper (recommended for iterative reviews)
 ```
 
 For each option:
@@ -57,9 +63,9 @@ Return: final prioritized file list for Phase 2
 **Stop conditions**: No source files found, user cancels.
 **Warning**: Confirm with user if file count > 100 or total lines > 50,000.
 
-## Phase 2: Parallel Review (7 Opus Agents)
+## Phase 2: Parallel Review (7 Agents)
 
-Launch all seven simultaneously in a single message via Agent tool.
+Launch all seven simultaneously in a single message via Agent tool, using the **user-selected model** from Phase 1b.
 
 Each agent receives: prioritized file list + CLAUDE.md content + project summary.
 Each reads files directly via Read tool and returns findings in the **common format**:
@@ -73,7 +79,7 @@ Each reads files directly via Read tool and returns findings in the **common for
 
 ### Agent #1: Rules Auditor
 
-name: "rules-auditor", model: opus
+name: "rules-auditor", model: user-selected (opus or sonnet)
 
 Audit source files for CLAUDE.md / REVIEW.md compliance.
 
@@ -87,7 +93,7 @@ Audit source files for CLAUDE.md / REVIEW.md compliance.
 
 ### Agent #2: Bug Scanner
 
-name: "bug-scanner", model: opus
+name: "bug-scanner", model: user-selected (opus or sonnet)
 
 Scan source files for obvious bugs.
 
@@ -102,7 +108,7 @@ Scan source files for obvious bugs.
 
 ### Agent #3: History Analyst
 
-name: "history-analyst", model: opus
+name: "history-analyst", model: user-selected (opus or sonnet)
 
 Use git log and blame to identify **high-risk areas** in the codebase.
 
@@ -115,7 +121,7 @@ Use git log and blame to identify **high-risk areas** in the codebase.
 
 ### Agent #4: Comments Auditor
 
-name: "comments-auditor", model: opus
+name: "comments-auditor", model: user-selected (opus or sonnet)
 
 Read code comments and check if they accurately reflect the code.
 
@@ -129,7 +135,7 @@ Read code comments and check if they accurately reflect the code.
 
 ### Agent #5: Architecture Analyst
 
-name: "architecture-analyst", model: opus
+name: "architecture-analyst", model: user-selected (opus or sonnet)
 
 Review file structure, dependencies, and architectural patterns.
 
@@ -144,7 +150,7 @@ Review file structure, dependencies, and architectural patterns.
 
 ### Agent #6: Security Scanner
 
-name: "security-scanner", model: opus
+name: "security-scanner", model: user-selected (opus or sonnet)
 
 OWASP-based security vulnerability scan across source files.
 
@@ -160,7 +166,7 @@ OWASP-based security vulnerability scan across source files.
 
 ### Agent #7: Dependency Analyst
 
-name: "dependency-analyst", model: opus
+name: "dependency-analyst", model: user-selected (opus or sonnet)
 
 Analyze package manifests, lock files, and dependency usage.
 
