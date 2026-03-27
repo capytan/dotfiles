@@ -1,366 +1,219 @@
 ---
 name: agent-team-review
 description: |
-  Parallel multi-agent code review using Agent Teams. Five specialized reviewers
-  (logic errors, security vulnerabilities, edge cases, regressions, infra/config)
-  analyze code in parallel with broadcast cross-validation to eliminate false positives.
+  Parallel multi-agent code review with independent confidence scoring.
+  Five methodology-based reviewers (rules audit, bug scan, git history,
+  PR archaeology, code comments) each use a distinct information source
+  to find bugs, then separate scoring agents filter false positives.
   Triggers on "team review", "deep review", "thorough review", "agent team review",
-  "team review this PR". Use when deeper cross-validation is needed beyond
-  code-review plugin or pr-review-toolkit. Supports both PRs (gh pr diff) and
-  local changes (git diff).
+  "team review this PR". Use when deeper analysis is needed beyond
+  code-review plugin or pr-review-toolkit. Supports both PRs and local changes.
 ---
 
 # Agent Team Code Review
 
-Parallel multi-agent code review using Agent Teams. Five specialized reviewers analyze code independently, then cross-validate via broadcast to eliminate false positives.
+Five reviewers, each using a **distinct methodology and information source**, analyze code in parallel. Separate scoring agents independently evaluate each finding to filter false positives.
 
-## Prerequisites
+## Design Principles
 
-`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` must be enabled. If not set, show the following and stop:
+- **Methodology diversity**: Each reviewer uses a different information source (diff only, git history, PR comments, code comments, project rules) — findings don't overlap
+- **Independent scoring**: Findings are scored by separate agents, not by the reviewer that found them — eliminates self-scoring bias
+- **Graduated models**: Haiku for prep/scoring, Opus for review
+- **High threshold**: Only issues scoring 80+ survive
 
-```
-Add to settings.json:
-"env": { "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1" }
-```
+## Phase 1: Preparation (Parallel Haiku)
 
-## Phase 1: Review Target
+Launch 2–3 Haiku agents in parallel:
 
-Determine what to review.
+### 1a. Eligibility & Context (Haiku)
 
-1. **PR specified**: PR number or URL provided
-   - Get diff via `gh pr diff <number>`
-   - Get PR info via `gh pr view <number>`
+If PR number/URL provided:
+- Check: not closed, not draft, not automated, not trivially simple, no existing review from you
+- If ineligible, report reason and **stop**
 
-2. **No PR specified**: Review local changes
-   - Use AskUserQuestion: "Select review target: (1) staged changes (2) unstaged changes (3) both"
-   - Run `git diff --cached`, `git diff`, or `git diff HEAD` accordingly
+Always:
+- Read all CLAUDE.md / REVIEW.md files (root + directories of changed files)
+- Return: file paths, rule content, eligibility status
 
-3. **No changes**: If diff is empty, notify user and stop
+### 1b. Change Summary (Haiku)
 
-Warn user and confirm if diff exceeds 3000 lines.
+If PR:
+- `gh pr view <number>` + `gh pr diff <number>`
 
-## Phase 2: Context Collection
+If local changes:
+- AskUserQuestion: "Review target: (1) staged (2) unstaged (3) both"
+- Run appropriate `git diff` command
 
-Gather review context.
+Return: summary of what changed and why, full diff, changed file list
 
-1. **Project rules**: Read CLAUDE.md / REVIEW.md if they exist
-2. **Changed files**: Extract file paths from diff
-3. **Reviewer references**: Read files from `references/`:
-   - `reviewer-logic.md` — for LOGIC reviewer
-   - `reviewer-security.md` — for SECURITY reviewer
-   - `reviewer-edge-cases.md` — for EDGE reviewer
-   - `reviewer-regression.md` — for REGRESSION reviewer
-   - `reviewer-infra-config.md` — for INFRA reviewer
-   - `false-positives.md` — shared by all reviewers
-   - `verification-protocol.md` — used in Phase 5
+**Stop conditions**: PR ineligible, diff empty.
+**Warning**: Confirm with user if diff > 3000 lines.
 
-## Phase 3: Launch Agent Team
+## Phase 2: Parallel Review (5 Opus Agents)
 
-Create a team and launch five Opus reviewers in parallel.
+Launch all five simultaneously in a single message via Agent tool.
 
-### Team Setup
+Each agent receives: full diff + changed file list + CLAUDE.md content.
+Each returns a list of issues in the following **common format** (required for Phase 3 scoring):
 
 ```
-TeamCreate:
-  team_name: "code-review-team"
-  description: "Parallel multi-agent code review with cross-validation"
+- **File**: path/to/file.ts:45
+- **Summary**: one-line description of the issue
+- **Reason**: why this was flagged (see agent-specific format below)
+- **Detail**: full description, evidence, and fix suggestion
+- **Pre-existing**: yes/no (is this on unchanged lines?)
 ```
 
-### Teammate Launch
+### Agent #1: Rules Auditor
 
-Launch all five teammates **simultaneously** via Agent tool (five calls in a single message).
+name: "rules-auditor", model: opus
 
-Common settings for all teammates:
-- model: opus
-- team_name: "code-review-team"
-- Each receives: full diff + changed file list + CLAUDE.md summary + specialized reference + false-positives.md
-- Output follows session language
+Audit changes for CLAUDE.md / REVIEW.md compliance.
 
-Prompt template for each teammate:
+- Read each rule carefully
+- Check if any change in the diff violates it
+- Not all CLAUDE.md instructions apply during review — skip build/workflow instructions
+- Only report violations where CLAUDE.md **specifically** calls out the issue
+- Quote the exact rule being violated
+- For issues silenced by lint-ignore/type-ignore comments in code, do NOT report
+- Reason format: `CLAUDE.md says "<exact quote>"`
 
-#### LOGIC Reviewer
+### Agent #2: Bug Scanner
 
-```
-Agent:
-  name: "logic-reviewer"
-  team_name: "code-review-team"
-  model: opus
-  prompt: |
-    You are the LOGIC reviewer. You specialize in detecting logic errors,
-    control flow issues, null/undefined handling, and race conditions.
+name: "bug-scanner", model: opus
 
-    ## Diff
-    <paste full diff>
+Shallow scan for obvious bugs. **Do NOT read extra context beyond the diff.**
 
-    ## Changed Files
-    <paste file list>
+- Focus on **large bugs only** — ignore small issues and nitpicks
+- Ignore likely false positives — if unsure, skip it
+- Do NOT report:
+  - Issues a linter, typechecker, or compiler would catch (imports, type errors, formatting)
+  - General quality issues (test coverage, documentation, security best practices) unless required in CLAUDE.md
+  - Pre-existing issues on unchanged lines
+  - Intentional changes directly related to the broader change purpose
+- Reason format: `bug due to <file and code snippet>`
 
-    ## Project Rules
-    <paste CLAUDE.md summary>
+### Agent #3: History Analyst
 
-    ## Checklist
-    <paste reviewer-logic.md content>
+name: "history-analyst", model: opus
 
-    ## False Positive Patterns (do NOT report these)
-    <paste false-positives.md content>
+Use git blame and git log to find bugs **invisible from the diff alone**.
 
-    ## Instructions
-    1. Analyze the diff line by line using the checklist
-    2. Only report issues directly related to changed lines (tag off-diff bugs as [PRE-EXISTING])
-    3. Assign a confidence score (0-100) to each finding
-    4. Exclude anything matching false positive patterns
-    5. Use Read to check surrounding context (50 lines) when needed
-    6. Send results to the lead when complete
+- Run `git blame -L <start-10>,<end+10> <file>` around changed lines
+- Run `git log -30 --oneline -- <file>` for each changed file
+- Check if deleted/modified lines were added by bug-fix commits (keywords: fix, bugfix, hotfix, patch, security, revert)
+- Check if the change reverts a previous fix
+- Check for function signature changes breaking callers
+- Base confidence on **git evidence**, not speculation
+- Do NOT report: intentional refactoring, deprecated API migration
+- Reason format: `historical git context: <commit and evidence>`
 
-    ## Output Format (per finding)
-    - **ID**: LOGIC-001
-    - **File**: path/to/file.ts:45
-    - **Severity**: Normal / Nit / Pre-existing
-    - **Confidence**: 0-100
-    - **Summary**: one-line summary
-    - **Detail**: description and fix suggestion
-```
+### Agent #4: PR Archaeologist
 
-#### SECURITY Reviewer
+name: "pr-archaeologist", model: opus
 
-Same prompt structure as LOGIC. Replace the checklist with reviewer-security.md and adjust role-specific sections:
+Check previous PRs that touched these files for **comments that may also apply**.
 
-```
-Agent:
-  name: "security-reviewer"
-  team_name: "code-review-team"
-  model: opus
-  prompt: |
-    You are the SECURITY reviewer. You specialize in detecting injection,
-    auth/authz flaws, secret exposure, and SSRF vulnerabilities.
+- Find recent merged PRs: `gh pr list --state merged --search "<filename>" --limit 5` or `git log --oneline -20 -- <file>`
+- Read comments on those PRs: `gh api repos/{owner}/{repo}/pulls/{number}/comments`
+- Only report issues clearly relevant to the current change
+- **Skip entirely** if not in a GitHub repo or `gh` is unavailable
+- Reason format: `previous PR comment: <PR link and quote>`
 
-    ## Diff
-    <paste full diff>
+### Agent #5: Comments Auditor
 
-    ## Changed Files
-    <paste file list>
+name: "comments-auditor", model: opus
 
-    ## Project Rules
-    <paste CLAUDE.md summary>
+Read code comments in modified files and check if changes **comply with in-code guidance**.
 
-    ## Checklist
-    <paste reviewer-security.md content>
+- Use Read to view the full file for each changed file
+- Find directive comments: TODO, FIXME, HACK, WARNING, NOTE, IMPORTANT, "do not modify", "must be", "required by", etc.
+- Check if any change violates guidance in those comments
+- Check if any comment is now stale/misleading due to the changes
+- Do NOT report: general lack of comments, style preferences
+- Reason format: `code comment says "<quote>"`
 
-    ## False Positive Patterns (do NOT report these)
-    <paste false-positives.md content>
+## Phase 3: Independent Scoring (Parallel Haiku)
 
-    ## Instructions
-    1-6 same as LOGIC. Additional:
-    - Read code from an attacker's perspective
-    - Trace data flow from user input to output/storage
+For **each issue** found in Phase 2, launch a parallel Haiku agent to score confidence.
 
-    ## Output Format
-    Same as LOGIC (ID prefix: SEC-)
-```
+Each scoring agent receives:
+- The full diff (or relevant excerpt around the issue)
+- The issue description and reason flagged
+- All CLAUDE.md files from Phase 1
+- `references/false-positives.md` content
 
-#### EDGE Reviewer
+Scoring agents should **use Read to verify** the actual code when needed (e.g., "does this variable exist?", "is this actually nullable?"). Don't just evaluate the description — check the code.
 
-Same prompt structure as LOGIC. Replace the checklist with reviewer-edge-cases.md:
+Give each scoring agent this rubric **verbatim**:
 
 ```
-Agent:
-  name: "edge-reviewer"
-  team_name: "code-review-team"
-  model: opus
-  prompt: |
-    You are the EDGE reviewer. You specialize in detecting boundary conditions,
-    empty inputs, concurrent access, and type mismatches.
+Score this issue on a scale from 0-100, indicating your level of confidence:
 
-    ## Diff
-    <paste full diff>
+- 0: Not confident at all. This is a false positive that doesn't stand up to
+  light scrutiny, or is a pre-existing issue.
+- 25: Somewhat confident. This might be a real issue, but may also be a false
+  positive. You weren't able to verify that it's real. If stylistic, it was
+  not explicitly called out in the relevant CLAUDE.md.
+- 50: Moderately confident. You were able to verify this is a real issue, but
+  it might be a nitpick or not happen very often in practice. Relative to the
+  rest of the changes, it's not very important.
+- 75: Highly confident. You double checked the issue, and verified that it is
+  very likely real and will be hit in practice. The existing approach is
+  insufficient. Very important and will directly impact functionality, or is
+  directly mentioned in the relevant CLAUDE.md.
+- 100: Absolutely certain. You double checked the issue, and confirmed that it
+  is definitely real and will happen frequently in practice. The evidence
+  directly confirms this.
 
-    ## Changed Files
-    <paste file list>
-
-    ## Project Rules
-    <paste CLAUDE.md summary>
-
-    ## Checklist
-    <paste reviewer-edge-cases.md content>
-
-    ## False Positive Patterns (do NOT report these)
-    <paste false-positives.md content>
-
-    ## Instructions
-    1-6 same as LOGIC. Additional:
-    - Systematically find "works on my machine" bugs
-    - Apply boundary values to each input parameter
-
-    ## Output Format
-    Same as LOGIC (ID prefix: EDGE-)
+For issues flagged due to CLAUDE.md instructions: double check that the CLAUDE.md
+actually calls out that issue specifically.
 ```
 
-#### REGRESSION Reviewer
+## Phase 4: Filter & Report
 
-Same prompt structure as LOGIC. Replace the checklist with reviewer-regression.md:
+### 4.1 Threshold
 
-```
-Agent:
-  name: "regression-reviewer"
-  team_name: "code-review-team"
-  model: opus
-  prompt: |
-    You are the REGRESSION reviewer. You specialize in detecting reverted fixes
-    and broken contracts using git blame/log (last 30 commits).
+Filter out issues scoring < 80. Record filtered count.
+If no issues remain, output "No issues found" report and **stop** (skip GitHub comment for PR).
 
-    ## Diff
-    <paste full diff>
+### 4.2 Deduplication
 
-    ## Changed Files
-    <paste file list>
+Merge findings on the same file within 5 lines:
+- Combine reviewer labels: `[Rules + Bug Scanner]`
+- Keep the higher confidence score
+- Merge details from both perspectives
 
-    ## Project Rules
-    <paste CLAUDE.md summary>
+### 4.3 Severity Classification
 
-    ## Checklist
-    <paste reviewer-regression.md content>
+| Confidence | Severity |
+|-----------|----------|
+| 90–100 | 🔴 Normal — must fix |
+| 80–89 | 🟡 Nit — recommended |
+| Any (unchanged lines) | 🟣 Pre-existing |
 
-    ## False Positive Patterns (do NOT report these)
-    <paste false-positives.md content>
+### 4.4 Report
 
-    ## Instructions
-    1-6 same as LOGIC. Additional:
-    - Run git blame and git log to analyze history context
-    - Check if deleted lines were added by bug-fix commits
-
-    ## Output Format
-    Same as LOGIC (ID prefix: REG-)
-```
-
-#### INFRA Reviewer
-
-Same prompt structure as LOGIC. Replace the checklist with reviewer-infra-config.md:
-
-```
-Agent:
-  name: "infra-reviewer"
-  team_name: "code-review-team"
-  model: opus
-  prompt: |
-    You are the INFRA reviewer. You specialize in detecting missing infrastructure
-    configuration, environment variable gaps, and deployment readiness issues.
-
-    ## Diff
-    <paste full diff>
-
-    ## Changed Files
-    <paste file list>
-
-    ## Project Rules
-    <paste CLAUDE.md summary>
-
-    ## Checklist
-    <paste reviewer-infra-config.md content>
-
-    ## False Positive Patterns (do NOT report these)
-    <paste false-positives.md content>
-
-    ## Instructions
-    1-6 same as LOGIC. Additional:
-    - Scan for new environment variable references and config file changes
-    - Cross-reference with IaC repos and secrets management when accessible
-    - Check if new external resources (storage, queues, databases, etc.) are provisioned
-    - Verify feature flags exist in management system
-    - Identify deployment ordering requirements
-
-    ## Output Format
-    Same as LOGIC (ID prefix: INFRA-)
-```
-
-### Waiting for Results
-
-Wait for completion messages from all five teammates. Messages are delivered automatically.
-
-## Phase 4: Cross-Validation
-
-**Condition**: Execute only when total findings >= 5. Skip to Phase 5 if fewer.
-
-1. Lead creates a summary table of all findings (ID, File, Severity, Confidence, Summary)
-2. Broadcast via SendMessage:
-
-```
-SendMessage:
-  type: "broadcast"
-  content: |
-    ## Cross-Validation Request
-
-    Below are all findings from all reviewers. From your specialized perspective,
-    challenge any finding you believe is a false positive.
-    Reply "no objections" if you have none.
-
-    <findings table>
-
-    Objection format:
-    - **Target ID**: ID of the challenged finding
-    - **Reason**: why you believe it is a false positive
-  summary: "Cross-validation request for all findings"
-```
-
-3. Wait for replies (treat unresponsive teammates as "no objections")
-4. Subtract **15 points** from confidence for any finding with objections
-5. Explicit "no objections" or no response counts as agreement
-
-## Phase 5: Verification, Dedup & CLAUDE.md Check
-
-Follow `verification-protocol.md`.
-
-### 5.1 Deduplication
-
-Merge findings on the same file with overlapping line ranges (within 5 lines):
-- Combine perspectives (e.g., `[LOGIC + SECURITY]`)
-- Keep the higher confidence
-- Merge details from both
-
-### 5.2 False Positive Filtering
-
-Final check against `false-positives.md` patterns. Remove matches.
-
-### 5.3 CLAUDE.md Compliance Check
-
-Lead checks diff against CLAUDE.md / REVIEW.md rules and adds violations as findings.
-
-### 5.4 Confidence Threshold
-
-Filter out findings with confidence < 80. Record filtered count.
-
-### 5.5 Severity Classification
-
-Classify remaining findings:
-
-| Marker | Level | Criteria |
-|--------|-------|----------|
-| 🔴 | Normal | Must fix before merge (confidence 90-100) |
-| 🟡 | Nit | Recommended but non-blocking (confidence 80-89) |
-| 🟣 | Pre-existing | Bug not introduced by this change |
-
-## Phase 6: Report Generation
-
-Output a structured markdown report in the session language.
+Output structured markdown in the session language:
 
 ```markdown
 ## Code Review Report
 
-**Target**: PR #42 / Local uncommitted changes (staged/unstaged/both)
+**Target**: PR #42 / Local changes (staged/unstaged/both)
 **Files reviewed**: N files, M lines changed
-**Reviewers**: LOGIC, SECURITY, EDGE, REGRESSION, INFRA
-**Cross-validation**: Performed / Skipped (< 5 findings)
+**Reviewers**: Rules, Bug Scanner, History, PR Archaeology, Comments
 
 ### 🔴 Normal (N issues)
 
-1. **[LOGIC]** description
-   - File: `path/to/file.ts:45`
+1. **[Rules Auditor]** description (CLAUDE.md says "<...>")
+   - File: `path/to/file:45`
    - Confidence: 95
    - Detail and fix suggestion
 
-2. **[LOGIC + SECURITY]** merged finding example
-   - File: `path/to/file.ts:23`
+2. **[Bug Scanner + History]** merged finding (bug due to <...>)
+   - File: `path/to/file:23`
    - Confidence: 92
-   - LOGIC: missing null check / SECURITY: unvalidated input
+   - Bug Scanner: description / History: regression evidence
 
 ### 🟡 Nit (N issues)
 ...
@@ -369,46 +222,62 @@ Output a structured markdown report in the session language.
 ...
 
 ### Summary
-- Normal: N issues
-- Nit: N issues
-- Pre-existing: N issues
-- CLAUDE.md compliance: No violations / N violations
+- Normal: N | Nit: N | Pre-existing: N
 - Filtered: N issues (confidence < 80)
-- Cross-validated: N issues had objections (-15 confidence each)
 ```
 
-If zero findings:
+Zero findings:
 
 ```markdown
 ## Code Review Report
 
-**Target**: PR #42 / Local uncommitted changes
+**Target**: PR #42 / Local changes
 **Files reviewed**: N files, M lines changed
-**Reviewers**: LOGIC, SECURITY, EDGE, REGRESSION, INFRA
 
 No issues found. All reviewers confirmed the changes look correct.
 ```
 
-## Phase 7: Cleanup
+### 4.5 GitHub Comment (PR only)
 
-1. Send shutdown_request to each teammate:
+1. Re-check eligibility (Haiku) — PR still open, no newer review from you
+2. Post via `gh pr comment`
+3. Link format — **full git SHA required** (no bash interpolation):
+   ```
+   https://github.com/owner/repo/blob/<full-sha>/path/file.ts#L44-L47
+   ```
+   - Include at least 1 line of context before/after in the line range
+   - SHA must be the full 40-char hash, not abbreviated
+4. Footer:
+   ```
+   🤖 Generated with [Claude Code](https://claude.ai/code)
 
-```
-SendMessage:
-  type: "shutdown_request"
-  recipient: "logic-reviewer"
-  content: "Review complete. Shutting down."
-```
+   <sub>- If this code review was useful, please react with 👍. Otherwise, react with 👎.</sub>
+   ```
 
-2. Repeat for all five (logic-reviewer, security-reviewer, edge-reviewer, regression-reviewer, infra-reviewer)
+## False Positive Examples
+
+These are false positives for Phases 2 and 3 — do NOT report:
+
+- Pre-existing issues (bugs on lines not modified in this change)
+- Issues a linter, typechecker, or compiler would catch (imports, type errors, formatting, broken tests)
+- Pedantic nitpicks that a senior engineer wouldn't call out
+- General quality issues (test coverage, general security, documentation) unless required by CLAUDE.md
+- Issues called out in CLAUDE.md but silenced in code (lint-ignore, type-ignore)
+- Intentional functionality changes directly related to the broader change
+- Real issues, but on lines the user did not modify
+
+Additional patterns are in `references/false-positives.md`.
 
 ## Error Handling
 
-- **Agent Teams launch failure**: Show error and suggest alternatives:
-  ```
-  Agent Teams failed to start. Try these alternatives:
-  - /code-review (simple review)
-  - /pr-review-toolkit:review-pr (detailed review)
-  ```
-- **Individual reviewer failure**: Skip failed reviewer, generate report from remaining results. Note failure in Summary.
+- **Individual reviewer failure**: Skip failed reviewer, note in Summary, generate report from remaining
 - **Diff retrieval failure**: Show error and stop
+- **`gh` unavailable**: Skip PR Archaeologist, note in Summary
+- **No issues above threshold**: Report "No issues found" — do not post empty review
+
+## Notes
+
+- Do NOT check build signal or attempt to build/typecheck. These run separately in CI.
+- Use `gh` for GitHub interactions, not web fetch
+- Make a todo list before starting
+- Cite and link every issue (if referring to CLAUDE.md, link it)
