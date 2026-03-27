@@ -196,14 +196,12 @@ fi
 ORIGINAL_INPUT=$(echo "$INPUT" | jq -c '.tool_input')
 UPDATED_INPUT=$(echo "$ORIGINAL_INPUT" | jq --arg cmd "$REWRITTEN" '.command = $cmd')
 
-# Output the rewrite instruction
+# Output the rewrite instruction (permission decision is left to Claude Code)
 jq -n \
   --argjson updated "$UPDATED_INPUT" \
   '{
     "hookSpecificOutput": {
       "hookEventName": "PreToolUse",
-      "permissionDecision": "allow",
-      "permissionDecisionReason": "RTK auto-rewrite",
       "updatedInput": $updated
     }
   }'
