@@ -110,7 +110,7 @@ set softtabstop=0
 set shiftwidth=4
 set expandtab
 
-"" Map leader to ,
+"" Map leader to <Space>
 let mapleader='\<Space>'
 
 "" Enable hidden buffers
