@@ -90,20 +90,9 @@ If something goes sideways, stop and re-plan. Do not keep pushing forward.
 
 **Verification**: Check symlinks and script permissions before marking work complete.
 
+**When modifying this repository**: Maintain consistency with existing shell aliases and functions. Test `install.sh` on the target platform before committing.
+
 ### Task Management
 
 - Update `tasks/lessons.md` after any user correction
 - Use `tasks/todo.md` for cross-session TODO items (TaskCreate はセッション内のみ)
-
-## Important Guidelines
-
-### When modifying this repository:
-- Respect the layered structure: `configs/` for apps, `shell/` for shared shell, `platform/` for OS-specific
-- Maintain consistency with existing shell aliases and functions
-- Update `install.sh` when adding new configuration files that need symlinks
-- Test `install.sh` on the target platform before committing
-- Preserve file permissions (especially for executable scripts)
-
-### Cursor AI Rules
-
-See `configs/cursor/rules/global.mdc` for Cursor-specific constraints. Cursor rules are separate from Claude Code instructions and do not need to be kept in sync.
