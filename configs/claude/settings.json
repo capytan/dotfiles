@@ -1,5 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "respectGitignore": true,
   "cleanupPeriodDays": 365,
   "env": {
     "MAX_THINKING_TOKENS": "31999",
@@ -442,8 +443,8 @@
           {
             "type": "command",
             "command": "bash ~/.claude/hooks/tmux-session-end-usage.sh",
-            "async": true,
-            "timeout": 10000
+            "timeout": 10000,
+            "async": true
           }
         ]
       }
@@ -491,9 +492,8 @@
     "claude-md-management@claude-plugins-official": true,
     "superpowers@claude-plugins-official": true,
     "playwright@claude-plugins-official": true,
-    "ruby-lsp@claude-plugins-official": true,
-    "pagerduty@claude-plugins-official": true,
-    "terraform@claude-plugins-official": true
+    "ruby-lsp@claude-plugins-official": false,
+    "terraform@claude-plugins-official": false
   },
   "extraKnownMarketplaces": {
     "agent-plugins-for-aws": {
@@ -504,10 +504,9 @@
     }
   },
   "language": "ja",
-  "autoMemoryEnabled": true,
-  "respectGitignore": true,
   "alwaysThinkingEnabled": true,
   "effortLevel": "high",
+  "autoMemoryEnabled": true,
   "additionalDirectories": [
     "~/ghq",
     "~/dev"
