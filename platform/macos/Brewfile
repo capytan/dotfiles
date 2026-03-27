@@ -35,6 +35,9 @@ brew "hyperfine" # command-line benchmarking tool
 brew "vim"
 brew "neovim"
 
+# Prompt
+brew "starship"
+
 # Shells
 brew "zsh"
 brew "bash"

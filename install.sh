@@ -77,6 +77,8 @@ info "Setting up tmux configuration..."
 link_file "$DOTFILES_DIR/configs/tmux/tmux.conf"      "$HOME/.config/tmux/tmux.conf"
 link_file "$DOTFILES_DIR/configs/tmux/keybindings.txt" "$HOME/.config/tmux/keybindings.txt"
 link_file "$DOTFILES_DIR/configs/tmux/tmux-start.sh"   "$HOME/.config/tmux/tmux-start.sh"
+link_file "$DOTFILES_DIR/configs/tmux/scripts/claude-usage-status.sh" \
+  "$HOME/.config/tmux/scripts/claude-usage-status.sh"
 
 # =============================================================================
 # 6. Alacritty configuration
@@ -137,6 +139,8 @@ if [[ "$PLATFORM" == "macos" ]]; then
     "$HOME/Library/Application Support/Code/User/settings.json"
   link_file "$DOTFILES_DIR/configs/vscode/extensions.json" \
     "$HOME/Library/Application Support/Code/User/extensions.json"
+  link_file "$DOTFILES_DIR/configs/vscode/extensions.json" \
+    "$HOME/Library/Application Support/Cursor/User/extensions.json"
 
   # Homebrew packages: platform/macos/Brewfile is for reference only
   # Run manually if needed: brew bundle --file=platform/macos/Brewfile
@@ -179,10 +183,10 @@ for entry in "${LINKS[@]}"; do
   src="${entry##* -> }"
   if [[ -L "$dst" && "$(readlink "$dst")" == "$src" ]]; then
     echo -e "  ${GREEN}OK${NC}  $dst"
-    ((PASS++))
+    PASS=$((PASS + 1))
   else
     echo -e "  ${RED}NG${NC}  $dst"
-    ((FAIL++))
+    FAIL=$((FAIL + 1))
   fi
 done
 
