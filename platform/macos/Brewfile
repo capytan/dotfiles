@@ -5,6 +5,7 @@ brew "git-secrets"
 brew "tig"
 brew "lazygit"
 brew "ghq"
+brew "k1LoW/tap/git-wt"
 
 # Terminal
 cask "ghostty"

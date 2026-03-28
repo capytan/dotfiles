@@ -5,3 +5,8 @@
 if [[ -x "$HOME/.local/bin/mise" ]]; then
   eval "$($HOME/.local/bin/mise activate zsh)"
 fi
+
+# git-wt (worktree manager)
+if command -v git-wt &>/dev/null; then
+  eval "$(git wt --init zsh)"
+fi
