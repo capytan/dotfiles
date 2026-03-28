@@ -1,7 +1,5 @@
 #!/usr/bin/env zsh
 # Thin loader - sources numbered modules then platform-specific config
-# Kiro CLI pre block. Keep at the top of this file.
-[[ -f "${HOME}/Library/Application Support/kiro-cli/shell/zshrc.pre.zsh" ]] && builtin source "${HOME}/Library/Application Support/kiro-cli/shell/zshrc.pre.zsh"
 
 DOTFILES_DIR="${DOTFILES_DIR:-$HOME/dotfiles}"
 
@@ -17,6 +15,3 @@ done
 # Machine-specific local config (gitignored)
 [[ -f "$DOTFILES_DIR/shell/zsh/local.zsh" ]] && \
   source "$DOTFILES_DIR/shell/zsh/local.zsh"
-
-# Kiro CLI post block. Keep at the bottom of this file.
-[[ -f "${HOME}/Library/Application Support/kiro-cli/shell/zshrc.post.zsh" ]] && builtin source "${HOME}/Library/Application Support/kiro-cli/shell/zshrc.post.zsh"
