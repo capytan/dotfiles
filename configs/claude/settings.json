@@ -493,7 +493,8 @@
     "superpowers@claude-plugins-official": true,
     "playwright@claude-plugins-official": true,
     "ruby-lsp@claude-plugins-official": false,
-    "terraform@claude-plugins-official": false
+    "terraform@claude-plugins-official": false,
+    "hookify@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "agent-plugins-for-aws": {
