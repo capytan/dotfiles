@@ -44,6 +44,7 @@
       "Bash(git blame *)",
       "Bash(git cherry-pick *)",
       "Bash(git worktree *)",
+      "Bash(git wt *)",
       "Bash(git ls-files *)",
       "Bash(git shortlog *)",
       "// Git -C (read-only, cross-repo)",
@@ -455,6 +456,28 @@
           {
             "type": "command",
             "command": "bash ~/.claude/hooks/tmux-stop-failure.sh"
+          }
+        ]
+      }
+    ],
+    "WorktreeCreate": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/worktree-git-wt.sh",
+            "timeout": 30000
+          }
+        ]
+      }
+    ],
+    "WorktreeRemove": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/worktree-git-wt.sh",
+            "timeout": 30000
           }
         ]
       }
