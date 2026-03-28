@@ -3,7 +3,10 @@
 source "$(dirname "$0")/tmux-lib.sh"
 tmux_guard || exit 0
 CURRENT=$(tmux display-message -p '#W')
-# ✅ は保護（Stop後にNotificationが来るケースを考慮）
-[[ "$CURRENT" == "✅"* ]] && exit 0
+# ✅ は保護（Stop後にNotificationが来るケースを考慮）— ただし bell は鳴らす
+if [[ "$CURRENT" == "✅"* ]]; then
+    printf '\a'
+    exit 0
+fi
 tmux_set_status "⚠️" "$(tmux_get_clean_name "$CURRENT")"
 printf '\a'
