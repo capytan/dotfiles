@@ -527,6 +527,7 @@
       }
     }
   },
+  "language": "ja",
   "spinnerVerbs": {
     "mode": "replace",
     "verbs": [
@@ -637,7 +638,6 @@
       "意識をクラウドにアップロードしています"
     ]
   },
-  "language": "ja",
   "alwaysThinkingEnabled": true,
   "effortLevel": "high",
   "autoMemoryEnabled": true,
