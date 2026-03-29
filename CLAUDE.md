@@ -31,7 +31,8 @@ tmux source ~/.config/tmux/tmux.conf      # Reload tmux (inside tmux)
 - `configs/nvim/` and `configs/vim/` are legacy (vim-plug era) — do not modify
 - `configs/tmux/tmux-start.sh` sources `tmux-start.local.sh` for machine-specific window layout
 - Claude Code hooks use shared functions from `configs/claude/hooks/tmux-lib.sh`
+- `configs/claude/CLAUDE.md` is symlinked to `~/.claude/CLAUDE.md` (global rules for all projects) — separate scope from this repo's `./CLAUDE.md`, not duplication
 
 ## Task Management
 
-- Use `todo.md` for cross-session TODO items (TaskCreate is session-scoped only)
+- Use `todo.md` at project root for cross-session TODO items (TaskCreate is session-scoped only)
