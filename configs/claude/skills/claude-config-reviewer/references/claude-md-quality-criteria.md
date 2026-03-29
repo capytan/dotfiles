@@ -116,7 +116,7 @@ Each hook-convertible rule: -1 pt (max -5 pts). Note: keeping the guidance in CL
 
 `[official]` + `[custom]` Does the file contain known problem patterns?
 
-See [anti-patterns.md](anti-patterns.md) for the full catalog.
+See [claude-md-anti-patterns.md](claude-md-anti-patterns.md) for the full catalog.
 
 **10 pts**: No anti-patterns
 **7 pts**: 1-2 Minor anti-patterns

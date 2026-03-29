@@ -206,6 +206,8 @@ echo "=== SKILL FULL CONTENT (sample: up to 5 skills, 80 lines each) ==="
 done
 ```
 
+> For detailed SKILL.md/agent scoring with research-backed criteria, use the `claude-config-reviewer` skill.
+
 ## Gotchas
 
 Before interpreting Step 1 output, check these known failure modes.
