@@ -87,6 +87,15 @@ go test -race ./...
 govulncheck ./...
 ```
 
+## Review Output Format
+
+```text
+[SEVERITY] Issue title
+File: path/to/file.go:42
+Issue: Description
+Fix: What to change
+```
+
 ## Approval Criteria
 
 - **Approve**: No CRITICAL or HIGH issues

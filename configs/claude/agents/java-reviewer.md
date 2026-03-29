@@ -104,6 +104,14 @@ grep -rn "FetchType.EAGER" src/main/java --include="*.java"
 ```
 Read `pom.xml`, `build.gradle`, or `build.gradle.kts` to determine the build tool and Spring Boot version before reviewing.
 
+## Review Output Format
+```text
+[SEVERITY] Issue title
+File: path/to/File.java:42
+Issue: Description
+Fix: What to change
+```
+
 ## Approval Criteria
 - **Approve**: No CRITICAL or HIGH issues
 - **Warning**: MEDIUM issues only
