@@ -5,12 +5,21 @@ description: |
   Build and compilation error resolution specialist. Use PROACTIVELY when build fails or type errors occur. Fixes build errors only with minimal diffs, no architectural edits.
 
   <example>
-  User: "I'm getting 15 TypeScript type errors after upgrading the SDK. Can you fix them?"
-  Action: Invoke build-error-resolver to collect all errors, categorize by type, and apply minimal fixes (type annotations, import updates, null checks) until the build passes.
+  Context: User is facing multiple build errors after an upgrade.
+  user: "I'm getting 15 TypeScript type errors after upgrading the SDK. Can you fix them?"
+  assistant: "I'll use the build-error-resolver agent to collect all errors, categorize by type, and apply minimal fixes until the build passes."
+  <commentary>
+  Explicit trigger: user reports build or type errors that need fixing.
+  </commentary>
   </example>
 
   <example>
-  The assistant runs `cargo build` and it fails with 3 missing trait implementation errors. It proactively invokes build-error-resolver to diagnose and fix each error with minimal diffs rather than attempting broader refactoring.
+  Context: The assistant runs `cargo build` and it fails with trait implementation errors.
+  user: "Implement the feature"
+  assistant: [after build fails] "Let me use the build-error-resolver agent to diagnose and fix these 3 trait errors with minimal diffs."
+  <commentary>
+  Proactive trigger: auto-invoke when build fails during implementation work.
+  </commentary>
   </example>
 tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
 model: sonnet
@@ -155,11 +164,10 @@ For each error:
 
 ## When NOT to Use
 
-- Code needs refactoring → use `refactor-cleaner` or `code-simplifier`
 - Architecture changes needed → use `architect`
 - New features required → use `planner`
-- Tests failing → use `tdd-guide`
-- Security issues → use `security-reviewer`
+- Tests failing (not build errors) → use `tdd-guide`
+- Security vulnerabilities → use `security-reviewer`
 
 ---
 

@@ -5,12 +5,21 @@ description: |
   Test-Driven Development specialist enforcing write-tests-first methodology. Use PROACTIVELY when writing new features, fixing bugs, or refactoring code. Ensures 80%+ test coverage.
 
   <example>
-  User: "Help me write tests for the new caching layer before I implement it."
-  Action: Invoke tdd-guide to define test cases covering cache hit/miss, TTL expiration, eviction, and concurrent access, then guide the Red-Green-Refactor cycle.
+  Context: User wants to write tests before implementing a feature.
+  user: "Help me write tests for the new caching layer before I implement it."
+  assistant: "I'll use the tdd-guide agent to define test cases covering cache hit/miss, TTL expiration, eviction, and concurrent access."
+  <commentary>
+  Explicit trigger: user requests test-first development guidance.
+  </commentary>
   </example>
 
   <example>
-  The assistant is about to implement a new webhook handler feature. Before writing any implementation code, it proactively invokes tdd-guide to establish failing tests for payload validation, retry logic, and error handling.
+  Context: The assistant is about to implement a new webhook handler feature.
+  user: "Implement the webhook handler for Stripe events"
+  assistant: "Let me use the tdd-guide agent to establish failing tests for payload validation and retry logic before writing implementation code."
+  <commentary>
+  Proactive trigger: auto-invoke before implementing features to enforce tests-first methodology.
+  </commentary>
   </example>
 tools: ["Read", "Write", "Edit", "Bash", "Grep"]
 model: sonnet
@@ -51,31 +60,9 @@ Remove duplication, improve names, optimize — tests must stay green.
 # Required: 80%+ branches, functions, lines, statements
 ```
 
-## Test Types Required
+## Test Coverage Requirements
 
-| Type | What to Test | When |
-|------|-------------|------|
-| **Unit** | Individual functions in isolation | Always |
-| **Integration** | API endpoints, database operations | Always |
-| **E2E** | Critical user flows | Critical paths |
-
-## Edge Cases You MUST Test
-
-1. **Null/Undefined** input
-2. **Empty** arrays/strings
-3. **Invalid types** passed
-4. **Boundary values** (min/max)
-5. **Error paths** (network failures, DB errors)
-6. **Race conditions** (concurrent operations)
-7. **Large data** (performance with 10k+ items)
-8. **Special characters** (Unicode, emojis, SQL chars)
-
-## Test Anti-Patterns to Avoid
-
-- Testing implementation details (internal state) instead of behavior
-- Tests depending on each other (shared state)
-- Asserting too little (passing tests that don't verify anything)
-- Not mocking external dependencies
+Always cover: null/empty/invalid input, boundary values, error paths, and race conditions. Test behavior, not implementation. Each test must be independent — no shared mutable state.
 
 ## Language-Specific Test Commands
 
@@ -90,16 +77,4 @@ Remove duplication, improve names, optimize — tests must stay green.
 | C++ | `ctest` | `gcov` or `llvm-cov` |
 | Dart/Flutter | `flutter test` | `flutter test --coverage` |
 
-## Quality Checklist
-
-- [ ] All public functions have unit tests
-- [ ] All API endpoints have integration tests
-- [ ] Critical user flows have E2E tests
-- [ ] Edge cases covered (null, empty, invalid)
-- [ ] Error paths tested (not just happy path)
-- [ ] Mocks used for external dependencies
-- [ ] Tests are independent (no shared state)
-- [ ] Assertions are specific and meaningful
-- [ ] Coverage is 80%+
-
-**Remember**: Write the test first. If you catch yourself writing implementation before the test, stop and reverse course.
+**Remember**: Write the test first. If you catch yourself writing implementation before the test, stop and reverse course. Target 80%+ coverage.

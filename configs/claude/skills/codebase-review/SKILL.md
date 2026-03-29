@@ -191,24 +191,7 @@ Each scoring agent receives:
 
 Scoring agents should **use Read to verify** the actual code when needed. Don't just evaluate the description — check the code.
 
-Give each scoring agent this rubric **verbatim**:
-
-```
-Score this finding on a scale from 0-100, indicating your level of confidence:
-
-- 0: Not confident at all. False positive that doesn't stand up to light scrutiny.
-- 25: Somewhat confident. Might be real, but may be false positive. Couldn't verify.
-  If stylistic, not explicitly called out in CLAUDE.md.
-- 50: Moderately confident. Verified as real, but might be a nitpick or unlikely
-  in practice. Not very important relative to the rest of the codebase.
-- 75: Highly confident. Double-checked, very likely real and will be hit in practice.
-  Very important or directly mentioned in CLAUDE.md.
-- 100: Absolutely certain. Confirmed real, will happen frequently. Evidence directly
-  confirms this.
-
-For CLAUDE.md-flagged findings: double check that CLAUDE.md actually calls out
-this issue specifically.
-```
+Give each scoring agent the rubric from `references/scoring-rubric.md` **verbatim**.
 
 ## Phase 4: Filter & Report
 

@@ -5,12 +5,21 @@ description: |
   Expert planning specialist for complex features and refactoring. Use PROACTIVELY when users request feature implementation, architectural changes, or complex refactoring.
 
   <example>
-  User: "Plan how to migrate our REST API to GraphQL without breaking existing clients."
-  Action: Invoke planner to create a phased migration plan with dependency analysis, risk mitigation, and incremental delivery milestones.
+  Context: User requests planning for a complex migration.
+  user: "Plan how to migrate our REST API to GraphQL without breaking existing clients."
+  assistant: "I'll use the planner agent to create a phased migration plan with dependency analysis and risk mitigation."
+  <commentary>
+  Explicit trigger: user requests a detailed implementation plan for a complex task.
+  </commentary>
   </example>
 
   <example>
-  The assistant is asked to implement a multi-tenant billing system spanning several services. Before touching code, it proactively invokes planner to break the work into phases, identify cross-service dependencies, and define testing strategy.
+  Context: The assistant is asked to implement a multi-tenant billing system spanning several services.
+  user: "Implement a multi-tenant billing system"
+  assistant: "Before touching code, let me use the planner agent to break the work into phases and identify cross-service dependencies."
+  <commentary>
+  Proactive trigger: auto-invoke before implementing features that span multiple services or require phased delivery.
+  </commentary>
   </example>
 tools: ["Read", "Grep", "Glob"]
 model: opus
@@ -137,26 +146,8 @@ When the feature is large, break it into independently deliverable phases:
 
 Each phase should be mergeable independently.
 
-## Best Practices
+## Plan Quality Checks
 
-1. **Be Specific**: Use exact file paths, function names, variable names
-2. **Consider Edge Cases**: Think about error scenarios, null values, empty states
-3. **Minimize Changes**: Prefer extending existing code over rewriting
-4. **Maintain Patterns**: Follow existing project conventions
-5. **Enable Testing**: Structure changes to be easily testable
-6. **Think Incrementally**: Each step should be verifiable
-7. **Document Decisions**: Explain why, not just what
-
-## Red Flags to Check
-
-- Large functions (>50 lines)
-- Deep nesting (>4 levels)
-- Duplicated code
-- Missing error handling
-- Hardcoded values
-- Missing tests
-- Plans with no testing strategy
-- Steps without clear file paths
-- Phases that cannot be delivered independently
+Every plan must include: exact file paths, testing strategy, risk assessment, and independently deliverable phases. Flag plans with vague steps ("properly handle errors") or missing file paths.
 
 **Remember**: A great plan is specific, actionable, and considers both the happy path and edge cases.
