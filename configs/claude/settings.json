@@ -215,7 +215,12 @@
       "Bash(tmux show-window-options *)",
       "Bash(printf *)",
       "// Skills",
-      "Skill(commit-commands:commit)"
+      "Skill(commit-commands:commit)",
+      "// Skill & agent files (cross-project read)",
+      "Read(~/.claude/skills/**)",
+      "Read(~/.claude/agents/**)",
+      "Glob(~/.claude/skills/**)",
+      "Glob(~/.claude/agents/**)"
     ],
     "ask": [
       "// System operations",
