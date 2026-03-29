@@ -1,6 +1,17 @@
 ---
 name: planner
-description: Expert planning specialist for complex features and refactoring. Use PROACTIVELY when users request feature implementation, architectural changes, or complex refactoring.
+color: green
+description: |
+  Expert planning specialist for complex features and refactoring. Use PROACTIVELY when users request feature implementation, architectural changes, or complex refactoring.
+
+  <example>
+  User: "Plan how to migrate our REST API to GraphQL without breaking existing clients."
+  Action: Invoke planner to create a phased migration plan with dependency analysis, risk mitigation, and incremental delivery milestones.
+  </example>
+
+  <example>
+  The assistant is asked to implement a multi-tenant billing system spanning several services. Before touching code, it proactively invokes planner to break the work into phases, identify cross-service dependencies, and define testing strategy.
+  </example>
 tools: ["Read", "Grep", "Glob"]
 model: opus
 ---
