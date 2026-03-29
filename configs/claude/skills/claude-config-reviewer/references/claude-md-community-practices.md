@@ -187,7 +187,7 @@ Boris runs 5 terminal instances + 5-10 web sessions simultaneously, each in its 
 
 ## Incorporation into Scoring Criteria
 
-When a community insight is reflected in `quality-criteria.md`, record it here.
+When a community insight is reflected in `claude-md-quality-criteria.md`, record it here.
 
 | Date | Insight | Reflected In | Credibility |
 |------|---------|--------------|-------------|
