@@ -118,71 +118,60 @@ Also check: `~/.claude/agents/*.md`
 
 ---
 
-## Phase 2: Quality Assessment
+## Phase 2: Quality Assessment (Parallel Subagents)
 
-Classify discovered files into three pools and apply the appropriate criteria to each.
+Classify discovered files into three pools (CLAUDE.md / SKILL.md / Agent).
+For each non-empty pool, dispatch a subagent with its own context window.
+Skip empty pools (mark as N/A in the report).
 
-### CLAUDE.md Assessment
+### Dispatch Process
 
-Evaluate against `references/claude-md-quality-criteria.md`.
-See [references/claude-md-quality-criteria.md](references/claude-md-quality-criteria.md) for full rubric.
+For each non-empty pool, in a **single message with parallel Agent tool calls**:
 
-| Category | Points | Summary |
-|----------|--------|---------|
-| A. Token Efficiency | 20 | Line count thresholds, inferable content detection |
-| B. Commands & Workflows | 15 | Build/test/deploy coverage |
-| C. Architecture Clarity | 15 | Structure explanation, module relationships |
-| D. Non-Obvious Patterns | 15 | Gotchas, workarounds |
-| E. Actionability | 15 | Copy-paste ready, concrete instructions |
-| F. Anti-patterns | 10 | See `references/claude-md-anti-patterns.md` |
-| G. Behavioral Impact | 10 | Does each section actually change Claude's decisions? |
+1. Read the assessor definition from this skill's `agents/` directory
+2. Compose the Agent tool prompt by combining:
+   - The full assessor file content (role, criteria paths, process, output format)
+   - The list of file paths to review (from Phase 1 Discovery)
+   - Relevant Discovery context (file classifications, related settings)
+3. Dispatch via Agent tool
 
-### SKILL.md Assessment
+### Assessors
 
-Evaluate against `references/skill-quality-criteria.md`.
-See [references/skill-quality-criteria.md](references/skill-quality-criteria.md) for full rubric.
+| Pool | Assessor File | Criteria | Categories |
+|------|--------------|----------|------------|
+| CLAUDE.md | `agents/claude-md-assessor.md` | `references/claude-md-quality-criteria.md` | A-G (100 pts) |
+| SKILL.md | `agents/skill-assessor.md` | `references/skill-quality-criteria.md` | A-H (100 pts) |
+| Agent | `agents/agent-assessor.md` | `references/agent-quality-criteria.md` | A-G (100 pts) |
 
-| Category | Points | Summary |
-|----------|--------|---------|
-| A. Frontmatter Correctness | 15 | name/description/tools validation |
-| B. Conciseness & Token Cost | 15 | Under 500 lines, no over-explanation |
-| C. Degrees of Freedom | 10 | Constraint level matches task fragility |
-| D. Structure & Progressive Disclosure | 15 | Logical layout, reference splitting |
-| E. Content Quality | 15 | No time-sensitive info, consistent terms, actionable |
-| F. Workflows & Error Handling | 10 | Checklists, feedback loops, recovery |
-| G. Anti-patterns | 10 | See `references/skill-anti-patterns.md` |
-| H. Behavioral Impact | 10 | Does each section change Claude's decisions? |
+Each assessor reads its own criteria and anti-patterns files, scores every file, runs codebase cross-reference checks, and returns structured results.
 
-### Agent Assessment
+### Output Contract
 
-Evaluate against `references/agent-quality-criteria.md`.
-See [references/agent-quality-criteria.md](references/agent-quality-criteria.md) for full rubric.
+Each subagent returns structured markdown containing:
+- Per-file score table (Category | Score | Max | Findings)
+- Per-file issues (severity-tagged) and strengths
+- Pool Summary (file count, average score, issue counts by severity)
 
-| Category | Points | Summary |
-|----------|--------|---------|
-| A. Frontmatter Correctness | 15 | name/model/color/tools validation |
-| B. Description & Triggering | 20 | Example count, coverage, phrasing variety |
-| C. System Prompt Quality | 25 | Length, second-person style, structure |
-| D. Tool Restriction | 10 | Least privilege assessment |
-| E. Anti-patterns | 10 | See `references/agent-anti-patterns.md` |
-| F. Behavioral Impact | 10 | Effective autonomous behavior guidance |
-| G. Cross-Reference Consistency | 10 | Described capabilities match listed tools |
+### Error Handling
 
-### Codebase Cross-Reference
-
-Go beyond desk review — verify against the actual codebase:
-
-- Do documented commands exist in `package.json`, `Makefile`, `Taskfile`, etc.?
-- Do referenced file paths actually exist? (check with Glob)
-- Does architecture description match actual directory structure?
-- For skills: do referenced scripts/files exist?
-- For agents: do tools in frontmatter match system prompt usage?
+- If a subagent fails or times out: note the failure, continue with remaining subagents
+- If a file cannot be read: skip it, record the skip in the pool summary
+- All dispatched subagents must complete before proceeding to Phase 3
 
 ---
 
 ## Phase 3: Report
 
 **Always output the report before making any changes.** Let the user understand the situation first.
+
+### Aggregating Subagent Results
+
+1. Collect structured output from all dispatched subagents
+2. For failed subagents, note the pool as "Assessment failed" in the report
+3. For skipped (empty) pools, note as "N/A — no files discovered"
+4. Compile per-file assessments into the report template below
+5. Read `references/cross-artifact-checks.md` and run all cross-artifact checks using the combined results
+6. Generate the Cross-Artifact Summary
 
 ### Per-Type Report Template
 
