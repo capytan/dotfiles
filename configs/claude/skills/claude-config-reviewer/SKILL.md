@@ -1,14 +1,8 @@
 ---
 name: claude-config-reviewer
 description: |
-  Review and improve Claude Code configuration files: CLAUDE.md, SKILL.md, and agent definitions.
-  Self-evolving skill that researches official docs and community insights on each run.
-  Use when: "review CLAUDE.md", "review my skill", "review agent", "audit configs",
-  "improve CLAUDE.md", "check SKILL.md quality", "validate agent definition",
-  "optimize project memory", or any CLAUDE.md/skill/agent quality question.
-  Covers quality assessment, fix proposals, updates, and modularization suggestions.
-  Also handles new file creation and health checks on existing configurations.
-  Use this skill whenever CLAUDE.md, SKILL.md, or agent definitions are mentioned.
+  Review CLAUDE.md, SKILL.md, and agent definitions with researched 100-point scoring.
+  Use when: "review CLAUDE.md", "review skill", "review agent", "audit configs", "check quality".
 tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch, WebFetch
 ---
 
@@ -51,83 +45,23 @@ Reference files live in the `references/` directory.
 
 #### Step 1: Official Documentation
 
-1. **context7 MCP**
-   - `resolve-library-id` to find "claude code"
-   - `query-docs` for "CLAUDE.md best practices", "project memory", "skills", "agents", etc.
-   - Extract sections related to CLAUDE.md, skills, and agent definitions
-
-2. **Anthropic website**
-   - `WebSearch` for "claude code CLAUDE.md best practices site:docs.anthropic.com"
-   - `WebSearch` for "claude code SKILL.md best practices", "claude code agent definition"
-   - Check official blog and changelog for recent changes
-   - `WebFetch` specific pages as needed
+1. **context7 MCP** — `resolve-library-id` for "claude code", then `query-docs` for CLAUDE.md, skills, and agents
+2. **Anthropic website** — `WebSearch` for latest best practices on `code.claude.com` and `docs.anthropic.com`
+3. **Official skill docs** — `WebFetch` https://code.claude.com/docs/en/skills and https://code.claude.com/docs/en/sub-agents
 
 #### Step 2: Community Insights
 
-Research practices with community traction, even if not in official docs.
-
-1. **GitHub**
-   - `WebSearch` for "CLAUDE.md tips OR best practices OR template site:github.com"
-   - `WebSearch` for "SKILL.md best practices", "claude code agent .md"
-   - Collect well-starred repos' configuration files as reference examples
-   - Extract useful patterns from Claude Code issues/discussions
-
-2. **Blogs, articles, forums**
-   - `WebSearch` for "CLAUDE.md writing guide", "claude code skill authoring", etc.
-   - Collect practical insights from tech blogs, Zenn, Qiita, dev.to, Reddit, etc.
-   - Judge traction by bookmark count, likes, shares
-
-3. **Awesome lists & curated resources**
-   - `WebSearch` for "awesome claude code", "claude code resources"
-   - Extract configuration-related insights from curated collections
+Research practices with community traction. Sources: GitHub (starred repos, issues), tech blogs, Zenn, Qiita, dev.to, Reddit. Judge by stars, likes, citations.
 
 #### Credibility Tiers
 
-Tag each piece of information with a credibility tier:
+Tag findings per credibility tier defined in each reference file's header (`[official]`, `[semi-official]`, `[community:high]`, `[community:mid]`, `[community:low]`). Only `[community:mid]` and above feed into scoring criteria.
 
-| Tier | Criteria | Tag |
-|------|----------|-----|
-| **Official** | Anthropic official docs or blog | `[official]` |
-| **Semi-official** | Anthropic employee's personal posts, official repo comments | `[semi-official]` |
-| **Community (high)** | GitHub 50+ stars, cited in multiple independent articles, widely reproduced | `[community:high]` |
-| **Community (mid)** | GitHub 10-50 stars, verified in a tech blog with concrete testing | `[community:mid]` |
-| **Community (low)** | Individual report, unverified but reasonable | `[community:low]` |
-
-`[community:low]` items are recorded for reference only — not incorporated into scoring criteria.
-Only `[official]`, `[semi-official]`, `[community:high]`, and `[community:mid]` feed into criteria.
-
-#### Step 3: Diff Analysis
+#### Step 3: Diff & Update
 
 - Compare findings against existing reference files
-- Identify new recommendations, deprecated practices, changes
 - When official and community sources conflict, prioritize official but note the conflict
-
-#### Step 4: Update References
-
-Update all reference files where new information was found:
-
-**CLAUDE.md references:**
-- `references/claude-md-official-best-practices.md`
-- `references/claude-md-community-practices.md`
-- `references/claude-md-quality-criteria.md`
-- `references/claude-md-anti-patterns.md`
-
-**SKILL.md references:**
-- `references/skill-official-best-practices.md`
-- `references/skill-community-practices.md`
-- `references/skill-quality-criteria.md`
-- `references/skill-anti-patterns.md`
-
-**Agent references:**
-- `references/agent-official-best-practices.md`
-- `references/agent-community-practices.md`
-- `references/agent-quality-criteria.md`
-- `references/agent-anti-patterns.md`
-
-**Cross-artifact:**
-- `references/cross-artifact-checks.md`
-
-Set `last_updated` to today on updated files.
+- Update all affected `references/*.md` files; set `last_updated` to today
 
 ### Recording Rules
 

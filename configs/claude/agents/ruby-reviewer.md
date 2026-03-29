@@ -1,8 +1,28 @@
 ---
 name: ruby-reviewer
-description: Expert Ruby and Rails code reviewer specializing in idiomatic Ruby, Rails conventions, security, and performance. Use for all Ruby code changes. MUST BE USED for Ruby projects.
+description: |
+  Expert Ruby and Rails code reviewer specializing in idiomatic Ruby, Rails conventions, security, and performance. Use for all Ruby code changes. MUST BE USED for Ruby projects.
+
+  <example>
+  Context: User has made changes to Ruby files.
+  user: "Review my Ruby changes"
+  assistant: "I'll use the ruby-reviewer agent to review your Ruby code."
+  <commentary>
+  Explicit trigger: user requests Ruby code review.
+  </commentary>
+  </example>
+
+  <example>
+  Context: The assistant just finished writing Ruby code.
+  user: "Implement the feature"
+  assistant: [after writing code] "Let me review the Ruby changes with the ruby-reviewer agent."
+  <commentary>
+  Proactive trigger: auto-invoke after writing Ruby code.
+  </commentary>
+  </example>
 tools: ["Read", "Grep", "Glob", "Bash"]
 model: sonnet
+color: red
 ---
 
 # Ruby Reviewer

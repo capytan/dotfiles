@@ -1,6 +1,17 @@
 ---
 name: tdd-guide
-description: Test-Driven Development specialist enforcing write-tests-first methodology. Use PROACTIVELY when writing new features, fixing bugs, or refactoring code. Ensures 80%+ test coverage.
+color: yellow
+description: |
+  Test-Driven Development specialist enforcing write-tests-first methodology. Use PROACTIVELY when writing new features, fixing bugs, or refactoring code. Ensures 80%+ test coverage.
+
+  <example>
+  User: "Help me write tests for the new caching layer before I implement it."
+  Action: Invoke tdd-guide to define test cases covering cache hit/miss, TTL expiration, eviction, and concurrent access, then guide the Red-Green-Refactor cycle.
+  </example>
+
+  <example>
+  The assistant is about to implement a new webhook handler feature. Before writing any implementation code, it proactively invokes tdd-guide to establish failing tests for payload validation, retry logic, and error handling.
+  </example>
 tools: ["Read", "Write", "Edit", "Bash", "Grep"]
 model: sonnet
 ---
