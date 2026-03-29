@@ -89,6 +89,12 @@ MAGI produces a structured analysis report:
 3. **Key Trade-offs**: Areas where perspectives differ significantly
 4. **Final Recommendation**: Synthesized recommendation with reasoning and next steps
 
+## Error Handling
+
+- **Agent failure**: If one agent fails or times out, proceed with the remaining two verdicts. Note the missing perspective and apply consensus rules to the available verdicts.
+- **Vague question**: If the question lacks sufficient context, use AskUserQuestion to clarify before launching agents. Ask for: the specific options being considered, constraints, and success criteria.
+- **No consensus (1-1 split with failure)**: Present both perspectives and let the user decide.
+
 ## Best Practices
 
 - Provide sufficient context (code, requirements, constraints) before invoking
