@@ -43,7 +43,7 @@ python ~/.claude/skills/prompt-review/scripts/collect.py [OPTIONS] > /tmp/prompt
 - 文字列のみ（例: `yonshogen`） → `--project yonshogen`
 - 文字列 + 数値（例: `yonshogen 30`） → `--project yonshogen --days 30`
 
-**重要**: スクリプトのパスは、このスキルファイルからの相対パスではなく、スキルが格納されているプロジェクトの `.claude/skills/prompt-review/scripts/collect.py` の絶対パスを使うこと。現在の作業ディレクトリ（`cwd`）を基準に `.claude/skills/prompt-review/scripts/collect.py` を指定する。
+**重要**: スクリプトのパスは `${CLAUDE_SKILL_DIR}/scripts/collect.py` を使うこと。`${CLAUDE_SKILL_DIR}` はこのスキルの SKILL.md が格納されたディレクトリに展開される。
 
 ### 出力の読み取り
 

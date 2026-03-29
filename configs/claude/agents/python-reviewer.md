@@ -109,9 +109,6 @@ Fix: What to change
 - **FastAPI**: CORS config, Pydantic validation, response models, no blocking in async
 - **Flask**: Proper error handlers, CSRF protection
 
-## Reference
-
-
 ---
 
 Review with the mindset: "Would this code pass review at a top Python shop or open-source project?"

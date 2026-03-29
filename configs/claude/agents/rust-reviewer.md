@@ -105,6 +105,15 @@ if command -v cargo-deny >/dev/null; then cargo deny check; else echo "cargo-den
 cargo build --release 2>&1 | head -50
 ```
 
+## Review Output Format
+
+```text
+[SEVERITY] Issue title
+File: path/to/file.rs:42
+Issue: Description
+Fix: What to change
+```
+
 ## Approval Criteria
 
 - **Approve**: No CRITICAL or HIGH issues
