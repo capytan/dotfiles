@@ -70,9 +70,8 @@ configs/ghostty/local.conf
 # Claude Code project-local settings (auto-generated, may contain sensitive permissions)
 .claude/settings.local.json
 
-# タスク管理ファイル（個人メモ、追跡不要）
-tasks/lessons.md
-tasks/todo.md
+# Cross-session TODO (personal, not tracked)
+todo.md
 
 # Claude Code スキルのレポート出力（自動生成、追跡不要）
 configs/claude/skills/prompt-review/reports/

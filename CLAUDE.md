@@ -1,98 +1,37 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+## Overview
 
-## Repository Overview
+Personal dotfiles for macOS/Ubuntu, shared between personal Mac and work Mac.
 
-This is a personal dotfiles repository for macOS and Ubuntu systems. It contains configuration files for various development tools, shell environments, and system settings.
+Three layers — do not mix:
+- `configs/` — App configs (XDG-oriented)
+- `shell/` — Shared shell config (zsh modules)
+- `platform/` — OS-specific overrides (macos/, ubuntu/)
 
-## Repository Architecture
+## Key Rules
 
-```
-dotfiles/
-├── configs/              # Application configs (XDG-oriented)
-│   ├── alacritty/       # Terminal emulator (alacritty.toml + shared modules)
-│   ├── claude/          # Claude Code (agents/, commands/, hooks/, skills/, settings.json)
-│   ├── cursor/rules/    # Cursor IDE rules
-│   ├── ghostty/         # Ghostty terminal config
-│   ├── git/             # Git config, ignore, completion, prompt
-│   ├── mise/            # mise (dev environment manager) config
-│   ├── nvim/            # Neovim config (legacy vim-plug, reference only)
-│   ├── tmux/            # tmux config, keybindings, startup scripts
-│   ├── vim/             # Vim config (legacy, reference only)
-│   ├── vscode/          # VSCode/Cursor settings and extensions
-│   └── zeno/            # zeno.zsh completions and snippets
-├── shell/               # Shell configuration (shared layer)
-│   ├── zshrc            # Thin loader (auto-detects platform)
-│   ├── zprofile         # Login shell settings
-│   └── zsh/             # Numbered modules (01-options … 08-zeno)
-├── platform/            # Platform-specific layer
-│   ├── macos/           # Brewfile, defaults.sh, zprofile.zsh, zshrc.zsh
-│   └── ubuntu/          # zprofile.zsh, zshrc.zsh, alacritty.toml
-├── tasks/               # lessons.md (session learnings) + todo.md (cross-session TODO)
-├── archive/             # Legacy config records
-├── .editorconfig        # indent=2spaces, UTF-8, LF (Makefile はタブ)
-├── install.sh           # Single setup entry point
-└── CLAUDE.md
-```
+- **Local files are sacred**: Never commit `shell/zsh/local.zsh`, `configs/tmux/tmux-start.local.sh`, `.claude/settings.local.json`
+- **Verify symlinks**: `ls -la ~ | grep "\-> .*dotfiles"` — check before marking work complete
+- **Plan first**: Enter plan mode for non-trivial tasks (3+ steps or architectural decisions). Re-plan if something goes sideways.
 
-**Key constraint**: Shared between personal Mac and work Mac. Machine-specific settings go in gitignored local files:
-- `shell/zsh/local.zsh` — Shell machine-specific settings
-- `configs/tmux/tmux-start.local.sh` — tmux machine-specific window layout
-- `.claude/settings.local.json` — Claude Code machine-specific settings
-
-## Quick Start
+## Commands
 
 ```bash
-./install.sh              # Auto-detects macOS/Ubuntu, creates symlinks
+./install.sh                              # Setup (idempotent, creates symlinks)
+source ~/.zshrc                           # Reload shell
+tmux source ~/.config/tmux/tmux.conf      # Reload tmux (inside tmux)
+./configs/claude/setup-claude.sh          # Setup Claude Code symlinks
 ```
 
-### Key Symlink Mappings
+## Non-Obvious Patterns
 
-| Source | Destination |
-|--------|------------|
-| `shell/zshrc` | `~/.zshrc` |
-| `shell/zprofile` | `~/.zprofile` |
-| `configs/git/` | `~/.config/git/` |
-| `configs/tmux/` | `~/.config/tmux/` |
-| `configs/alacritty/` | `~/.config/alacritty/` |
-| `configs/ghostty/` | `~/.config/ghostty/` |
-| `configs/mise/` | `~/.config/mise/` |
-| `configs/zeno/` | `~/.config/zeno/` |
+- `shell/zshrc` is a thin loader — add shell config to numbered modules in `shell/zsh/` (`01-options` … `08-zeno`), not to zshrc directly
+- `configs/alacritty/` uses shared TOML modules (font, theme, pane) imported by per-platform config
+- `configs/nvim/` and `configs/vim/` are legacy (vim-plug era) — do not modify
+- `configs/tmux/tmux-start.sh` sources `tmux-start.local.sh` for machine-specific window layout
+- Claude Code hooks use shared functions from `configs/claude/hooks/tmux-lib.sh`
 
-macOS のみ: `configs/vscode/` → `~/Library/Application Support/{Cursor,Code}/User/`
+## Task Management
 
-### After Editing Configs
-
-```bash
-source ~/.zshrc           # Reload shell config (or open new terminal)
-tmux source ~/.config/tmux/tmux.conf  # Reload tmux config (inside tmux)
-```
-
-## Claude Code Configuration
-
-Custom agents, skills, hooks, and settings are in `configs/claude/`. Setup: `./configs/claude/setup-claude.sh`
-
-## Claude Code Behavior
-
-This section defines how Claude Code should operate when working in this repository.
-
-### Core Principles
-
-- **Verify symlinks**: Never consider a task complete without checking symlinks work (`ls -la ~ | grep "\-> .*dotfiles"`)
-- **Respect layers**: `configs/` for apps, `shell/` for shared shell, `platform/` for OS-specific. Do not mix.
-- **Local files are sacred**: Never commit `local.zsh`, `tmux-start.local.sh`, `settings.local.json`
-
-### Workflow
-
-**Plan First**: Enter plan mode for any non-trivial task (3+ steps or architectural decisions).
-If something goes sideways, stop and re-plan. Do not keep pushing forward.
-
-**Verification**: Check symlinks and script permissions before marking work complete.
-
-**When modifying this repository**: Maintain consistency with existing shell aliases and functions. Test `install.sh` on the target platform before committing.
-
-### Task Management
-
-- Update `tasks/lessons.md` after any user correction
-- Use `tasks/todo.md` for cross-session TODO items (TaskCreate はセッション内のみ)
+- Use `todo.md` for cross-session TODO items (TaskCreate is session-scoped only)
