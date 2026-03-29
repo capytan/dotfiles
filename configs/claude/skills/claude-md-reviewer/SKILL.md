@@ -31,6 +31,13 @@ Phase 3: Report (always present before making changes)
 Phase 4: Fix Proposals & Apply (after user approval)
 ```
 
+## Paths
+
+Skill directory: `~/.claude/skills/claude-md-reviewer/`
+Reference files: `~/.claude/skills/claude-md-reviewer/references/`
+
+⚠️ Always use these absolute paths for Glob/Read. The current working directory is the project being reviewed, not this skill's directory.
+
 ---
 
 ## Phase 0: Research — Investigate & Update Best Practices
