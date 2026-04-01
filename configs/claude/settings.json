@@ -523,13 +523,20 @@
     "playwright@claude-plugins-official": true,
     "ruby-lsp@claude-plugins-official": false,
     "terraform@claude-plugins-official": false,
-    "hookify@claude-plugins-official": true
+    "hookify@claude-plugins-official": true,
+    "codex@openai-codex": true
   },
   "extraKnownMarketplaces": {
     "agent-plugins-for-aws": {
       "source": {
         "source": "github",
         "repo": "awslabs/agent-plugins"
+      }
+    },
+    "openai-codex": {
+      "source": {
+        "source": "github",
+        "repo": "openai/codex-plugin-cc"
       }
     }
   },
