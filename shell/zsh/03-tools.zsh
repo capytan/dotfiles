@@ -10,3 +10,8 @@ fi
 if command -v git-wt &>/dev/null; then
   eval "$(git wt --init zsh)"
 fi
+
+# safe-chain
+if [[ -f "$HOME/.safe-chain/scripts/init-posix.sh" ]]; then
+  source "$HOME/.safe-chain/scripts/init-posix.sh"
+fi
