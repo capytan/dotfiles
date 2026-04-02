@@ -13,7 +13,13 @@ esac
 
 # bun
 export BUN_INSTALL="$HOME/.bun"
-export PATH="$BUN_INSTALL/bin:$PATH"
+case ":$PATH:" in
+  *":$BUN_INSTALL/bin:"*) ;;
+  *) export PATH="$BUN_INSTALL/bin:$PATH" ;;
+esac
 
 # Go binaries
-export PATH="$PATH:$HOME/go/bin"
+case ":$PATH:" in
+  *":$HOME/go/bin:"*) ;;
+  *) export PATH="$PATH:$HOME/go/bin" ;;
+esac
