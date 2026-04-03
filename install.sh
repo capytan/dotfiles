@@ -99,7 +99,13 @@ info "Setting up Ghostty configuration..."
 link_file "$DOTFILES_DIR/configs/ghostty/config" "$HOME/.config/ghostty/config"
 
 # =============================================================================
-# 8. mise configuration
+# 8. Starship configuration
+# =============================================================================
+info "Setting up Starship configuration..."
+link_file "$DOTFILES_DIR/configs/starship/starship.toml" "$HOME/.config/starship.toml"
+
+# =============================================================================
+# 9. mise configuration
 # =============================================================================
 info "Setting up mise configuration..."
 link_file "$DOTFILES_DIR/configs/mise/config.toml" "$HOME/.config/mise/config.toml"
