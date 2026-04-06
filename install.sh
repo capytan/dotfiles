@@ -111,7 +111,7 @@ info "Setting up mise configuration..."
 link_file "$DOTFILES_DIR/configs/mise/config.toml" "$HOME/.config/mise/config.toml"
 
 # =============================================================================
-# 9. Claude Code configuration
+# 10. Claude Code configuration
 # =============================================================================
 info "Setting up Claude Code configuration..."
 if [[ -x "$DOTFILES_DIR/configs/claude/setup-claude.sh" ]]; then
@@ -119,7 +119,7 @@ if [[ -x "$DOTFILES_DIR/configs/claude/setup-claude.sh" ]]; then
 fi
 
 # =============================================================================
-# 10. zeno.zsh (optional - snippet expansion engine)
+# 11. zeno.zsh (optional - snippet expansion engine)
 # =============================================================================
 ZENO_DIR="$HOME/.local/share/zeno"
 if [[ -d "$ZENO_DIR" ]]; then
@@ -135,7 +135,7 @@ info "Setting up zeno configuration..."
 link_file "$DOTFILES_DIR/configs/zeno" "$HOME/.config/zeno"
 
 # =============================================================================
-# 11. Platform-specific setup
+# 12. Platform-specific setup
 # =============================================================================
 if [[ "$PLATFORM" == "macos" ]]; then
   info "Setting up macOS-specific configurations..."
@@ -163,7 +163,7 @@ elif [[ "$PLATFORM" == "ubuntu" ]]; then
 fi
 
 # =============================================================================
-# 12. Migrate local.zsh from old path (if needed)
+# 13. Migrate local.zsh from old path (if needed)
 # =============================================================================
 OLD_LOCAL_ZSH="$HOME/dotfiles/macos/.zsh/local.zsh"
 NEW_LOCAL_ZSH="$DOTFILES_DIR/shell/zsh/local.zsh"
@@ -176,7 +176,7 @@ if [[ -f "$OLD_LOCAL_ZSH" && ! -f "$NEW_LOCAL_ZSH" ]]; then
 fi
 
 # =============================================================================
-# 13. Symlink verification report
+# 14. Symlink verification report
 # =============================================================================
 echo ""
 echo "============================================="
