@@ -524,7 +524,8 @@
     "ruby-lsp@claude-plugins-official": false,
     "terraform@claude-plugins-official": false,
     "hookify@claude-plugins-official": true,
-    "codex@openai-codex": true
+    "codex@openai-codex": true,
+    "claude-code-setup@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "agent-plugins-for-aws": {
