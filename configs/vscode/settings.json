@@ -137,6 +137,12 @@
     "markdown": false,
     "scminput": false
   },
+  // Extension Settings - markdownlint
+  "markdownlint.config": {
+    "MD007": {
+      "indent": 4
+    }
+  },
   "docker.extension.enableComposeLanguageServer": false,
   "[dockercompose]": {
     "editor.insertSpaces": true,
