@@ -14,15 +14,6 @@ context: fork
 
 ユーザーの過去のAIエージェント対話履歴を分析し、技術理解度・プロンプティングパターン・AI依存度を推定してレポートを生成する。レポートは日本語で `reports/prompt-review-YYYY-MM-DD.md` に書き出す。
 
-## 引数の処理
-
-`$ARGUMENTS` を解析し、以下のルールで引数を処理する:
-
-- 数値のみ → **日数フィルタ**（例: `30` → 過去30日分）
-- 文字列のみ → **プロジェクト名フィルタ**（部分一致）
-- 文字列 + 数値 → **プロジェクト名** + **日数フィルタ**（例: `yonshogen 30`）
-- 引数なし → 全プロジェクト横断、過去7日分（デフォルト）
-
 ## ステップ1: データ収集（スクリプト実行）
 
 前処理スクリプト [scripts/collect.py](scripts/collect.py) を実行してデータを収集する。
@@ -37,11 +28,13 @@ context: fork
 python ~/.claude/skills/prompt-review/scripts/collect.py [OPTIONS] > /tmp/prompt-review-data.json
 ```
 
-- 引数なし → オプションなし（デフォルト: 過去7日分）
-- 数値のみ（例: `30`） → `--days 30`
-- `all` または `0` → `--days 0`（全期間）
-- 文字列のみ（例: `yonshogen`） → `--project yonshogen`
-- 文字列 + 数値（例: `yonshogen 30`） → `--project yonshogen --days 30`
+| `$ARGUMENTS` | 意味 | オプション |
+|---|---|---|
+| （空） | 全プロジェクト、過去7日（デフォルト） | なし |
+| 数値のみ（例 `30`） | 日数フィルタ | `--days 30` |
+| `all` または `0` | 全期間 | `--days 0` |
+| 文字列のみ（例 `yonshogen`） | プロジェクト名（部分一致） | `--project yonshogen` |
+| 文字列＋数値（例 `yonshogen 30`） | プロジェクト＋日数 | `--project yonshogen --days 30` |
 
 **重要**: スクリプトのパスは `${CLAUDE_SKILL_DIR}/scripts/collect.py` を使うこと。`${CLAUDE_SKILL_DIR}` はこのスキルの SKILL.md が格納されたディレクトリに展開される。
 

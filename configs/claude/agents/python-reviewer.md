@@ -14,8 +14,8 @@ description: |
 
   <example>
   Context: The assistant just finished writing Python code.
-  user: "Implement the feature"
-  assistant: [after writing code] "Let me review the Python changes with the python-reviewer agent."
+  user: "Add pagination to the /api/users endpoint"
+  assistant: [after writing async handler with SQLAlchemy query] "Let me review these Python changes with the python-reviewer agent."
   <commentary>
   Proactive trigger: auto-invoke after writing Python code.
   </commentary>
@@ -108,6 +108,14 @@ Fix: What to change
 - **Django**: `select_related`/`prefetch_related` for N+1, `atomic()` for multi-step, migrations
 - **FastAPI**: CORS config, Pydantic validation, response models, no blocking in async
 - **Flask**: Proper error handlers, CSRF protection
+
+## Edge Cases
+
+- **No `.py` changes in diff**: Report "no Python changes to review" and stop — do not review unchanged code unless explicitly asked.
+- **Shallow history (single commit / detached HEAD)**: Fall back to `git show --patch HEAD -- '*.py'` so you still inspect code-level changes.
+- **No `pyproject.toml` / `requirements*.txt`**: Skip dependency checks; note the absence and continue with code review.
+- **`ruff`/`mypy`/`bandit` not installed**: Check with `command -v <tool>` first; skip with a note rather than fabricating findings.
+- **Generated code (migrations, stubs)**: Do not flag style issues in auto-generated files; only report behavioral/security bugs.
 
 ---
 

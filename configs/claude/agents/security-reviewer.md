@@ -107,15 +107,17 @@ For every finding, document the flow:
 3. **Sink**: Where is the data used dangerously? (SQL query, shell command, HTML output, file path)
 4. **Exploitability**: Can an attacker actually reach this code path with malicious input?
 
-## Diagnostic Commands
+## Searching for Vulnerability Patterns
+
+Use the **Grep tool** (not Bash `grep`) for pattern search across the codebase. Run each in parallel when independent:
+
+- Dangerous sinks: pattern `exec|system|eval|popen|shell`, glob `*.{py,rb,js,ts,java,go,rs}`
+- Potential secrets: pattern `(?i)(password|secret|token|api[_-]?key)\s*[=:]`, glob same
+- Security TODOs: pattern `(TODO|FIXME|HACK).*?(security|auth|crypto)`
+
+## Language-Specific Audit Tools (run via Bash, only if available)
 
 ```bash
-# Search for common vulnerability patterns
-grep -rn "exec\|system\|eval\|popen\|shell" --include="*.py" --include="*.rb" --include="*.js" --include="*.ts" .
-grep -rn "password\|secret\|token\|api_key\|apikey" --include="*.py" --include="*.rb" --include="*.js" --include="*.ts" --include="*.java" --include="*.go" .
-grep -rn "TODO.*security\|FIXME.*security\|HACK.*auth" .
-
-# Language-specific audit tools
 # Python: bandit -r . ; safety check
 # Node: npm audit ; npx snyk test
 # Ruby: bundle-audit check ; brakeman
@@ -123,6 +125,8 @@ grep -rn "TODO.*security\|FIXME.*security\|HACK.*auth" .
 # Go: govulncheck ./...
 # Rust: cargo audit ; cargo deny check
 ```
+
+Run `command -v <tool>` before invoking — skip gracefully when the tool is not installed; never fabricate findings from a missing tool.
 
 ## Review Output Format
 

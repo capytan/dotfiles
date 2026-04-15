@@ -1,13 +1,6 @@
 ---
 name: agent-team-review
-description: |
-  Parallel multi-agent code review with independent confidence scoring.
-  Five methodology-based reviewers (rules audit, bug scan, git history,
-  PR archaeology, code comments) each use a distinct information source
-  to find bugs, then separate scoring agents filter false positives.
-  Triggers on "team review", "deep review", "thorough review", "agent team review",
-  "team review this PR". Use when deeper analysis is needed beyond
-  code-review plugin or pr-review-toolkit. Supports both PRs and local changes.
+description: Parallel multi-agent code review with independent scoring. Five methodology-based reviewers (rules, bugs, git history, PR archaeology, comments) filter false positives. Triggers on "team review", "deep review", "thorough review". Supports PRs and local changes.
 ---
 
 # Agent Team Code Review
@@ -244,7 +237,5 @@ Give `references/false-positives.md` to all reviewers (Phase 2) and scoring agen
 
 ## Notes
 
-- Do NOT check build signal or attempt to build/typecheck. These run separately in CI.
+- Do NOT check build signal or attempt to build/typecheck — these run in CI
 - Use `gh` for GitHub interactions, not web fetch
-- Make a todo list before starting
-- Cite and link every issue (if referring to CLAUDE.md, link it)

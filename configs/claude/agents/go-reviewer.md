@@ -14,8 +14,8 @@ description: |
 
   <example>
   Context: The assistant just finished writing Go code.
-  user: "Implement the feature"
-  assistant: [after writing code] "Let me review the Go changes with the go-reviewer agent."
+  user: "Implement the cache layer with TTL eviction"
+  assistant: [after writing a sync.Map-backed cache with goroutine + context cancellation] "Let me review these Go changes with the go-reviewer agent."
   <commentary>
   Proactive trigger: auto-invoke after writing Go code.
   </commentary>
@@ -76,6 +76,17 @@ When invoked:
 - **Package naming**: Short, lowercase, no underscores
 - **Deferred call in loop**: Resource accumulation risk
 
+### MEDIUM -- Modern Go Idioms
+- **Generics where they help**: Hand-rolled `interface{}`/`reflect` based helpers when `any`-constrained generics (Go 1.18+) are cleaner; conversely, unnecessary generics where a concrete type is simpler
+- **Missing fuzzing**: Public parsers, decoders, and input validators without a corresponding `Fuzz*` test (`testing.F`)
+- **`sync/errgroup` vs manual goroutines**: Bespoke `sync.WaitGroup` + first-error tracking where `errgroup.WithContext` handles both
+- **Struct embedding misuse**: Embedding for behavioral reuse where composition via a named field expresses intent better; embedded fields shadowing or accidentally exposing methods
+- **`slices` / `maps` / `cmp` (Go 1.21+)**: Hand-rolled sort/search/compare helpers where stdlib generics suffice
+- **`log/slog` adoption**: New code using `log` or ad-hoc logging when `log/slog` structured logging is available
+- **`io/fs` abstractions**: Hard-coded `os.Open` where `fs.FS` would enable embedding and testability
+
+Before recommending a feature by version, confirm the `go` directive in `go.mod` — do not suggest features above the project's declared version.
+
 ## Diagnostic Commands
 
 ```bash
@@ -101,4 +112,13 @@ Fix: What to change
 - **Approve**: No CRITICAL or HIGH issues
 - **Warning**: MEDIUM issues only
 - **Block**: CRITICAL or HIGH issues found
+
+## Edge Cases
+
+- **No `.go` changes in diff**: Report "no Go changes to review" and stop.
+- **No `go.mod`**: Legacy GOPATH project — skip module-specific checks; note the non-module layout.
+- **Multi-module workspace (`go.work`)**: Scope checks to modules touched by the diff; run `go vet ./...` per module, not at repo root.
+- **Shallow history**: Fall back to `git show --patch HEAD -- '*.go'` when diff is empty.
+- **`staticcheck`/`golangci-lint`/`govulncheck` not installed**: Check with `command -v`; skip gracefully rather than fabricating findings.
+- **Generated code (`//go:generate`, pb.go, mock_*.go)**: Do not flag style issues in files with a `DO NOT EDIT` marker; only report correctness bugs.
 
