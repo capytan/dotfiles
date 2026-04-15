@@ -13,7 +13,6 @@ Three layers — do not mix:
 
 - **Local files are sacred**: Never commit `shell/zsh/local.zsh`, `configs/tmux/tmux-start.local.sh`, `.claude/settings.local.json`
 - **Verify symlinks**: `ls -la ~ | grep "\-> .*dotfiles"` — check before marking work complete
-- **Plan first**: Enter plan mode for non-trivial tasks (3+ steps or architectural decisions). Re-plan if something goes sideways.
 
 ## Commands
 
@@ -35,4 +34,4 @@ tmux source ~/.config/tmux/tmux.conf      # Reload tmux (inside tmux)
 
 ## Task Management
 
-- Use `todo.md` at project root for cross-session TODO items (TaskCreate is session-scoped only)
+- Use `tasks/todo.md` for cross-session TODO items (TaskCreate is session-scoped only)
