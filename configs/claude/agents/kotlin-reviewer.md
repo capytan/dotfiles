@@ -15,7 +15,7 @@ description: |
   <example>
   Context: The assistant just finished writing Kotlin code.
   user: "Add the login screen with form validation"
-  assistant: [after writing a Compose screen + ViewModel with coroutine-based auth call] "Let me review these Kotlin changes with the kotlin-reviewer agent."
+  assistant: [after writing a Compose screen + ViewModel] "Let me review these Kotlin changes with the kotlin-reviewer agent."
   <commentary>
   Proactive trigger: auto-invoke after writing Kotlin code.
   </commentary>

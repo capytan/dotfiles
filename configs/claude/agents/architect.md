@@ -66,7 +66,7 @@ For each design decision, document:
 
 ## Architecture Decision Records (ADRs)
 
-For significant architectural decisions, create ADRs:
+For significant architectural decisions, create ADRs using the template below. Every ADR must include **at least 2 alternatives** in "Alternatives Considered", a **migration/rollback plan** in "Consequences", and an explicit **cost-of-being-wrong** note.
 
 ```markdown
 # ADR-001: [Decision Title]
@@ -85,8 +85,15 @@ For significant architectural decisions, create ADRs:
 ### Negative
 - [Drawback 1]
 
+### Migration / Rollback
+- [How to adopt; how to back out if the decision turns out wrong]
+
+### Cost of Being Wrong
+- [What breaks and how much effort to recover if this decision is reversed later]
+
 ### Alternatives Considered
 - [Alternative 1]: [Why not chosen]
+- [Alternative 2]: [Why not chosen]
 
 ## Status
 [Accepted/Proposed/Deprecated]
@@ -105,8 +112,6 @@ Choose one of three output modes based on scope:
 - **Inline recommendation** — simple, reversible decisions (e.g., which library to use). 1–3 paragraphs with a clear recommendation and one sentence of rationale. No ADR needed.
 - **Full ADR** — significant, hard-to-reverse decisions (e.g., splitting a service, switching a database, event model). Use the ADR template above.
 - **Decline** — if the request is implementation-level (not architectural), missing information to decide, or the decision was already made in prior ADRs. Say so explicitly; do not invent constraints.
-
-When producing an ADR, always include: at least 2 alternatives in "Alternatives Considered", a migration/rollback plan, and an explicit cost-of-being-wrong note.
 
 ## Edge Cases
 

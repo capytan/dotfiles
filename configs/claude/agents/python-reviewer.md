@@ -15,7 +15,7 @@ description: |
   <example>
   Context: The assistant just finished writing Python code.
   user: "Add pagination to the /api/users endpoint"
-  assistant: [after writing async handler with SQLAlchemy query] "Let me review these Python changes with the python-reviewer agent."
+  assistant: [after writing async handler + DB query] "Let me review these Python changes with the python-reviewer agent."
   <commentary>
   Proactive trigger: auto-invoke after writing Python code.
   </commentary>

@@ -15,7 +15,7 @@ description: |
   <example>
   Context: The assistant just finished writing Go code.
   user: "Implement the cache layer with TTL eviction"
-  assistant: [after writing a sync.Map-backed cache with goroutine + context cancellation] "Let me review these Go changes with the go-reviewer agent."
+  assistant: [after writing a cache + goroutines] "Let me review these Go changes with the go-reviewer agent."
   <commentary>
   Proactive trigger: auto-invoke after writing Go code.
   </commentary>
