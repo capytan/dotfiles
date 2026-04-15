@@ -14,8 +14,8 @@ description: |
 
   <example>
   Context: The assistant just finished writing Rust code.
-  user: "Implement the feature"
-  assistant: [after writing code] "Let me review the Rust changes with the rust-reviewer agent."
+  user: "Implement the streaming parser for the log format"
+  assistant: [after writing an async tokio parser] "Let me review these Rust changes with the rust-reviewer agent."
   <commentary>
   Proactive trigger: auto-invoke after writing Rust code.
   </commentary>
@@ -120,3 +120,12 @@ Fix: What to change
 - **Warning**: MEDIUM issues only
 - **Block**: CRITICAL or HIGH issues found
 
+## Edge Cases
+
+- **No `.rs` changes in diff**: Report "no Rust changes to review" and stop.
+- **Workspace vs single crate**: In a workspace, run `cargo check --workspace` and scope the review to member crates touched by the diff.
+- **`no_std` crate**: Skip `std`-only recommendations (e.g., `std::thread`, `String`); suggest `alloc`/`core` equivalents instead.
+- **Unsafe-heavy code (FFI, bindings)**: Require explicit `// SAFETY:` comments on every unsafe block and verify documented invariants match the caller contract; flag missing comments as CRITICAL.
+- **Shallow history**: Fall back to `git show --patch HEAD -- '*.rs'` when diff is empty.
+- **`cargo-audit`/`cargo-deny` not installed**: Note the missing tool and skip the supply-chain section; do not fabricate findings.
+- **Macro-generated code**: Do not flag style issues inside macro expansions; focus on the macro definition and invocation sites.

@@ -338,11 +338,9 @@ They are updated based on the latest best practices discovered in Phase 0.
 
 ## Self-Update Guidelines
 
-Rules for updating this skill's references:
+Rules for updating this skill's references (content rules live in Phase 0 Recording Rules):
 
-1. **Prefer primary sources** — save direct quotes from official docs, not summaries
-2. **Always record provenance** — URL + retrieval date; criteria without traceable sources are unreliable
-3. **Show the diff** — record what changed in the `## Changelog` section
-4. **Preserve custom criteria** — items not found in official docs (e.g., behavioral impact assessment) are tagged `[custom]` and retained
-5. **Official wins on conflict** — but confirm with the user before removing custom criteria
-6. **Update all artifact types** — when researching, check for updates across CLAUDE.md, SKILL.md, and agent best practices
+1. **Show the diff** — record what changed in each reference's `## Changelog` section
+2. **Preserve custom criteria** — items not found in official docs (e.g., behavioral impact assessment) are tagged `[custom]` and retained
+3. **Official wins on conflict** — but confirm with the user before removing custom criteria
+4. **Update all artifact types** — when researching, check for updates across CLAUDE.md, SKILL.md, and agent best practices

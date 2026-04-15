@@ -66,15 +66,29 @@ Always cover: null/empty/invalid input, boundary values, error paths, and race c
 
 ## Language-Specific Test Commands
 
-| Language | Test | Coverage |
-|----------|------|----------|
-| Python | `pytest` | `pytest --cov --cov-report=term-missing` |
-| Rust | `cargo test` | `cargo tarpaulin` or `cargo llvm-cov` |
-| Go | `go test ./...` | `go test -coverprofile=coverage.out ./...` |
-| TypeScript | `npm test` or `vitest` | `vitest --coverage` or `jest --coverage` |
-| Ruby | `bundle exec rspec` | `COVERAGE=true bundle exec rspec` |
-| Java | `mvn test` or `gradle test` | `mvn jacoco:report` |
-| C++ | `ctest` | `gcov` or `llvm-cov` |
-| Dart/Flutter | `flutter test` | `flutter test --coverage` |
+Before picking a runner, read the nearest manifest (see the Language column below) and its scripts/sections — prefer the project's canonical command (e.g., `npm test`) over generic binaries (`vitest`). If no manifest is found, ask the user; do not default to one language.
 
-**Remember**: Write the test first. If you catch yourself writing implementation before the test, stop and reverse course. Target 80%+ coverage.
+| Language | Manifest | Test | Coverage |
+|----------|----------|------|----------|
+| Python | `pyproject.toml` / `requirements*.txt` | `pytest` | `pytest --cov --cov-report=term-missing` |
+| Rust | `Cargo.toml` | `cargo test` | `cargo tarpaulin` or `cargo llvm-cov` |
+| Go | `go.mod` | `go test ./...` | `go test -coverprofile=coverage.out ./...` |
+| TypeScript | `package.json` | `npm test` or `vitest` | `vitest --coverage` or `jest --coverage` |
+| Ruby | `Gemfile` | `bundle exec rspec` | `COVERAGE=true bundle exec rspec` |
+| Java | `pom.xml` / `build.gradle*` | `mvn test` or `gradle test` | `mvn jacoco:report` |
+| C++ | `CMakeLists.txt` / `Makefile` / `meson.build` | `ctest` | `gcov` or `llvm-cov` |
+| Dart/Flutter | `pubspec.yaml` | `flutter test` | `flutter test --coverage` |
+
+## Slow Test Suites (Integration / E2E)
+
+When the project's canonical test suite is too slow to drive the inner RED-GREEN loop, introduce a seam (interface / injected dependency) at the RED step and drive the cycle against a small in-memory double. Run the slow suite before considering the cycle complete — do not skip it.
+
+## Edge Cases
+
+- **Legacy code without tests**: Do not demand full coverage retroactively. Add characterization tests around the area you are changing (a thin safety net), then apply RED-GREEN-REFACTOR for new behavior only.
+- **Tests exist but weren't written first**: Do not fabricate a "tests-first" narrative. Treat existing tests as the safety net; write the next failing test for the new change.
+- **Refactor with an existing green suite**: Skip RED — run tests before and after to confirm behavior is preserved. TDD applies to behavioral change, not pure refactoring.
+- **Fixture or test-infrastructure migration**: Update fixtures with tests still green at each step; never combine fixture changes with behavioral changes in one commit.
+- **Untestable dependency (network, clock, filesystem)**: Introduce a seam (interface / injected dependency) as part of the RED step; do not write a test that hits the real dependency in the fast loop.
+
+**Remember**: Write the test first. If you catch yourself writing implementation before the test, stop and reverse course. Target 80%+ coverage on new code; characterization coverage is enough for legacy code you touch.

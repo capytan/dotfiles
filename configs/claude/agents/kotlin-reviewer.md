@@ -14,8 +14,8 @@ description: |
 
   <example>
   Context: The assistant just finished writing Kotlin code.
-  user: "Implement the feature"
-  assistant: [after writing code] "Let me review the Kotlin changes with the kotlin-reviewer agent."
+  user: "Add the login screen with form validation"
+  assistant: [after writing a Compose screen + ViewModel] "Let me review these Kotlin changes with the kotlin-reviewer agent."
   <commentary>
   Proactive trigger: auto-invoke after writing Kotlin code.
   </commentary>
@@ -177,3 +177,12 @@ Verdict: BLOCK — HIGH issues must be fixed before merge.
 
 - **Approve**: No CRITICAL or HIGH issues
 - **Block**: Any CRITICAL or HIGH issues — must fix before merge
+
+## Edge Cases
+
+- **No Kotlin changes in diff**: Report "no Kotlin changes to review" and stop.
+- **Android-only vs KMP vs server-side Kotlin**: Detect from `build.gradle*` / source-set layout. Skip Android/Compose rules for server-side; skip `androidMain`-specific rules for commonMain/iosMain code in KMP.
+- **No `build.gradle*` / `settings.gradle*`**: Plain Kotlin project — skip Gradle sections; review idioms only.
+- **Shallow history**: Fall back to `git show --patch HEAD -- '*.kt' '*.kts'` when diff is empty.
+- **`ktlint`/`detekt` not installed**: Check for presence before invoking; skip gracefully rather than fabricating findings.
+- **Generated code (`build/generated/`, `*_Hilt*`, `*$$*`)**: Do not flag style issues; review for correctness only.
