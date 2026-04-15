@@ -14,8 +14,8 @@ description: |
 
   <example>
   Context: The assistant just finished writing Java code.
-  user: "Implement the feature"
-  assistant: [after writing code] "Let me review the Java changes with the java-reviewer agent."
+  user: "Add the order creation endpoint to the REST API"
+  assistant: [after adding a Spring controller with JPA repository + @Transactional service] "Let me review these Java changes with the java-reviewer agent."
   <commentary>
   Proactive trigger: auto-invoke after writing Java code.
   </commentary>
@@ -117,3 +117,10 @@ Fix: What to change
 - **Warning**: MEDIUM issues only
 - **Block**: CRITICAL or HIGH issues found
 
+## Edge Cases
+- **No `.java` changes in diff**: Report "no Java changes to review" and stop.
+- **No `pom.xml` / `build.gradle*`**: Skip Maven/Gradle tool invocations; note the absence and continue with code review.
+- **Non-Spring Java project**: Skip Spring Boot / JPA sections; focus on core Java, concurrency, security, and testing.
+- **Shallow history**: Fall back to `git show --patch HEAD -- '*.java'` when diff is empty.
+- **`checkstyle`/`spotbugs`/`dependency-check` not installed**: Check via Maven/Gradle output; skip gracefully rather than fabricating findings.
+- **Generated files (antlr, protobuf, MapStruct, Lombok-generated)**: Do not flag style issues in generated sources; only report behavioral/security bugs.

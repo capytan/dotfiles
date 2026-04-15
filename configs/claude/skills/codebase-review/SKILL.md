@@ -1,14 +1,6 @@
 ---
 name: codebase-review
-description: |
-  Full codebase review with seven methodology-based reviewers (Opus or Sonnet) and independent
-  confidence scoring. Covers rules compliance, bugs, git hotspots, code comments,
-  architecture, security (OWASP), and dependency analysis.
-  Triggers on "codebase review", "audit codebase", "review the codebase",
-  "full review", "全体レビュー", "コードベースレビュー".
-  Does not trigger for: PR review, diff review, document review.
-  Use for reviewing source files directly (not diffs). For diff-based review,
-  use agent-team-review or code-review instead.
+description: Full codebase review with seven parallel reviewers (rules, bugs, git hotspots, comments, architecture, OWASP, dependencies) and independent scoring. Triggers on "codebase review", "audit codebase", "全体レビュー". Reviews source files — for diffs use code-review instead.
 ---
 
 # Codebase Review
@@ -275,7 +267,5 @@ Give `references/false-positives.md` to all reviewers (Phase 2) and scoring agen
 
 ## Notes
 
-- Do NOT attempt to build, typecheck, or run tests. Focus on static analysis of source files.
-- Use `git` commands for history analysis, not `gh`
-- Make a todo list before starting
-- Cite and link every finding with file path and line number
+- Static analysis only — do NOT build, typecheck, or run tests
+- Use `git` for history analysis, not `gh`

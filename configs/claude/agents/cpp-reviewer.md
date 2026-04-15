@@ -14,8 +14,8 @@ description: |
 
   <example>
   Context: The assistant just finished writing C++ code.
-  user: "Implement the feature"
-  assistant: [after writing code] "Let me review the C++ changes with the cpp-reviewer agent."
+  user: "Add the memory pool allocator for small objects"
+  assistant: [after writing a pool class with RAII lifetime + template methods] "Let me review these C++ changes with the cpp-reviewer agent."
   <commentary>
   Proactive trigger: auto-invoke after writing C++ code.
   </commentary>
@@ -75,10 +75,28 @@ When invoked:
 - **Include hygiene**: Missing include guards, unnecessary includes
 - **Namespace pollution**: `using namespace std;` in headers
 
+### MEDIUM -- Modern C++ (C++20/23)
+- **`concepts` vs SFINAE**: New template code with `std::enable_if_t` / `void_t` tricks where `concepts` and `requires` clauses are clearer
+- **Ranges**: Hand-rolled iterator loops (`std::transform` + `back_inserter`) where `std::ranges::views` + pipe syntax reads better
+- **Coroutines**: Manual callback chains in async code where `co_await` / `std::generator` fits; verify the project targets C++20+ before recommending
+- **`std::span` / `std::string_view`**: Passing `const std::vector<T>&` or `const std::string&` to read-only APIs when `span`/`string_view` suffices
+- **`[[nodiscard]]` / `[[likely]]`**: Missing on factory-like returns, error-returning functions, and hot-path branches
+- **Designated initializers / class template argument deduction**: Verbose struct initialization or explicit template args when CTAD / `{.member = value}` is available
+- **`std::format` / `std::print` (C++20/23)**: `printf`-family calls where formatted output is available and type-safe
+
+Before recommending any C++20/23 feature, confirm the target standard from `CMakeLists.txt` / `Makefile` / `compile_commands.json`; do not suggest features below the project's compiler standard.
+
 ## Diagnostic Commands
 
 ```bash
-clang-tidy --checks='*,-llvmlibc-*' src/*.cpp -- -std=c++17
+# Prefer the project's compile_commands.json so clang-tidy uses the right -std and includes.
+if [ -f build/compile_commands.json ]; then
+  clang-tidy -p build --checks='*,-llvmlibc-*' src/*.cpp
+else
+  # Fallback: detect C++ standard from CMakeLists / Makefile when possible
+  STD=$(grep -hE "CXX_STANDARD|c\+\+[0-9]+" CMakeLists.txt Makefile 2>/dev/null | head -1 | grep -oE "c\+\+[0-9]+" || echo "c++17")
+  clang-tidy --checks='*,-llvmlibc-*' src/*.cpp -- -std=$STD
+fi
 cppcheck --enable=all --suppress=missingIncludeSystem src/
 cmake --build build 2>&1 | head -50
 ```
@@ -98,3 +116,11 @@ Fix: What to change
 - **Warning**: MEDIUM issues only
 - **Block**: CRITICAL or HIGH issues found
 
+## Edge Cases
+
+- **No C++ changes in diff**: Report "no C++ changes to review" and stop.
+- **No `compile_commands.json`**: Build with `cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON` if possible, or fall back to detecting `-std` from `CMakeLists.txt`/`Makefile`; note the degraded accuracy.
+- **Header-only library**: Review focuses on headers — `clang-tidy` needs the compile command from a consuming translation unit; say so when analysis cannot be run standalone.
+- **Embedded / no-exceptions / no-RTTI project**: Skip recommendations that rely on exceptions or `dynamic_cast`; adjust recommendations to match compiler flags.
+- **Shallow history**: Fall back to `git show --patch HEAD -- '*.cpp' '*.hpp' '*.cc' '*.hh' '*.cxx' '*.h'` when diff is empty.
+- **`clang-tidy`/`cppcheck` not installed**: Check with `command -v`; skip gracefully rather than fabricating findings.

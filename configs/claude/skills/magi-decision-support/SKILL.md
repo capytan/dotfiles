@@ -1,6 +1,6 @@
 ---
 name: magi-decision-support
-description: Multi-perspective decision support using three AI agents (Scientist, Mother, Realist). Use when facing difficult decisions, trade-offs, comparing alternatives, choosing between options, or when unsure which approach is best. Triggers on questions like "should I", "which is better", "pros and cons", "normalize vs denormalize", "microservices vs monolith", or any technical/architectural decision with multiple valid options.
+description: Multi-perspective decision support using three AI agents (Scientist, Mother, Realist) with APPROVE/CONDITIONAL/REJECT verdicts. Triggers on "should I", "which is better", "pros and cons", "X vs Y" questions, or technical/architectural decisions with multiple valid options.
 ---
 
 # MAGI - Consensus-Based Decision Support System
@@ -44,10 +44,7 @@ When invoked, follow this process:
 
 1. **Parse the question**: Extract the decision topic and any relevant context from the user's message.
 
-2. **Launch all three agents in parallel** using the Task tool with `subagent_type: "general-purpose"`:
-   - MELCHIOR: "Analyze [question] from a technical accuracy and best practices perspective. Provide your verdict: APPROVE, REJECT, or CONDITIONAL (with specific condition). Be rigorous and cite concrete trade-offs."
-   - BALTHASAR: "Analyze [question] from a developer experience, team health, and sustainability perspective. Provide your verdict: APPROVE, REJECT, or CONDITIONAL (with specific condition). Consider human factors and long-term maintainability."
-   - CASPER: "Analyze [question] from a practical implementation perspective: cost, timeline, feasibility, and real-world constraints. Provide your verdict: APPROVE, REJECT, or CONDITIONAL (with specific condition). Be pragmatic and ground your assessment in reality."
+2. **Launch all three agents in parallel** using the Task tool with `subagent_type: "general-purpose"`. Each agent's prompt: `"Analyze [question] from the [Focus] perspective per the MAGI agent table above. Return APPROVE / CONDITIONAL (with condition) / REJECT and cite concrete trade-offs."` Substitute each agent's Focus column from the table.
 
 3. **Collect all three responses** before proceeding to synthesis.
 
@@ -95,9 +92,3 @@ MAGI produces a structured analysis report:
 - **Vague question**: If the question lacks sufficient context, use AskUserQuestion to clarify before launching agents. Ask for: the specific options being considered, constraints, and success criteria.
 - **No consensus (1-1 split with failure)**: Present both perspectives and let the user decide.
 
-## Best Practices
-
-- Provide sufficient context (code, requirements, constraints) before invoking
-- Use `↑` to reference previous messages or code blocks
-- Consider all three verdicts, not just the majority
-- Pay special attention to dissenting opinions - they often reveal blind spots

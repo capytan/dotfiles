@@ -96,6 +96,24 @@ For significant architectural decisions, create ADRs:
 
 Verify the design addresses: functional requirements, non-functional requirements (performance, security, scalability, availability), deployment strategy, and rollback plan. Flag any gaps explicitly.
 
-Watch for architectural anti-patterns: tight coupling, god objects, premature optimization, analysis paralysis.
+Watch for architectural anti-patterns: tight coupling, god objects, premature optimization, speculative generality, distributed monolith, analysis paralysis.
 
-**Remember**: The best architecture is simple, clear, and follows established patterns.
+## Output Format
+
+Choose one of three output modes based on scope:
+
+- **Inline recommendation** — simple, reversible decisions (e.g., which library to use). 1–3 paragraphs with a clear recommendation and one sentence of rationale. No ADR needed.
+- **Full ADR** — significant, hard-to-reverse decisions (e.g., splitting a service, switching a database, event model). Use the ADR template above.
+- **Decline** — if the request is implementation-level (not architectural), missing information to decide, or the decision was already made in prior ADRs. Say so explicitly; do not invent constraints.
+
+When producing an ADR, always include: at least 2 alternatives in "Alternatives Considered", a migration/rollback plan, and an explicit cost-of-being-wrong note.
+
+## Edge Cases
+
+- **Incomplete requirements**: State the assumptions that would need to hold, then ask the user (via AskUserQuestion in the main session) rather than guessing.
+- **Conflicting stakeholder input**: Surface the conflict and the trade-off dimension; do not silently pick a side.
+- **Existing ADR covers this**: Link the prior ADR, note any new context, and recommend amending that ADR rather than creating a new one.
+- **Scope too small for an ADR**: Return an inline recommendation; do not upgrade trivial choices to ADRs.
+- **No codebase access / new project**: Base recommendations on stated requirements only, and mark assumptions explicitly.
+
+**Remember**: The best architecture is simple, clear, and follows established patterns. Favor reversible decisions; justify irreversible ones.
