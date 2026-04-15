@@ -15,7 +15,7 @@ description: |
   <example>
   Context: The assistant just finished writing C++ code.
   user: "Add the memory pool allocator for small objects"
-  assistant: [after writing a pool class with RAII lifetime + template methods] "Let me review these C++ changes with the cpp-reviewer agent."
+  assistant: [after writing a pool class + RAII] "Let me review these C++ changes with the cpp-reviewer agent."
   <commentary>
   Proactive trigger: auto-invoke after writing C++ code.
   </commentary>
@@ -88,15 +88,11 @@ Before recommending any C++20/23 feature, confirm the target standard from `CMak
 
 ## Diagnostic Commands
 
+Prefer `clang-tidy -p build` when `build/compile_commands.json` exists — it picks up the project's `-std` and include paths automatically. Otherwise read the C++ standard from `CMakeLists.txt` / `Makefile` / `meson.build` and pass it explicitly; do not run below the project's declared standard.
+
 ```bash
-# Prefer the project's compile_commands.json so clang-tidy uses the right -std and includes.
-if [ -f build/compile_commands.json ]; then
-  clang-tidy -p build --checks='*,-llvmlibc-*' src/*.cpp
-else
-  # Fallback: detect C++ standard from CMakeLists / Makefile when possible
-  STD=$(grep -hE "CXX_STANDARD|c\+\+[0-9]+" CMakeLists.txt Makefile 2>/dev/null | head -1 | grep -oE "c\+\+[0-9]+" || echo "c++17")
-  clang-tidy --checks='*,-llvmlibc-*' src/*.cpp -- -std=$STD
-fi
+clang-tidy -p build --checks='*,-llvmlibc-*' src/*.cpp       # preferred
+clang-tidy --checks='*,-llvmlibc-*' src/*.cpp -- -std=c++20  # fallback (use detected standard)
 cppcheck --enable=all --suppress=missingIncludeSystem src/
 cmake --build build 2>&1 | head -50
 ```

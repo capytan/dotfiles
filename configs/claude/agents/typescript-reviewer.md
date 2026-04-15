@@ -15,7 +15,7 @@ description: |
   <example>
   Context: The assistant just finished writing TypeScript code.
   user: "Add retry logic with exponential backoff to the API client"
-  assistant: [after writing async retry wrapper with Promise chains] "Let me review these TypeScript changes with the typescript-reviewer agent."
+  assistant: [after writing async retry wrapper] "Let me review these TypeScript changes with the typescript-reviewer agent."
   <commentary>
   Proactive trigger: auto-invoke after writing TypeScript or JavaScript code.
   </commentary>

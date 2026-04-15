@@ -15,7 +15,7 @@ description: |
   <example>
   Context: The assistant just finished writing Ruby code.
   user: "Add a background job for sending welcome emails"
-  assistant: [after adding a Sidekiq worker with ActiveRecord] "Let me review these Ruby changes with the ruby-reviewer agent."
+  assistant: [after adding a Sidekiq worker] "Let me review these Ruby changes with the ruby-reviewer agent."
   <commentary>
   Proactive trigger: auto-invoke after writing Ruby code.
   </commentary>

@@ -15,7 +15,7 @@ description: |
   <example>
   Context: The assistant just finished writing Flutter/Dart code.
   user: "Build the profile screen with async data loading"
-  assistant: [after writing a StatefulWidget with FutureBuilder + error states] "Let me review these Flutter changes with the flutter-reviewer agent."
+  assistant: [after writing a StatefulWidget + FutureBuilder] "Let me review these Flutter changes with the flutter-reviewer agent."
   <commentary>
   Proactive trigger: auto-invoke after writing Flutter/Dart code.
   </commentary>

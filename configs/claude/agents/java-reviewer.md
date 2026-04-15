@@ -15,7 +15,7 @@ description: |
   <example>
   Context: The assistant just finished writing Java code.
   user: "Add the order creation endpoint to the REST API"
-  assistant: [after adding a Spring controller with JPA repository + @Transactional service] "Let me review these Java changes with the java-reviewer agent."
+  assistant: [after adding a Spring controller + JPA service] "Let me review these Java changes with the java-reviewer agent."
   <commentary>
   Proactive trigger: auto-invoke after writing Java code.
   </commentary>

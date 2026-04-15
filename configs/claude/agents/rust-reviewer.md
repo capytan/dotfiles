@@ -15,7 +15,7 @@ description: |
   <example>
   Context: The assistant just finished writing Rust code.
   user: "Implement the streaming parser for the log format"
-  assistant: [after writing an async parser with tokio + error handling] "Let me review these Rust changes with the rust-reviewer agent."
+  assistant: [after writing an async tokio parser] "Let me review these Rust changes with the rust-reviewer agent."
   <commentary>
   Proactive trigger: auto-invoke after writing Rust code.
   </commentary>
