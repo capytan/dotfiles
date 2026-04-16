@@ -1,4 +1,3 @@
-@RTK.md
 
 # Workflow Preferences
 
@@ -9,4 +8,4 @@
 
 # Hooks
 
-PreToolUse validators block dangerous patterns (force-push, reset --hard, rm -rf, standalone sed/awk) and auto-rewrite commands through rtk — do not prefix `rtk` manually. Source: `configs/claude/hooks/pretooluse-validate-command.sh`.
+PreToolUse validators block dangerous patterns (force-push, reset --hard, rm -rf, standalone sed/awk). Source: `configs/claude/hooks/pretooluse-validate-command.sh`.

@@ -102,9 +102,6 @@ chmod +x "$DOTFILES_CLAUDE/statusline.sh"
 # CLAUDE.md: グローバル指示ファイル
 create_symlink "$CLAUDE_DIR/CLAUDE.md" "$DOTFILES_CLAUDE/CLAUDE.md" "CLAUDE.md"
 
-# RTK.md: rtk (Rust Token Killer) のガイドファイル
-create_symlink "$CLAUDE_DIR/RTK.md" "$DOTFILES_CLAUDE/RTK.md" "RTK.md"
-
 # 4. 確認と完了メッセージ
 echo
 echo -e "${GREEN}✓ セットアップが完了しました！${NC}"
