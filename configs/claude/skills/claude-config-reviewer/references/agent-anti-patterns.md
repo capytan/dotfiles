@@ -3,6 +3,8 @@
 > Referenced during Phase 2, criterion E (Anti-patterns) for agent file reviews.
 > Each pattern has a severity: Critical / Major / Minor.
 
+last_updated: 2026-04-17
+
 ---
 
 ## Critical — Immediate Action Required
@@ -41,15 +43,21 @@ Names like "helper", "assistant", "agent", or "tool" provide no signal about pur
 
 **Fix:** Use a descriptive name that reflects the agent's purpose (e.g., `code-reviewer`, `migration-planner`, `test-generator`).
 
-### Description Without Sufficient Examples `[custom:derived-from-agent-reviewer]`
+### Description Without Trigger Conditions `[official]` + `[community:high]`
 
-Fewer than 2 `<example>` blocks in the description. Examples are the primary mechanism for triggering accuracy.
+Description fails to state **when** the agent should fire. The router can't delegate if it doesn't know the trigger.
 
 **Detection patterns:**
-- Count of `<example>` tags in `description` block is 0 or 1
-- Description relies solely on prose without concrete trigger demonstrations
+- No "when…" / "after…" / "immediately after…" / "proactively…" / "use to…" phrasing
+- Description is purely capability-based ("security expert", "test runner") with no triggering condition
+- No action verb (`review`, `analyze`, `optimize`, `debug`, etc.)
+- For agents intended to auto-fire: no proactive keyword (`proactively`, `immediately`, `PROACTIVELY`, `MUST BE USED`)
 
-**Fix:** Add at least 2 examples (3–4 recommended). Each must include `Context:`, `user:`, `assistant:`, and `<commentary>` blocks.
+**Fix:** Rewrite the description to state when to use the agent. Either style is acceptable:
+- **Prose** (official style): "Expert code review specialist. Proactively reviews code for quality, security, and maintainability. Use immediately after writing or modifying code."
+- **`<example>`-block** (community style): 2–4 `<example>` blocks with `Context:`, `user:`, `assistant:`, `<commentary>`.
+
+**Note:** Anthropic's own documented agents use prose-only descriptions. The `<example>`-block convention is a community pattern — not required.
 
 ### Unjustified Write/Bash Tools `[custom:derived-from-agent-reviewer]`
 
@@ -61,6 +69,17 @@ Fewer than 2 `<example>` blocks in the description. Examples are the primary mec
 - No mention of file creation, modification, or command execution in the process steps
 
 **Fix:** Remove unjustified tools. If the agent only reads and reports, restrict to `["Read", "Grep", "Glob"]`. Add tools back only when the system prompt explicitly describes write or execution behavior.
+
+### Behavioral Instructions in Description `[community:high]`
+
+The description contains behavioral instructions ("Always do X", "You will…", step-by-step procedures) instead of routing signals.
+
+**Detection patterns:**
+- Description contains second-person instructions meant for the agent (e.g., `"You are a reviewer. When invoked, you will…"`)
+- Description contains numbered procedure steps
+- Description describes *how* the agent works rather than *when* it should fire
+
+**Fix:** Move all behavioral content into the system prompt (body). The description should be routing-only: "when" and "why" the agent fires. "Crystal-clear descriptions guide the router; crystal-clear prompts guide the specialist." (https://github.com/vijaythecoder/awesome-claude-agents)
 
 ### Thin System Prompt for Autonomous Agent `[custom:derived-from-agent-reviewer]`
 
@@ -112,3 +131,7 @@ System prompt lacks guidance for failure modes or unusual inputs.
 ## Changelog
 
 - 2026-03-29: Initial version — derived from agent-reviewer.md check items. All items tagged `[custom:derived-from-agent-reviewer]` pending Phase 0 research for official source validation.
+- 2026-04-17: Refreshed against code.claude.com/docs/en/sub-agents and community sources.
+  - Renamed **"Description Without Sufficient Examples"** → **"Description Without Trigger Conditions"**. Rewrote so the anti-pattern is missing *trigger conditions / action verbs / when-clauses* rather than missing `<example>` blocks. Anthropic's documented agents use prose-only descriptions, so the `<example>`-block count should not be a Major anti-pattern. Now tagged `[official]` + `[community:high]`.
+  - Added new Major anti-pattern: **"Behavioral Instructions in Description"** — description should be routing signals only; behavior belongs in the system prompt.
+  - Added `last_updated: 2026-04-17` header.

@@ -4,11 +4,13 @@
 > Manual edits are fine but may be overwritten on next research run.
 > Items tagged `[custom]` are protected from overwrite.
 
-last_updated: 2026-03-29
+last_updated: 2026-04-17
 sources:
   - https://code.claude.com/docs/en/memory
   - https://code.claude.com/docs/en/best-practices
+  - https://code.claude.com/docs/en/settings
   - https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/claude-4-best-practices
+  - https://www.anthropic.com/research/long-running-Claude
 
 ---
 
@@ -52,11 +54,26 @@ sources:
 | Managed policy | macOS: `/Library/Application Support/ClaudeCode/CLAUDE.md`; Linux/WSL: `/etc/claude-code/CLAUDE.md`; Windows: `C:\Program Files\ClaudeCode\CLAUDE.md` | Organization-wide instructions managed by IT/DevOps | All users in organization |
 | Project instructions | `./CLAUDE.md` or `./.claude/CLAUDE.md` | Team-shared instructions for the project | Team members via source control |
 | User instructions | `~/.claude/CLAUDE.md` | Personal preferences for all projects | Just you (all projects) |
+| Local instructions | `./CLAUDE.local.md` | Personal project-specific preferences; add to `.gitignore` | Just you (current project) |
 
-> — https://code.claude.com/docs/en/memory (retrieved 2026-03-29)
+> — https://code.claude.com/docs/en/memory (retrieved 2026-04-17)
 
-- "CLAUDE.md files in the directory hierarchy above the working directory are loaded in full at launch. CLAUDE.md files in subdirectories load on demand when Claude reads files in those directories."
+- "CLAUDE.md and CLAUDE.local.md files in the directory hierarchy above the working directory are loaded in full at launch. Files in subdirectories load on demand when Claude reads files in those directories."
+- "Within each directory, `CLAUDE.local.md` is appended after `CLAUDE.md`, so when instructions conflict, your personal notes are the last thing Claude reads at that level."
+- "All discovered files are concatenated into context rather than overriding each other."
 - "Managed policy CLAUDE.md files cannot be excluded."
+- **New in 2026-04**: Set `CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD=1` to also load `CLAUDE.md`, `.claude/CLAUDE.md`, `.claude/rules/*.md`, and `CLAUDE.local.md` from directories added with `--add-dir`.
+
+### When to Add to CLAUDE.md `[official]`
+
+> "Treat CLAUDE.md as the place you write down what you'd otherwise re-explain. Add to it when:
+> - Claude makes the same mistake a second time
+> - A code review catches something Claude should have known about this codebase
+> - You type the same correction or clarification into chat that you typed last session
+> - A new teammate would need the same context to be productive
+>
+> Keep it to facts Claude should hold in every session: build commands, conventions, project layout, 'always do X' rules. If an entry is a multi-step procedure or only matters for one part of the codebase, move it to a skill or a path-scoped rule instead."
+> — https://code.claude.com/docs/en/memory (retrieved 2026-04-17)
 
 ### Writing Effective Instructions `[official]`
 
@@ -198,11 +215,48 @@ paths:
 
 ### Compaction Behavior `[official]`
 
-> "CLAUDE.md fully survives compaction. After /compact, Claude re-reads your CLAUDE.md from disk and re-injects it fresh into the session."
-> — https://code.claude.com/docs/en/memory (retrieved 2026-03-29)
+> "Project-root CLAUDE.md survives compaction: after `/compact`, Claude re-reads it from disk and re-injects it into the session. Nested CLAUDE.md files in subdirectories are not re-injected automatically; they reload the next time Claude reads a file in that subdirectory."
+> — https://code.claude.com/docs/en/memory (retrieved 2026-04-17)
 
-- "If an instruction disappeared after compaction, it was given only in conversation, not written to CLAUDE.md."
+- "If an instruction disappeared after compaction, it was either given only in conversation or lives in a nested CLAUDE.md that hasn't reloaded yet."
 - Can customize: add "When compacting, always preserve the full list of modified files and any test commands" to CLAUDE.md
+
+### Managed CLAUDE.md vs Managed Settings `[official]`
+
+> "A managed CLAUDE.md and managed settings serve different purposes. Use settings for technical enforcement and CLAUDE.md for behavioral guidance"
+> — https://code.claude.com/docs/en/memory (retrieved 2026-04-17)
+
+| Concern | Configure in |
+|---------|-------------|
+| Block specific tools, commands, or file paths | Managed settings: `permissions.deny` |
+| Enforce sandbox isolation | Managed settings: `sandbox.enabled` |
+| Environment variables and API provider routing | Managed settings: `env` |
+| Authentication method and organization lock | Managed settings: `forceLoginMethod`, `forceLoginOrgUUID` |
+| Code style and quality guidelines | Managed CLAUDE.md |
+| Data handling and compliance reminders | Managed CLAUDE.md |
+| Behavioral instructions for Claude | Managed CLAUDE.md |
+
+### Auto Memory Settings `[official]`
+
+- Requires Claude Code v2.1.59 or later
+- Enabled by default; toggle via `/memory` or `autoMemoryEnabled: false` in project settings
+- Disable via env var: `CLAUDE_CODE_DISABLE_AUTO_MEMORY=1`
+- `autoMemoryDirectory` (user/local/policy settings only, not project) redirects storage location
+- Not accepted from `.claude/settings.json` — prevents shared projects from redirecting writes to sensitive locations
+- Storage derives `<project>` path from git repo root; all worktrees share one directory
+
+> — https://code.claude.com/docs/en/memory (retrieved 2026-04-17)
+
+### Self-Editing CLAUDE.md in Long-Running Sessions `[official]`
+
+> "Claude treats this file specially, keeping it in context and referencing it for the overall plan... Claude can edit these instructions as it works, updating them for future work as it works through issues."
+> — https://www.anthropic.com/research/long-running-Claude (retrieved 2026-04-17)
+
+For autonomous/long-running Claude sessions:
+- Spend most setup time "crafting a set of instructions that clearly articulates the project's deliverables and relevant context"
+- Iterate the plan locally before deploying
+- Let Claude refine its own strategic approach by editing CLAUDE.md as it encounters issues
+- Pair with a separate `CHANGELOG.md` (or similar) for progress tracking to avoid CLAUDE.md bloat
 
 ### Troubleshooting `[official]`
 
@@ -228,3 +282,4 @@ paths:
 
 - 2025-05-01: Initial version (based on Claude Code v2.x official docs)
 - 2026-03-29: Major update — rewrote from official docs at code.claude.com/docs/en/memory and code.claude.com/docs/en/best-practices. Added: two memory systems table, managed policy locations (macOS/Linux/Windows), writing effective instructions (size/structure/specificity/consistency), include/exclude table, pruning guidance with direct quotes, emphasis for adherence, /init with CLAUDE_CODE_NEW_INIT, @path import details (depth limit, approval dialog, relative resolution), AGENTS.md compatibility, path-specific rules with YAML frontmatter and glob patterns, claudeMdExcludes setting, HTML comments stripping, CLAUDE.md vs hooks distinction, CLAUDE.md vs skills distinction, over-specified anti-pattern, compaction behavior and survival, troubleshooting section (InstructionsLoaded hook, /memory, --append-system-prompt), Claude 4 prompting practices (explicit instructions, motivation/context).
+- 2026-04-17: Re-read official docs. Added: `CLAUDE.local.md` as fourth scope in file-locations table (with concatenation/append-after ordering), new "When to Add to CLAUDE.md" official heuristic (4 triggers), `CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD` env var for `--add-dir` directories, Managed CLAUDE.md vs Managed Settings decision table, Auto Memory settings (`autoMemoryEnabled`, `autoMemoryDirectory`, v2.1.59+ requirement, `CLAUDE_CODE_DISABLE_AUTO_MEMORY`), Self-Editing CLAUDE.md guidance from long-running Claude research blog. Updated compaction behavior to clarify only project-root CLAUDE.md is re-injected after `/compact`; nested files reload lazily.

@@ -11,7 +11,9 @@
 > - `[custom]` = Derived from this repo's own practice
 > - `[custom:derived-from-agent-reviewer]` = Derived from agent-reviewer.md check items
 >
-> **Note:** Phase 0 research will update tags to official sources when found.
+> **Note:** Phase 0 research (2026-04-17) cross-checked against code.claude.com/docs/en/sub-agents.
+
+last_updated: 2026-04-17
 
 ---
 
@@ -19,31 +21,36 @@
 
 ### A. Frontmatter Correctness (15 points)
 
-Validate the YAML frontmatter between `---` markers for required fields and value constraints.
-`[custom:derived-from-agent-reviewer]`
+Validate the YAML frontmatter between `---` markers for required fields and value constraints. Only `name` and `description` are required per official docs `[official]`; `model`, `color`, and `tools` are optional.
+`[custom:derived-from-agent-reviewer]` + `[official]`
 
-**name field:**
-- Present, 3–50 chars, pattern `^[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]$` → PASS
+**name field (required):**
+- Present, lowercase letters and hyphens, 3–50 chars → PASS
 - Generic name (`helper`, `assistant`, `agent`, `tool`) → -3 pts
 - Missing → 0 pts for entire category
 
-**model field:**
-- Present, value in `inherit | sonnet | opus | haiku` → PASS
-- Unrecognized value → -2 pts
-- Missing → 0 pts for entire category
+**description field (required):**
+- Present, non-empty → PASS
+- Missing → 0 pts for entire category (scored in detail in category B)
 
-**color field:**
-- Present, value in `blue | cyan | green | yellow | magenta | red` → PASS
+**model field (optional):**
+- Absent → PASS (defaults to `inherit`)
+- Present, value in `inherit | sonnet | opus | haiku` or full model ID (e.g., `claude-opus-4-7`) → PASS
 - Unrecognized value → -2 pts
-- Missing → 0 pts for entire category
 
-**tools field (if present):**
-- Valid JSON array format → PASS
-- Free-form string instead of array → -3 pts
+**color field (optional):**
+- Absent → PASS (no default required)
+- Present, value in `red | blue | green | yellow | purple | orange | pink | cyan` → PASS
+- Unrecognized value (e.g., `magenta`, `white`) → -2 pts
+  Source: https://code.claude.com/docs/en/sub-agents (retrieved 2026-04-17)
+
+**tools field (optional):**
+- Absent → PASS (inherits all)
+- Present as comma-separated string or YAML array of recognized tool names → PASS
 - Unrecognized tool name → -1 pt each
 
-**15 pts**: All required fields present and valid
-**10 pts**: All present, minor warnings (generic name, unusual values)
+**15 pts**: All present required fields valid, optional fields valid if present
+**10 pts**: Minor warnings (generic name, unusual optional values)
 **5 pts**: One required field missing or malformed
 **0 pts**: Multiple required fields missing
 
@@ -51,39 +58,48 @@ Validate the YAML frontmatter between `---` markers for required fields and valu
 
 The description determines when the agent triggers. This is the single most important factor
 for agent usefulness — a well-built agent that never fires is worthless.
-`[custom:derived-from-agent-reviewer]`
+`[custom:derived-from-agent-reviewer]` + `[official]` + `[community:high]`
 
-**Length:** 10–5,000 characters required.
+**Two accepted styles (either satisfies this category):**
+
+Official Anthropic examples use a **prose-only** description (no `<example>` blocks).
+Many community collections use an **`<example>`-block** style (Context / user / assistant / `<commentary>`).
+Both are valid. Score the style the author chose against its own rubric below.
+
+**Length:** 10–5,000 characters.
 - Under 10 → 0 pts for entire category
 - Over 5,000 → -3 pts
 
-**"Use this agent when..." pattern:**
-- Present prominently → PASS
-- Missing → -4 pts
+**Trigger language (both styles):**
+- Description includes a clear "when to use" clause (e.g., "Use proactively after…", "Use when…", "Use immediately after…") → required
+- Missing any trigger clause → -4 pts
+- Proactive trigger word (`proactively`, `immediately`, `PROACTIVELY`, `MUST BE USED`) present when auto-delegation is desired → +0 (expected)
+- Note: `"use proactively"` is the only trigger phrase in official docs; `MUST BE USED` is a community convention `[community:high]`
 
-**`<example>` blocks:**
-- 3–4 examples → full marks
-- 2 examples → -2 pts
-- Fewer than 2 → -6 pts
-- Zero examples → 0 pts for entire category
+**Action-verb specificity `[community:high]`:**
+- Description contains a concrete action verb (`review`, `analyze`, `optimize`, `audit`, `debug`, `generate`, `refactor`) → PASS
+- Purely capability-based description without action verb ("security expert") → -3 pts
 
-**Example structure (each must contain):**
-- `Context:` line, `user:` line, `assistant:` line, `<commentary>` block
-- Missing any element → -2 pts per example
+#### B1. Prose-style scoring (official-aligned)
 
-**Trigger coverage:**
-- At least one Explicit trigger (direct user request) → required
-- At least one Proactive trigger (auto-trigger after related work) → required
-- Missing either type → -2 pts
+- Specific trigger conditions stated (what event, what file type, what user intent) → 8 pts
+- Role/expertise area stated in a few words → 4 pts
+- Action-verb recall hook present → 4 pts
+- Length 80–600 characters (matches all four official examples) → 4 pts
+- No behavioral instructions bleeding into description (routing only) → deduction-only: mixing instructions → -3 pts
 
-**Phrasing variety:**
-- User messages vary across examples → PASS
-- All examples phrased identically → -1 pt
+#### B2. `<example>`-block scoring (community-aligned)
 
-**20 pts**: 3+ well-structured examples, both trigger types, varied phrasing
-**15 pts**: 2 good examples with minor gaps
-**10 pts**: Examples present but missing structure or coverage
-**5 pts**: Minimal description, fewer than 2 examples
+- 2–4 `<example>` blocks → 8 pts (3 recommended)
+- Fewer than 2 → -6 pts; zero → 0 pts for entire category
+- Each example contains `Context:`, `user:`, `assistant:`, and `<commentary>` → 4 pts
+- At least one explicit trigger + at least one proactive trigger example → 4 pts
+- User-message phrasing varies across examples → 4 pts
+
+**20 pts**: Top-tier in either style (crisp prose OR 3+ well-formed examples covering both trigger types)
+**15 pts**: Good but missing one dimension (no proactive trigger, or no action verb)
+**10 pts**: Description present but vague or lacking trigger clause
+**5 pts**: Minimal description, unclear when the agent fires
 **0 pts**: No description or effectively empty
 
 ### C. System Prompt Quality (25 points)
@@ -110,28 +126,39 @@ Second person is required throughout the system prompt.
 
 #### C3. Structure (9 points)
 
-Check for the presence of these structural elements:
+Based on the 5-part pattern shared by all four documented official example agents (code-reviewer, debugger, data-scientist, db-reader) `[official]` and the community five-layer blueprint `[community:high]`:
 
-- **Role definition** (`You are [role] specializing in [domain]`): 1 pt
-- **Core Responsibilities** (3–8 numbered items): 2 pts (absent entirely → 0 pts, fewer than 3 → 1 pt)
-- **Process steps** (concrete, ordered sequence): 2 pts (absent → 0 pts)
-- **Output Format** (explicit definition of expected output): 2 pts (absent → 0 pts)
-- **Edge Cases** (handling instructions for failure modes): 2 pts (absent → 1 pt)
+- **Role / Identity opener** (`You are a [qualifier] [role] [specializing in / ensuring X]`): 1 pt
+- **"When invoked:" action sequence** (3–6 numbered steps, concrete and ordered): 2 pts (absent → 0 pts, fewer than 3 → 1 pt)
+- **Domain checklist / key practices** (bullet list of concerns, techniques, or responsibilities): 2 pts (absent → 0 pts)
+- **Output Format** (explicit priority labels, sections, or JSON/Markdown contract): 2 pts (absent → 0 pts)
+- **Focus statement / edge-case handling** (single-sentence priority reminder OR conditional instructions for failure modes): 2 pts (absent → 1 pt)
+
+The official examples omit a separate "Edge Cases" section and substitute a closing focus statement (e.g., "Focus on fixing the underlying issue, not the symptoms."). Either is acceptable.
 
 ### D. Tool Restriction (10 points)
 
-Principle of least privilege for the `tools` array.
-`[custom:derived-from-agent-reviewer]`
+Principle of least privilege for the `tools` array. Official guidance: "Limit tool access: grant only necessary permissions for security and focus." `[official]`
+Community-standard role tiers `[community:high]`:
+
+| Role | Recommended tools |
+|------|-------------------|
+| Read-only reviewer / auditor | `Read, Grep, Glob` (add `Bash` if `git diff` etc. is needed — official code-reviewer includes Bash) |
+| Research / information gatherer | `Read, Grep, Glob, WebFetch, WebSearch` |
+| Code writer / implementer | `Read, Write, Edit, Bash, Glob, Grep` |
+| Documentation agent | `Read, Write, Edit, Glob, Grep, WebFetch, WebSearch` |
 
 **If `tools` is specified:**
 - Each listed tool is justified by the agent's described functionality → 10 pts
-- `Write` or `Bash` listed without clear justification → -3 pts per unjustified tool
+- `Write` or `Edit` listed on a read-only/review agent → -3 pts per unjustified tool
+- `Bash` on an agent with no shell-execution responsibility → -3 pts (exception: read-only agents that `git diff` or run validators)
 - Unused tools listed → -2 pts each
 
 **If `tools` is not specified:**
-- Agent has access to all tools — assess whether that is appropriate for its purpose
-- Read-only agent with full tool access → -5 pts
-- Agent needing broad tool access → 10 pts (advisory NOTE only)
+- Agent inherits all tools. Scoring depends on described behavior.
+- Read-only/review agent with no `tools` restriction → -5 pts (violates least-privilege; official quickstart explicitly says to deselect everything except Read-only tools for reviewers)
+- Writer/coordinator agent needing broad access → 10 pts (advisory NOTE only)
+- Consider `disallowedTools` denylist as an alternative (useful when mostly-full access is wanted except a few sensitive tools)
 
 ### E. Anti-patterns (10 points)
 
@@ -196,3 +223,8 @@ Verify the agent file is consistent with its environment.
 ## Changelog
 
 - 2026-03-29: Initial version — derived from agent-reviewer.md check items A–G. All items tagged `[custom:derived-from-agent-reviewer]` pending Phase 0 research for official source validation.
+- 2026-04-17: Refreshed against code.claude.com/docs/en/sub-agents.
+  - **A. Frontmatter**: `color` palette corrected to `red | blue | green | yellow | purple | orange | pink | cyan` (was `blue | cyan | green | yellow | magenta | red`). Clarified `model`/`color` as optional. Accept full model IDs. Accept comma-separated string for `tools` (YAML-native, not just JSON array).
+  - **B. Description**: Rewrote to accept both official prose-only style and community `<example>`-block style as equally valid. Added action-verb specificity check (-3 pts for capability-only descriptions). Split scoring into B1 (prose) and B2 (`<example>`-block) branches. `MUST BE USED` flagged as community convention, not official.
+  - **C3. Structure**: Replaced with the 5-part official pattern (Identity / "When invoked:" steps / Checklist / Output format / Focus or edge-case statement). Edge-case section no longer mandatory — closing focus statement is an accepted substitute.
+  - **D. Tool Restriction**: Added role-tier table (read-only / research / writer / docs) sourced from VoltAgent/awesome-claude-code-subagents. Noted that official code-reviewer example includes `Bash` for `git diff` — pure `Read/Grep/Glob` is stricter but not required. Added `disallowedTools` as denylist alternative.

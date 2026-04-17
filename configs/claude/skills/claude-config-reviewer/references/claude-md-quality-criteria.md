@@ -1,5 +1,7 @@
 # Quality Criteria
 
+last_updated: 2026-04-17
+
 > Referenced during Phase 2 (Quality Assessment).
 > Updated based on Phase 0 research findings.
 >
@@ -18,13 +20,16 @@
 
 CLAUDE.md is loaded every session. Evaluate whether each line justifies its token cost.
 
-**Line count thresholds** `[official]` + `[semi-official]`
+**Line count thresholds** `[official]` + `[semi-official]` + `[community:high]`
 Official docs: "target under 200 lines per CLAUDE.md file" (code.claude.com/docs/en/memory).
-Boris Cherny (Claude Code creator): ~100 lines / ~2,500 tokens is his personal config.
-- Under 100 lines → ideal (20 pts)
-- 100–200 lines → good, within official target (15 pts)
-- 200–300 lines → over official target, review for trimming (10 pts)
-- Over 300 lines → strongly recommend splitting (5 pts)
+Boris Cherny (Claude Code creator): ~100 lines / ~2,500 tokens is his personal config. His team's `~/.claude/CLAUDE.md` is ~76 tokens; project CLAUDE.md is ~4k tokens.
+HumanLayer (Nov 2025): "general consensus is that under 300 lines is best, and shorter is even better. At HumanLayer, the root CLAUDE.md file is less than sixty lines."
+abhishekray07 (2026): "if your project CLAUDE.md is over 80 lines, Claude starts ignoring parts of it" — and frontier models reliably follow ~150–200 total instructions, ~50 of which are consumed by Claude Code's system prompt.
+- Under 80 lines → ideal (20 pts)
+- 80–150 lines → good (17 pts)
+- 150–200 lines → acceptable, within official target (13 pts)
+- 200–300 lines → over official target, review for trimming (8 pts)
+- Over 300 lines → strongly recommend splitting (4 pts)
 - Over 500 lines → immediate action needed (0 pts)
 
 **Inferable content detection** `[official]`
@@ -158,3 +163,4 @@ Deduct when Low/None exceeds 30% of total sections.
 
 - 2025-05-01: Initial version
 - 2026-03-29: Updated line count thresholds with official 200-line target and Boris Cherny's ~100-line reference. Expanded inferable content detection to match official Exclude list. Added hook-convertible rules detection sub-criterion under Token Efficiency (semi-official + community:high).
+- 2026-04-17: Tightened line-count thresholds: new "ideal" bar is under 80 lines (HumanLayer 60-line benchmark + abhishekray07 "80 lines → Claude starts ignoring" finding) with a 6-tier rubric. Added note on the ~150–200 total-instruction budget (~50 used by Claude Code's system prompt). Cited specific Boris token numbers (user 76 / project 4k).

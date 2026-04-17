@@ -1,14 +1,16 @@
 # SKILL.md Quality Criteria
 
 > Referenced during Phase 2 (Quality Assessment) for SKILL.md reviews.
-> Derived from the skill-reviewer agent's check items A-J.
+> Derived from the skill-reviewer agent's check items A-J, updated with 2026-04 official guidance.
 >
 > **Source tags:**
 > - `[official]` = Anthropic official documentation
 > - `[semi-official]` = Anthropic employee personal posts, official repo comments
 > - `[community:high]` = GitHub 50+ stars, cited in multiple independent articles
 > - `[custom]` = Derived from this repo's own practice
-> - `[custom:derived-from-skill-reviewer]` = Extracted from skill-reviewer agent; Phase 0 research will update to official sources when found
+> - `[custom:derived-from-skill-reviewer]` = Extracted from skill-reviewer agent
+
+last_updated: 2026-04-17
 
 ---
 
@@ -16,13 +18,15 @@
 
 ### A. Frontmatter Correctness (15 points)
 
-`[custom:derived-from-skill-reviewer]` YAML frontmatter is the skill's identity and trigger mechanism.
+`[official]` YAML frontmatter is the skill's identity and trigger mechanism.
 
-**name**: max 64 chars, lowercase/numbers/hyphens only, no reserved words ("anthropic", "claude"), no XML tags, gerund form preferred, must match folder name.
+**name** `[official]`: max 64 chars, lowercase/numbers/hyphens only, no reserved words ("anthropic", "claude"), no XML tags. Gerund form preferred (`processing-pdfs`, `analyzing-spreadsheets`). If omitted, defaults to directory name.
 
-**description**: non-empty, max 1024 chars, no XML tags, third person. Must cover: `[What] + [When/triggers] + [Capabilities] + [Negative triggers]`.
+**description** `[official]`: non-empty, max **1024 chars** (hard cap, truncated beyond), no XML tags, **third person** (not "I" / "You"). Must cover: `[What] + [When/triggers]`. Slight "pushiness" recommended to combat undertriggering.
 
-**Other**: no README.md in skill dir. Optional fields (compatibility, metadata, license) validated if present.
+**when_to_use** `[official]` (new field, 2026): optional; appended to `description` in listing. Combined (`description` + `when_to_use`) truncated at **1,536 chars** in the listing — front-load key triggers.
+
+**Other**: no README.md / CHANGELOG.md in skill dir `[community:high]` (wastes tokens). Optional fields (`allowed-tools`, `paths`, `context`, etc.) validated if present.
 
 - **15 pts**: All valid, description covers four components, name-folder match, no README.md
 - **12 pts**: Valid but description missing one component
@@ -55,11 +59,13 @@ High freedom for creative tasks, medium for technical, low for safety-critical/e
 
 ### D. Structure & Progressive Disclosure (15 points)
 
-`[custom:derived-from-skill-reviewer]` Large skills must split content into referenced files.
+`[official]` Large skills must split content into referenced files.
 
-**Size**: SKILL.md under 500 lines; total words (SKILL.md + refs) under 5,000; references one level deep only.
+**Size** `[official]`: SKILL.md under **500 lines**; SKILL.md body under 5,000 tokens recommended; references **one level deep only** (no nested links from a reference into another reference).
 
-**Progressive disclosure**: over 300 lines without `references/` triggers a warning.
+**Table of contents** `[official]`: reference files longer than **100 lines** must include a TOC at the top so Claude can see full scope when previewing with partial reads.
+
+**Progressive disclosure** `[official]`: three tiers — metadata (always loaded) → SKILL.md body (on trigger) → bundled resources (on demand). Over 300 lines without `references/` is a yellow flag.
 
 **Recommended sections**: title/overview, workflow/instructions, output format/examples, error handling/troubleshooting.
 
@@ -128,7 +134,11 @@ Per section: **High** = changes decisions, **Medium** = clarifies ambiguity, **L
 
 **MCP Tool References** `[custom:derived-from-skill-reviewer]`: fully qualified format (`ServerName:tool_name`), no ambiguous references.
 
-**Testing** `[custom:derived-from-skill-reviewer]`: recommend testing across model tiers (Haiku, Sonnet, Opus).
+**Testing** `[official]`: test across model tiers (Haiku, Sonnet, Opus) — what works for Opus may need more detail for Haiku. Build ≥3 evals BEFORE writing extensive content (evaluation-driven development). skill-creator's eval pipeline uses 20 realistic trigger/non-trigger queries × up to 5 rounds of description optimization `[semi-official]`.
+
+**"Pushy" descriptions** `[semi-official]`: combat undertriggering by making descriptions slightly assertive — include explicit trigger phrases beyond the bare "what" statement.
+
+**"Old patterns" archival** `[official]`: deprecated info should move into a collapsed `<details>` section titled "Old patterns" rather than being deleted or flagged with dates.
 
 ---
 
@@ -148,3 +158,4 @@ Per section: **High** = changes decisions, **Medium** = clarifies ambiguity, **L
 ## Changelog
 
 - 2026-03-29: Initial version. Derived from skill-reviewer agent check items A-J. All items tagged `[custom:derived-from-skill-reviewer]` pending Phase 0 research to update with official sources.
+- 2026-04-17: Upgraded tags from `[custom:derived-from-skill-reviewer]` to `[official]` / `[semi-official]` / `[community:high]` where Phase 0 research confirmed. Added `when_to_use` frontmatter field (new 2026). Clarified description caps: 1024-char hard validation + 1,536-char listing truncation (combined with `when_to_use`). Added "no README/CHANGELOG in skill dir" rule (community consensus). Strengthened structure criterion D with one-level-deep + 100-line TOC rules (now `[official]`). Added "pushy" description guidance, evaluation-driven development, and "Old patterns" archival pattern to supplementary checks.
