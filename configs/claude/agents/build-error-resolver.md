@@ -21,6 +21,15 @@ description: |
   Proactive trigger: auto-invoke when build fails during implementation work.
   </commentary>
   </example>
+
+  <example>
+  Context: CI is red after a Dependabot PR bumps the TypeScript major version.
+  user: "CI is failing after the TypeScript 5 bump — 40+ errors"
+  assistant: "I'll use the build-error-resolver agent to categorize the 40+ errors and apply minimal fixes — no refactoring, just restore the green build."
+  <commentary>
+  Dependency-upgrade trigger: minimal-diff fixes for compiler breaks after a version bump.
+  </commentary>
+  </example>
 tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
 model: sonnet
 ---

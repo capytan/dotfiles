@@ -20,6 +20,15 @@ description: |
   Proactive trigger: auto-invoke after writing Ruby code.
   </commentary>
   </example>
+
+  <example>
+  Context: A Rails app is about to deploy changes that modify authorization logic.
+  user: "Review the authorization changes before we deploy tomorrow"
+  assistant: "I'll use the ruby-reviewer agent to audit the changes — Brakeman plus the CRITICAL Rails security checklist (CSRF, mass assignment, unsafe YAML, open redirect)."
+  <commentary>
+  Pre-deploy trigger: Rails-specific security sweep before a production release.
+  </commentary>
+  </example>
 tools: ["Read", "Grep", "Glob", "Bash"]
 model: sonnet
 color: red

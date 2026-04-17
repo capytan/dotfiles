@@ -20,6 +20,15 @@ description: |
   Proactive trigger: auto-invoke after writing Python code.
   </commentary>
   </example>
+
+  <example>
+  Context: A pull request adds webhook handling code to a Django project.
+  user: "Review PR #128 — adds the billing webhook handler"
+  assistant: "I'll use the python-reviewer agent to review the Django webhook changes, escalating to security-reviewer if payment-signature handling looks weak."
+  <commentary>
+  PR-review trigger: review a PR diff (not local changes) with peer-agent handoff for security-critical paths.
+  </commentary>
+  </example>
 tools: ["Read", "Grep", "Glob", "Bash"]
 model: sonnet
 color: green

@@ -158,9 +158,9 @@ Merge findings on the same file within 5 lines:
 
 | Confidence | Severity |
 |-----------|----------|
-| 90–100 | 🔴 Normal — must fix |
-| 80–89 | 🟡 Nit — recommended |
-| Any (unchanged lines) | 🟣 Pre-existing |
+| 90–100 | Normal — must fix |
+| 80–89 | Nit — recommended |
+| Any (unchanged lines) | Pre-existing |
 
 ### 4.4 Report
 
@@ -173,7 +173,7 @@ Output structured markdown in the session language:
 **Files reviewed**: N files, M lines changed
 **Reviewers**: Rules, Bug Scanner, History, PR Archaeology, Comments
 
-### 🔴 Normal (N issues)
+### Normal (N issues)
 
 1. **[Rules Auditor]** description (CLAUDE.md says "<...>")
    - File: `path/to/file:45`
@@ -185,10 +185,10 @@ Output structured markdown in the session language:
    - Confidence: 92
    - Bug Scanner: description / History: regression evidence
 
-### 🟡 Nit (N issues)
+### Nit (N issues)
 ...
 
-### 🟣 Pre-existing (N issues)
+### Pre-existing (N issues)
 ...
 
 ### Summary

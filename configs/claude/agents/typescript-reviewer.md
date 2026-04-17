@@ -20,6 +20,15 @@ description: |
   Proactive trigger: auto-invoke after writing TypeScript or JavaScript code.
   </commentary>
   </example>
+
+  <example>
+  Context: A pull request is marked ready for review but CI status is unknown.
+  user: "Review the PR for the payment flow refactor"
+  assistant: "I'll use the typescript-reviewer agent — it establishes scope against the PR base branch and gates on green CI before commenting, so it will stop and report if required checks are failing."
+  <commentary>
+  PR-review trigger: merge-readiness check precedes comment generation to avoid reviewing against a broken build.
+  </commentary>
+  </example>
 tools: ["Read", "Grep", "Glob", "Bash"]
 model: sonnet
 color: yellow

@@ -21,6 +21,15 @@ description: |
   Proactive trigger: auto-invoke before implementing features with significant architectural impact.
   </commentary>
   </example>
+
+  <example>
+  Context: User asks for help choosing a variable name inside an existing service.
+  user: "Should I call this `userCount` or `totalUsers`?"
+  assistant: "This is an implementation-level decision, not an architectural one — no architect agent needed. I'll suggest a name inline based on nearby conventions."
+  <commentary>
+  Decline trigger: routine naming/implementation choices do not warrant ADR-level analysis; the agent's Decline mode exists to route these away.
+  </commentary>
+  </example>
 tools: ["Read", "Grep", "Glob"]
 model: opus
 ---

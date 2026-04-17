@@ -20,6 +20,15 @@ description: |
   Proactive trigger: auto-invoke after writing Java code.
   </commentary>
   </example>
+
+  <example>
+  Context: A pull request adds a new Spring REST endpoint with JPA queries.
+  user: "Review PR #215 — adds the /orders search endpoint"
+  assistant: "I'll use the java-reviewer agent to review the Spring controller and JPA query, escalating to security-reviewer if `@Valid` or input validation looks insufficient."
+  <commentary>
+  PR-review trigger: Spring Boot endpoint review with known hotspots (N+1, `@Valid`, pagination); hands off security-critical paths.
+  </commentary>
+  </example>
 tools: ["Read", "Grep", "Glob", "Bash"]
 model: sonnet
 color: blue

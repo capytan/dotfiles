@@ -20,6 +20,15 @@ description: |
   Proactive trigger: auto-invoke after writing Go code.
   </commentary>
   </example>
+
+  <example>
+  Context: User added a goroutine-based worker pool and wants a safety review.
+  user: "Check the worker pool — I'm worried about goroutine leaks"
+  assistant: "I'll use the go-reviewer agent to audit the goroutine lifecycle — context cancellation, channel buffering, sync.WaitGroup coordination."
+  <commentary>
+  Concurrency trigger: goroutine lifecycle audit for leak and cancellation correctness.
+  </commentary>
+  </example>
 tools: ["Read", "Grep", "Glob", "Bash"]
 model: sonnet
 color: cyan
