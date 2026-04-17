@@ -1,5 +1,7 @@
 # Modularization Guide
 
+last_updated: 2026-04-17
+
 > Referenced in Phase 4 when proposing CLAUDE.md splits.
 
 ---
@@ -103,7 +105,7 @@ monorepo/
 - Don't copy parent CLAUDE.md content into children (parent is auto-loaded too)
 - Children should contain only package-specific information
 
-## Method 4: `.claude.local.md` (Personal Settings)
+## Method 4: `CLAUDE.local.md` (Personal Settings) `[official]`
 
 Separate settings that shouldn't be shared with the team.
 
@@ -112,7 +114,11 @@ Separate settings that shouldn't be shared with the team.
 - Local-environment-specific paths (homebrew install locations, etc.)
 - Experimental configurations
 
-**Must be added to `.gitignore`.**
+**Must be added to `.gitignore`.** Running `/init` and choosing the personal option does this automatically.
+
+**Caveats (official, 2026-04-17):**
+- Loads alongside `CLAUDE.md` and is appended *after* it at each directory level, so personal notes override the shared file when they conflict
+- In multi-worktree workflows, a gitignored `CLAUDE.local.md` exists only in the worktree where you created it. To share across worktrees, import from your home directory: `@~/.claude/my-project-instructions.md`
 
 ---
 
@@ -141,6 +147,30 @@ Skills only load when invoked or when Claude determines they're relevant.
 **Caveats:**
 - Skills require Claude to recognize relevance or explicit invocation
 - Not suitable for rules that must apply to every session universally
+
+## Method 5b: `agent_docs/` with file:line pointers `[community:high]`
+
+HumanLayer's progressive-disclosure pattern (Nov 2025):
+
+```
+agent_docs/
+├── building_the_project.md
+├── running_tests.md
+└── code_conventions.md
+```
+
+From CLAUDE.md, reference these files as needed with `file:line` pointers to authoritative code instead of inlining snippets that will drift.
+
+**Best for:**
+- Supplementary documentation that would otherwise bloat CLAUDE.md
+- Topics where authoritative code exists (point there rather than copying)
+- Team knowledge that doesn't belong in every session context
+
+**Caveats:**
+- Not auto-loaded — Claude reads on demand when it follows pointers, like any regular file
+- Prefer `.claude/rules/` with `paths:` frontmatter when the content should load automatically for specific file patterns
+
+> Source: https://www.humanlayer.dev/blog/writing-a-good-claude-md (retrieved 2026-04-17)
 
 ## Method 6: Hooks for Deterministic Enforcement `[official]` `[semi-official]`
 
@@ -193,3 +223,4 @@ Move absolute rules to hooks instead of relying on CLAUDE.md compliance.
 
 - 2025-05-01: Initial version
 - 2026-03-29: Added path-specific rules (YAML frontmatter), updated @path import details (depth limit, resolution rules, approval dialog), added Method 5 (Skills) and Method 6 (Hooks) for modularization, expanded splitting procedure with skills/hooks/claudeMdExcludes options, added symlink support for rules.
+- 2026-04-17: Renamed Method 4 from `.claude.local.md` to the official `CLAUDE.local.md` (previous spelling was incorrect); added concatenation/ordering and worktree caveats. Added new Method 5b: HumanLayer `agent_docs/` progressive-disclosure pattern with file:line pointers.

@@ -1,5 +1,7 @@
 # Anti-Pattern Catalog
 
+last_updated: 2026-04-17
+
 > Referenced during Phase 2, criterion F (Anti-patterns).
 > Each pattern has a severity: Critical / Major / Minor.
 
@@ -29,13 +31,15 @@ CLAUDE.md is typically git-tracked, making this a high-risk leak vector.
 > — https://code.claude.com/docs/en/best-practices (retrieved 2026-03-29)
 
 Files exceeding 200 lines (official threshold) where important rules get lost in noise.
+Community consensus tightens this: HumanLayer keeps theirs under 60 lines; abhishekray07 reports adherence falling off above 80 lines. Claude Code's system prompt already consumes ~50 of the ~150–200 instructions frontier models reliably follow.
 
 **Detection patterns:**
-- Line count over 200
+- Line count over 200 (official threshold)
+- Line count over 80 (community adherence cliff)
 - Multiple sections covering the same topic
 - Rules Claude already follows correctly without being told
 
-**Fix:** "Ruthlessly prune. If Claude already does something correctly without the instruction, delete it or convert it to a hook."
+**Fix:** "Ruthlessly prune. If Claude already does something correctly without the instruction, delete it or convert it to a hook." Consider moving supplementary content to `agent_docs/` with `file:line` pointers, or to skills/rules with `paths:` frontmatter.
 
 ### Copy-Pasted External Docs `[official]`
 
@@ -198,3 +202,4 @@ Content that only applies to a specific task or session.
 
 - 2025-05-01: Initial version
 - 2026-03-29: Added new anti-patterns from official docs and community research: Over-Specified CLAUDE.md (official), Conflicting Instructions (official), Guidance That Should Be a Hook (semi-official + community:high), Information That Changes Frequently (official), Session-Specific Content (official). Enhanced existing patterns with direct quotes and source URLs. Added SFEIR bullet-point adherence insight to Verbose Writing.
+- 2026-04-17: Tightened Over-Specified CLAUDE.md detection with community 80-line adherence cliff (abhishekray07) and the ~150–200 instruction budget finding; added progressive-disclosure fix suggestion (HumanLayer agent_docs/ pattern).

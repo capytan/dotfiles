@@ -9,7 +9,7 @@
 > - `[community:mid]` = GitHub 10-50 stars, verified in a tech blog
 > - `[community:low]` = Individual report, unverified but reasonable (reference only, not in scoring)
 
-last_updated: 2026-03-29
+last_updated: 2026-04-17
 sources:
   - https://howborisusesclaudecode.com/
   - https://github.com/shanraisshan/claude-code-best-practice
@@ -19,9 +19,14 @@ sources:
   - https://github.com/ykdojo/claude-code-tips
   - https://github.com/hesreallyhim/awesome-claude-code
   - https://github.com/wesammustafa/Claude-Code-Everything-You-Need-to-Know
+  - https://github.com/rohitg00/awesome-claude-code-toolkit
   - https://www.builder.io/blog/claude-code-tips-best-practices
   - https://institute.sfeir.com/en/claude-code/claude-code-memory-system-claude-md/tips/
   - https://medium.com/data-science-collective/10-claude-code-tips-from-the-creator-boris-cherny-36d5a8af2560
+  - https://www.humanlayer.dev/blog/writing-a-good-claude-md
+  - https://venturebeat.com/technology/the-creator-of-claude-code-just-revealed-his-workflow-and-developers-are
+  - https://claudify.tech/blog/claude-code-best-practices
+  - https://ccforpms.com/fundamentals/project-memory
   - https://dev.to/_46ea277e677b888e0cd13/claude-code-vs-codex-2026-what-500-reddit-developers-really-think-31pb
 
 ---
@@ -34,8 +39,39 @@ sources:
 
 Boris Cherny's (Claude Code creator) CLAUDE.md is "only about 2,500 tokens (~100 lines), yet it outperforms most people's 800-line configs."
 
-> Source: https://howborisusesclaudecode.com/ (retrieved 2026-03-29)
+Explicit token breakdown from Boris's team (2026-04): `~/.claude/CLAUDE.md` ~76 tokens; project `CLAUDE.md` ~4k tokens.
+
+> Source: https://howborisusesclaudecode.com/ (retrieved 2026-04-17)
 > Corroborated: https://mindwiredai.com/2026/03/25/claude-code-creator-workflow-claudemd/, https://medium.com/data-science-collective/10-claude-code-tips-from-the-creator-boris-cherny-36d5a8af2560
+
+#### HumanLayer: under 60 lines ideal, under 300 lines hard ceiling `[community:high]`
+
+> "general consensus is that under 300 lines is best, and shorter is even better. At HumanLayer, the root CLAUDE.md file is less than sixty lines."
+
+> Source: https://www.humanlayer.dev/blog/writing-a-good-claude-md (Kyle, 2025-11-25, retrieved 2026-04-17)
+> Corroborated: https://github.com/abhishekray07/claude-md-templates ("if your project CLAUDE.md is over 80 lines, Claude starts ignoring parts of it")
+
+#### 150–200 instruction budget before compliance drops `[community:high]`
+
+Frontier models reliably follow roughly 150–200 instructions. Claude Code's default system prompt already consumes ~50 of them, leaving ~100–150 for your CLAUDE.md, skills metadata, and conversation instructions combined.
+
+> Source: https://github.com/abhishekray07/claude-md-templates (retrieved 2026-04-17)
+> Corroborated: https://zenn.dev/tmasuyama1114/articles/claude_code_best_practice_guide
+
+#### WHAT / WHY / HOW structure `[community:high]`
+
+HumanLayer recommends organizing CLAUDE.md around three pillars:
+- **WHAT**: tech stack, project structure, codebase map (essential in monorepos)
+- **WHY**: purpose and function of different parts of the project
+- **HOW**: how Claude should work — tools (e.g., `bun` vs `node`), how to verify changes, how to run tests/typechecks
+
+> Source: https://www.humanlayer.dev/blog/writing-a-good-claude-md (retrieved 2026-04-17)
+
+#### Progressive disclosure: link to agent_docs/ instead of inlining `[community:high]`
+
+> Organize supplementary documentation in separate files under `agent_docs/` (e.g., `building_the_project.md`, `running_tests.md`, `code_conventions.md`) and reference them with `file:line` pointers from CLAUDE.md. Keeps the root file lean and points to authoritative code rather than copying snippets that become outdated.
+
+> Source: https://www.humanlayer.dev/blog/writing-a-good-claude-md (retrieved 2026-04-17)
 
 #### Document mistakes in CLAUDE.md, not just rules `[semi-official]`
 
@@ -103,11 +139,22 @@ Boris Cherny's workflow: "I will use Plan mode, and go back and forth with Claud
 > Source: https://howborisusesclaudecode.com/ (retrieved 2026-03-29)
 > Corroborated: https://github.com/wesammustafa/Claude-Code-Everything-You-Need-to-Know
 
-#### Use @.claude tag on PRs to add learnings `[semi-official]`
+#### Use @.claude tag on PRs to add learnings (Compounding Engineering) `[semi-official]`
 
 > "Cherny often uses the @.claude tag on coworkers' PRs to add learnings to CLAUDE.md, ensuring knowledge from each PR is preserved."
 
-> Source: https://medium.com/data-science-collective/10-claude-code-tips-from-the-creator-boris-cherny-36d5a8af2560 (retrieved 2026-03-29)
+Install via `/install-github-action`. Claude automatically updates CLAUDE.md and commits learnings when tagged. Boris calls this **"Compounding Engineering"** — iteratively building institutional knowledge so the agent gets smarter with every PR review.
+
+> Source: https://howborisusesclaudecode.com/ (retrieved 2026-04-17), https://medium.com/data-science-collective/10-claude-code-tips-from-the-creator-boris-cherny-36d5a8af2560
+> Corroborated: https://venturebeat.com/technology/the-creator-of-claude-code-just-revealed-his-workflow-and-developers-are (Jan 2026, viral coverage)
+
+#### "Every mistake becomes a rule" (Anthropic internal practice) `[semi-official]`
+
+> "Anytime we see Claude do something incorrectly we add it to the CLAUDE.md, so Claude knows not to do it next time."
+
+Aakash Gupta (product leader) summarized the effect: "Every mistake becomes a rule. The longer the team works together, the smarter the agent becomes."
+
+> Source: Boris Cherny via VentureBeat, Jan 2026 (retrieved 2026-04-17)
 
 #### Stable CLAUDE.md on main; branch-specific rules in `.claude/rules/` `[community:mid]`
 
@@ -195,6 +242,10 @@ When a community insight is reflected in `claude-md-quality-criteria.md`, record
 | 2026-03-29 | Bullet points > paragraphs for adherence | A. Token Efficiency / E. Actionability | `[community:mid]` |
 | 2026-03-29 | Hooks for enforcement, CLAUDE.md for guidance | G. Behavioral Impact (convert hook-worthy items) | `[semi-official]` + `[community:high]` |
 | 2026-03-29 | Iterate on CLAUDE.md like a prompt | New consideration for all criteria | `[community:high]` |
+| 2026-04-17 | Instruction budget (~150–200 total, ~50 used by system prompt) | A. Token Efficiency (tightens "ideal" threshold) | `[community:high]` |
+| 2026-04-17 | HumanLayer under-60-line benchmark and "80 lines → Claude starts ignoring" | A. Token Efficiency thresholds | `[community:high]` |
+| 2026-04-17 | WHAT/WHY/HOW structure | C. Architecture Clarity / E. Actionability | `[community:high]` |
+| 2026-04-17 | Progressive disclosure via agent_docs/ with file:line pointers | A. Token Efficiency / D. Non-Obvious Patterns | `[community:high]` |
 
 ---
 
@@ -216,3 +267,4 @@ Insights found during research but not adopted, for reasons such as:
 
 - 2025-05-01: Initial version (empty template)
 - 2026-03-29: First research run. Added 20+ insights across Structure & Design, Token Efficiency, Workflow Patterns, Tool Integration, and Parallel & Scaling Patterns. Sources include Boris Cherny (semi-official), Trail of Bits (community:high), FlorianBruniaux guide (community:mid), SFEIR Institute (community:mid), ykdojo tips (community:high), wesammustafa guide (community:high), awattar best practices (community:mid), and Japanese community (Qiita/Zenn, community:mid/low).
+- 2026-04-17: Added HumanLayer "Writing a good CLAUDE.md" (Kyle, Nov 2025) with WHAT/WHY/HOW structure, 60-line benchmark, and agent_docs/ progressive-disclosure pattern. Added abhishekray07/claude-md-templates insight on the 150–200 instruction budget and 80-line adherence cliff. Added rohitg00/awesome-claude-code-toolkit "CLAUDE.md Bible" (stack-specific 80–150 line templates). Added Boris Cherny token breakdown (user 76 / project 4k tokens) and "Compounding Engineering" term for @.claude PR workflow, plus VentureBeat Jan 2026 viral coverage ("Every mistake becomes a rule"). Refreshed Boris howborisusesclaudecode retrieval date.

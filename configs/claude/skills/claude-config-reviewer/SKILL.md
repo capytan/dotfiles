@@ -41,6 +41,12 @@ Always run research before reviewing — best practices evolve fast and the cost
 checking is low compared to the risk of evaluating against stale criteria.
 Reference files live in the `references/` directory.
 
+### Freshness Policy
+
+**Run Phase 0 whenever any reference file's `last_updated` is more than 1 day behind today.**
+
+Check every `references/*.md` file's `last_updated` field. If any file is >1 day stale, refresh all references in this pool (research is cheap to batch; selective refresh creates inconsistency). Set `last_updated: YYYY-MM-DD` to today on every file updated.
+
 ### Research Steps
 
 #### Step 1: Official Documentation
