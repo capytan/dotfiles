@@ -271,7 +271,7 @@ Aggregate the local analysis and any agent outputs into one report:
 
 **Health Report: {project} ({tier} tier, {file_count} files)**
 
-### ✓ Passing
+### Passing
 
 Render a compact table of checks that passed. Include only checks relevant to the detected tier. Limit to 5 rows. Omit rows for checks that have findings.
 
@@ -281,21 +281,21 @@ Render a compact table of checks that passed. Include only checks relevant to th
 | No nested CLAUDE.md | ok |
 | Skill security scan | no flags |
 
-### ☻ Critical -- fix now
+### Critical -- fix now
 
 Rules violated, missing verification definitions, dangerous allowedTools, MCP overhead >12.5%, required-path `Access denied`, active cache-breakers, and security findings.
 
-### ◎ Structural -- fix soon
+### Structural -- fix soon
 
 CLAUDE.md content that belongs elsewhere, missing hooks, oversized skill descriptions, single-layer critical rules, model switching, verifier gaps, subagent permission gaps, and skill structural issues.
 
-### ○ Incremental -- nice to have
+### Incremental -- nice to have
 
 New patterns to add, outdated items to remove, global vs local placement, context hygiene, HANDOFF.md adoption, skill invoke tuning, and provenance issues.
 
 ---
 
-If all three issue sections are empty, output one short line in the output language like: `✓ All relevant checks passed. Nothing to fix.`
+If all three issue sections are empty, output one short line in the output language like: `All relevant checks passed. Nothing to fix.`
 
 ## Non-goals
 - Never auto-apply fixes without confirmation.

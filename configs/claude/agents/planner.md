@@ -21,6 +21,15 @@ description: |
   Proactive trigger: auto-invoke before implementing features that span multiple services or require phased delivery.
   </commentary>
   </example>
+
+  <example>
+  Context: User wants to move many services off a deprecated internal framework.
+  user: "Plan the migration off framework-v1 — we have ~40 services and 3 months"
+  assistant: "I'll use the planner agent to produce a phased migration plan with dependency analysis, risk grading, and independently-mergeable phases."
+  <commentary>
+  Migration trigger: large-scale multi-service rollout requires phased delivery with explicit inter-service dependencies.
+  </commentary>
+  </example>
 tools: ["Read", "Grep", "Glob"]
 model: opus
 ---

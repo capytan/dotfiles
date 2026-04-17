@@ -20,6 +20,15 @@ description: |
   Proactive trigger: auto-invoke after writing Flutter/Dart code.
   </commentary>
   </example>
+
+  <example>
+  Context: User refactored a feature from Provider to Riverpod.
+  user: "Moved the cart feature to Riverpod — does it look right?"
+  assistant: "I'll use the flutter-reviewer agent to review the Riverpod migration — it adapts to the chosen state-management solution and checks rebuild scope, lifecycle, and layer boundaries."
+  <commentary>
+  Migration trigger: review spans multiple state-management conventions; the agent adapts to the target solution.
+  </commentary>
+  </example>
 tools: ["Read", "Grep", "Glob", "Bash"]
 model: sonnet
 color: cyan

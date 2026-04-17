@@ -203,8 +203,8 @@ Merge findings on the same file within 5 lines:
 
 | Confidence | Severity |
 |-----------|----------|
-| 90-100 | 🔴 Critical — must fix |
-| 80-89 | 🟡 Warning — recommended |
+| 90-100 | Critical — must fix |
+| 80-89 | Warning — recommended |
 
 ### 4.4 Report
 
@@ -217,7 +217,7 @@ Output structured markdown in the session language:
 **Files reviewed**: N files, M total lines
 **Reviewers**: Rules, Bug Scanner, History, Comments, Architecture, Security, Dependency
 
-### 🔴 Critical (N issues)
+### Critical (N issues)
 
 1. **[Security]** Hardcoded API key in config (security: hardcoded secret)
    - File: `src/config.ts:23`
@@ -229,7 +229,7 @@ Output structured markdown in the session language:
    - Confidence: 95
    - Detail
 
-### 🟡 Warning (N issues)
+### Warning (N issues)
 ...
 
 ### Summary

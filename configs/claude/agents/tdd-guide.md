@@ -21,6 +21,15 @@ description: |
   Proactive trigger: auto-invoke before implementing features to enforce tests-first methodology.
   </commentary>
   </example>
+
+  <example>
+  Context: User wants to refactor a module without changing behavior.
+  user: "I want to extract the pricing logic into its own module without breaking anything"
+  assistant: "I'll use the tdd-guide agent — for pure refactors we skip RED and gate on the existing green suite before and after the extraction to confirm behavior is preserved."
+  <commentary>
+  Refactor trigger: TDD applies to behavioral change; for pure refactors the agent enforces before/after green-suite checks instead of writing new tests.
+  </commentary>
+  </example>
 tools: ["Read", "Write", "Edit", "Bash", "Grep"]
 model: sonnet
 ---

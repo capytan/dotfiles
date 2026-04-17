@@ -20,6 +20,15 @@ description: |
   Proactive trigger: auto-invoke after writing Rust code.
   </commentary>
   </example>
+
+  <example>
+  Context: User added an unsafe block for FFI bindings.
+  user: "I added unsafe code for the C interop layer — can you check it?"
+  assistant: "I'll use the rust-reviewer agent to verify the `// SAFETY:` comments document the invariants and that the unsafe boundary is minimal."
+  <commentary>
+  unsafe-focused trigger: review demands explicit `// SAFETY:` comments and narrow unsafe surface area.
+  </commentary>
+  </example>
 tools: ["Read", "Grep", "Glob", "Bash"]
 model: sonnet
 color: red
