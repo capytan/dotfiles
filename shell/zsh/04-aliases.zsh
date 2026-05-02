@@ -59,7 +59,7 @@ fi
 
 # =============================================================================
 # Modern CLI tools (installed via Brewfile)
-# Skip in Claude Code sessions to avoid interfering with RTK token filtering
+# Skip in Claude Code sessions to avoid confusing Claude with aliased output
 # =============================================================================
 if [[ -z "$CLAUDECODE" ]]; then
     if command -v bat &>/dev/null; then
