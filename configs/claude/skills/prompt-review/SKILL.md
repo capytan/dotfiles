@@ -25,7 +25,7 @@ context: fork
 `$ARGUMENTS` を解析し、Bash で以下のように実行する:
 
 ```bash
-python ~/.claude/skills/prompt-review/scripts/collect.py [OPTIONS] > /tmp/prompt-review-data.json
+python "${CLAUDE_SKILL_DIR}/scripts/collect.py" [OPTIONS] > /tmp/prompt-review-data.json
 ```
 
 | `$ARGUMENTS` | 意味 | オプション |
@@ -36,7 +36,7 @@ python ~/.claude/skills/prompt-review/scripts/collect.py [OPTIONS] > /tmp/prompt
 | 文字列のみ（例 `yonshogen`） | プロジェクト名（部分一致） | `--project yonshogen` |
 | 文字列＋数値（例 `yonshogen 30`） | プロジェクト＋日数 | `--project yonshogen --days 30` |
 
-**重要**: スクリプトのパスは `${CLAUDE_SKILL_DIR}/scripts/collect.py` を使うこと。`${CLAUDE_SKILL_DIR}` はこのスキルの SKILL.md が格納されたディレクトリに展開される。
+`${CLAUDE_SKILL_DIR}` はこのスキルの SKILL.md が格納されたディレクトリに展開される。symlinkでもインストールパスでも正しく解決される。
 
 ### 出力の読み取り
 
