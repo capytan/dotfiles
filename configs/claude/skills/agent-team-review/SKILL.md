@@ -217,11 +217,9 @@ No issues found. All reviewers confirmed the changes look correct.
    ```
    - Include at least 1 line of context before/after in the line range
    - SHA must be the full 40-char hash, not abbreviated
-4. Footer:
+4. Footer (omit unless the user explicitly requests an attribution/feedback line):
    ```
-   🤖 Generated with [Claude Code](https://claude.ai/code)
-
-   <sub>- If this code review was useful, please react with 👍. Otherwise, react with 👎.</sub>
+   Generated with Claude Code (https://claude.ai/code).
    ```
 
 ## False Positives
