@@ -668,10 +668,11 @@
   "alwaysThinkingEnabled": true,
   "effortLevel": "high",
   "autoMemoryEnabled": true,
+  "showTurnDuration": true,
+  "teammateMode": "auto",
   "additionalDirectories": [
     "~/ghq",
     "~/dev"
   ],
-  "teammateMode": "auto",
-  "showTurnDuration": true
+  "skipAutoPermissionPrompt": true
 }
