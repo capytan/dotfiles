@@ -1,6 +1,7 @@
 #!/bin/bash
-# Stop hook: Claude Code 応答完了をtmuxウィンドウ名で通知
+# Stop hook: 応答完了 → 強制 ✅ + bell
 source "$(dirname "$0")/tmux-lib.sh"
 tmux_guard || exit 0
-tmux_set_status "✅" "$(tmux_current_clean_name)"
+_tmux_init_session "$(cat)"
+tmux_force_set_status "✅" "Stop"
 printf '\a'

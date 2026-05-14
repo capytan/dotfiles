@@ -1,12 +1,12 @@
 #!/bin/bash
-# Notification hook: 許可待ちなどユーザーの注意が必要なときに通知
+# Notification hook: matcher 別の警告表示
+# settings.json から matcher 名を引数で受け取る（permission_prompt / idle_prompt / elicitation_dialog）
+# bell は permission_prompt のみ
 source "$(dirname "$0")/tmux-lib.sh"
 tmux_guard || exit 0
-CURRENT=$(tmux display-message -p '#W')
-# ✅ は保護（Stop後にNotificationが来るケースを考慮）— ただし bell は鳴らす
-if [[ "$CURRENT" == "✅"* ]]; then
+_tmux_init_session "$(cat)"
+MATCHER="${1:-unknown}"
+tmux_set_status_if_priority_allows "⚠️" "Notification:$MATCHER"
+if [ "$MATCHER" = "permission_prompt" ]; then
     printf '\a'
-    exit 0
 fi
-tmux_set_status "⚠️" "$(tmux_get_clean_name "$CURRENT")"
-printf '\a'
