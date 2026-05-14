@@ -2,7 +2,7 @@
 # Claude Code tmux status hook 共通ライブラリ
 #
 # Public API:
-#   tmux_guard
+#   _tmux_hook_init <stdin_json>                  # hook 冒頭で必ず1度呼ぶ (guard + session 初期化)
 #   tmux_get_clean_name <name>
 #   tmux_current_clean_name
 #   tmux_force_set_status <emoji> <hook> [<base>]
@@ -13,7 +13,7 @@
 #   tmux_subagent_count <session_id>
 #   tmux_subagent_reset <session_id>
 #   tmux_subagent_clear <session_id>
-#   _tmux_init_session <stdin_json>     # hook 冒頭で1度呼ぶ
+#   _tmux_log <hook> <action> <from> <to> [<extra_kv>]
 #
 # 環境変数:
 #   CLAUDE_TMUX_LOG=0   — ログ無効化（既定: 有効）
@@ -39,16 +39,15 @@ tmux_current_clean_name() {
     tmux_get_clean_name "$(tmux display-message -p '#W' 2>/dev/null)"
 }
 
-_tmux_current_emoji() {
-    local name
-    name=$(tmux display-message -p '#W' 2>/dev/null)
-    case "$name" in
+# 引数: <window 名>。display-message を呼ばずに渡された名前から判定する
+_tmux_emoji_of() {
+    case "$1" in
         "✅ "*) echo "✅" ;;
         "⏳ "*) echo "⏳" ;;
         "🤖 "*) echo "🤖" ;;
         "❌ "*) echo "❌" ;;
         "⚠️ "*) echo "⚠️" ;;
-        "⚠ "*)  echo "⚠️" ;;
+        "⚠ "*)  echo "⚠️" ;;  # tmux が variation selector を落とした場合
         *)       echo "" ;;
     esac
 }
@@ -64,18 +63,25 @@ _tmux_priority() {
     esac
 }
 
+# bash 正規表現で session_id を抽出。jq fork を避ける。pattern は変数経由で渡す（=~ の引用符仕様）
 _tmux_session_id_from_stdin() {
     local stdin_data="$1"
     [ -z "$stdin_data" ] && { echo ""; return; }
-    if command -v jq >/dev/null 2>&1; then
-        printf '%s' "$stdin_data" | jq -r '.session_id // empty' 2>/dev/null
+    local pat='"session_id"[[:space:]]*:[[:space:]]*"([^"]+)"'
+    if [[ "$stdin_data" =~ $pat ]]; then
+        echo "${BASH_REMATCH[1]}"
     fi
 }
 
-# 各 hook が冒頭で呼ぶ
 _tmux_init_session() {
     CLAUDE_TMUX_SESSION_ID=$(_tmux_session_id_from_stdin "$1")
     export CLAUDE_TMUX_SESSION_ID
+}
+
+# 各 hook の冒頭で1度呼ぶ。guard を関数内 exit で済ませ、_tmux_init_session の呼び忘れも防ぐ
+_tmux_hook_init() {
+    tmux_guard || exit 0
+    _tmux_init_session "$1"
 }
 
 _tmux_log() {
@@ -90,12 +96,11 @@ _tmux_log() {
             mv -f "$CLAUDE_TMUX_LOG_FILE" "${CLAUDE_TMUX_LOG_FILE}.1" 2>/dev/null
         fi
     fi
-    local ts pane pane_id sid
+    local ts pane_combined pane pane_id sid
     ts=$(date '+%Y-%m-%dT%H:%M:%S%z')
-    pane=$(tmux display-message -p '#{session_name}:#{window_index}.#{pane_index}' 2>/dev/null)
-    [ -z "$pane" ] && pane="?"
-    pane_id=$(tmux display-message -p '#{pane_id}' 2>/dev/null)
-    [ -z "$pane_id" ] && pane_id="?"
+    pane_combined=$(tmux display-message -p '#{session_name}:#{window_index}.#{pane_index}|#{pane_id}' 2>/dev/null)
+    pane="${pane_combined%|*}"; [ -z "$pane" ] && pane="?"
+    pane_id="${pane_combined#*|}"; [ -z "$pane_id" ] && pane_id="?"
     sid="${CLAUDE_TMUX_SESSION_ID:-?}"
     [ -z "$sid" ] && sid="?"
     printf "%s pid=%s session=%s pane=%s pane_id=%s hook=%s action=%s from='%s' to='%s'%s\n" \
@@ -103,57 +108,57 @@ _tmux_log() {
         "${extra:+ $extra}" >> "$CLAUDE_TMUX_LOG_FILE" 2>/dev/null
 }
 
+# tmux RPC: automatic-rename off と rename-window をセミコロン1コマンドにまとめる
 _tmux_rename() {
-    tmux set-window-option automatic-rename off >/dev/null 2>&1
-    tmux rename-window "$1" >/dev/null 2>&1
+    tmux set-window-option automatic-rename off \; rename-window "$1" >/dev/null 2>&1
 }
 
-# 強制更新: 優先度無視
 tmux_force_set_status() {
-    tmux_guard || return 0
     local emoji="$1" hook="$2" base="${3:-}"
     local current_full
     current_full=$(tmux display-message -p '#W' 2>/dev/null)
     [ -z "$base" ] && base=$(tmux_get_clean_name "$current_full")
     local new_full="$emoji $base"
-    _tmux_rename "$new_full"
+    if [ "$new_full" != "$current_full" ]; then
+        _tmux_rename "$new_full"
+    fi
     _tmux_log "$hook" "force" "$current_full" "$new_full"
 }
 
-# 優先度ガード更新: new >= current のときだけ更新（同値は冪等）
 tmux_set_status_if_priority_allows() {
-    tmux_guard || return 0
     local emoji="$1" hook="$2"
     local current_full current_emoji current_pri new_pri base new_full
     current_full=$(tmux display-message -p '#W' 2>/dev/null)
-    current_emoji=$(_tmux_current_emoji)
+    current_emoji=$(_tmux_emoji_of "$current_full")
     current_pri=$(_tmux_priority "$current_emoji")
     new_pri=$(_tmux_priority "$emoji")
     base=$(tmux_get_clean_name "$current_full")
     new_full="$emoji $base"
-    if [ "$new_pri" -ge "$current_pri" ]; then
-        _tmux_rename "$new_full"
-        _tmux_log "$hook" "update" "$current_full" "$new_full" "priority=$new_pri"
-    else
+    if [ "$new_pri" -lt "$current_pri" ]; then
         _tmux_log "$hook" "skip" "$current_full" "$current_full" "reason=priority_too_low new_pri=$new_pri current_pri=$current_pri"
+        return 0
     fi
+    if [ "$new_full" != "$current_full" ]; then
+        _tmux_rename "$new_full"
+    fi
+    _tmux_log "$hook" "update" "$current_full" "$new_full" "priority=$new_pri"
 }
 
-# 降格: 現在が <from> のときだけ <to> に下げる
 tmux_demote_status() {
-    tmux_guard || return 0
     local from="$1" to="$2" hook="$3"
-    local current_emoji current_full base new_full
-    current_emoji=$(_tmux_current_emoji)
+    local current_full current_emoji base new_full
     current_full=$(tmux display-message -p '#W' 2>/dev/null)
-    if [ "$current_emoji" = "$from" ]; then
-        base=$(tmux_get_clean_name "$current_full")
-        new_full="$to $base"
-        _tmux_rename "$new_full"
-        _tmux_log "$hook" "demote" "$current_full" "$new_full"
-    else
+    current_emoji=$(_tmux_emoji_of "$current_full")
+    if [ "$current_emoji" != "$from" ]; then
         _tmux_log "$hook" "skip" "$current_full" "$current_full" "reason=not_in_from_state from=$from current=$current_emoji"
+        return 0
     fi
+    base=$(tmux_get_clean_name "$current_full")
+    new_full="$to $base"
+    if [ "$new_full" != "$current_full" ]; then
+        _tmux_rename "$new_full"
+    fi
+    _tmux_log "$hook" "demote" "$current_full" "$new_full"
 }
 
 # === subagent counter ===
@@ -167,7 +172,7 @@ _tmux_counter_file() {
 
 # mkdir mutex (atomic, portable; macOS lacks flock)
 _tmux_counter_op() {
-    local file="$1" delta="$2" clamp="${3:-0}"
+    local file="$1" delta="$2"
     mkdir -p "$(dirname "$file")" 2>/dev/null
     local lockdir="${file}.lock.d"
     local tries=50
@@ -180,14 +185,14 @@ _tmux_counter_op() {
     [ -f "$file" ] && cur=$(cat "$file" 2>/dev/null)
     case "$cur" in ''|*[!0-9-]*) cur=0 ;; esac
     local new=$((cur + delta))
-    [ "$new" -lt "$clamp" ] && new=$clamp
+    [ "$new" -lt 0 ] && new=0
     printf '%s' "$new" > "$file"
     rmdir "$lockdir" 2>/dev/null
     printf '%s' "$new"
 }
 
 tmux_subagent_inc() { _tmux_counter_op "$(_tmux_counter_file "$1")" 1; }
-tmux_subagent_dec() { _tmux_counter_op "$(_tmux_counter_file "$1")" -1 0; }
+tmux_subagent_dec() { _tmux_counter_op "$(_tmux_counter_file "$1")" -1; }
 
 tmux_subagent_count() {
     local file
@@ -209,11 +214,6 @@ tmux_subagent_reset() {
 tmux_subagent_clear() {
     local file
     file=$(_tmux_counter_file "$1")
-    rm -f "$file" "${file}.lock" 2>/dev/null
+    rm -f "$file" 2>/dev/null
     rmdir "${file}.lock.d" 2>/dev/null
-}
-
-# === legacy alias（旧 hook が誤って残っても破綻しないため） ===
-tmux_set_status() {
-    tmux_force_set_status "$1" "legacy_set_status" "$2"
 }
