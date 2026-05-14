@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Collect Claude Code six-layer configuration data for the health skill.
+# Collect Claude Code six-layer configuration data for the auditing-claude-config skill.
 # Output is structured plain text with === SECTION === banners; the skill
 # parses these sections in Step 2.
 
@@ -12,7 +12,7 @@ echo "=== TIER METRICS ==="
 echo "project_files: $(git -C "$P" ls-files 2>/dev/null | wc -l || find "$P" -type f -not -path "*/.git/*" -not -path "*/node_modules/*" -not -path "*/dist/*" -not -path "*/build/*" | wc -l)"
 echo "contributors: $(git -C "$P" log -n 500 --format='%ae' 2>/dev/null | sort -u | wc -l)"
 echo "ci_workflows:  $(ls "$P/.github/workflows/"*.yml "$P/.github/workflows/"*.yaml 2>/dev/null | wc -l)"
-echo "skills:        $(find "$P/.claude/skills" -name "SKILL.md" 2>/dev/null | grep -v '/health/SKILL.md' | wc -l)"
+echo "skills:        $(find "$P/.claude/skills" -name "SKILL.md" 2>/dev/null | grep -v '/auditing-claude-config/SKILL.md' | wc -l)"
 echo "claude_md_lines: $(wc -l < "$P/CLAUDE.md" 2>/dev/null)"
 
 echo "=== CLAUDE.md (global) ===" ; cat ~/.claude/CLAUDE.md 2>/dev/null || echo "(none)"
@@ -122,8 +122,8 @@ done | head -20
 
 # --- Skill scan ---
 # Exclude self by frontmatter name, stable across install paths.
-SELF_SKILL=$( (grep -rl '^name: health$' "$P/.claude/skills" "$HOME/.claude/skills" 2>/dev/null || true) | grep 'SKILL.md' | head -1)
-[ -z "$SELF_SKILL" ] && SELF_SKILL="health/SKILL.md"
+SELF_SKILL=$( (grep -rl '^name: auditing-claude-config$' "$P/.claude/skills" "$HOME/.claude/skills" 2>/dev/null || true) | grep 'SKILL.md' | head -1)
+[ -z "$SELF_SKILL" ] && SELF_SKILL="auditing-claude-config/SKILL.md"
 
 echo "=== SKILL INVENTORY ==="
 for DIR in "$P/.claude/skills" "$HOME/.claude/skills"; do

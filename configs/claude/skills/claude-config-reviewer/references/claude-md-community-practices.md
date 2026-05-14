@@ -9,7 +9,7 @@
 > - `[community:mid]` = GitHub 10-50 stars, verified in a tech blog
 > - `[community:low]` = Individual report, unverified but reasonable (reference only, not in scoring)
 
-last_updated: 2026-04-17
+last_updated: 2026-05-15
 sources:
   - https://howborisusesclaudecode.com/
   - https://github.com/shanraisshan/claude-code-best-practice

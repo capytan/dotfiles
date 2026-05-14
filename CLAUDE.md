@@ -25,13 +25,9 @@ tmux source ~/.config/tmux/tmux.conf      # Reload tmux (inside tmux)
 
 ## Non-Obvious Patterns
 
-- `shell/zshrc` is a thin loader — add shell config to numbered modules in `shell/zsh/` (`01-options` … `08-zeno`), not to zshrc directly
+- `shell/zshrc` is a thin loader — add shell config to numbered modules in `shell/zsh/`, not to zshrc directly (naming + local-file rules in `.claude/rules/shell-config.md`)
 - `configs/alacritty/` uses shared TOML modules (font, theme, pane) imported by per-platform config
 - `configs/nvim/` and `configs/vim/` are legacy (vim-plug era) — do not modify
 - `configs/tmux/tmux-start.sh` sources `tmux-start.local.sh` for machine-specific window layout
 - `configs/claude/CLAUDE.md` is symlinked to `~/.claude/CLAUDE.md` (global rules for all projects) — separate scope from this repo's `./CLAUDE.md`, not duplication
 - Claude Code hook conventions live in `.claude/rules/claude-config.md` (path-scoped to `configs/claude/**`)
-
-## Task Management
-
-- Use `tasks/todo.md` for cross-session TODO items (TaskCreate is session-scoped only)

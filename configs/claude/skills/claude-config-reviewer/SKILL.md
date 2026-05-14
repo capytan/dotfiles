@@ -1,9 +1,9 @@
 ---
 name: claude-config-reviewer
 description: |
-  Review CLAUDE.md, SKILL.md, and agent definitions with researched 100-point scoring.
-  Use when: "review CLAUDE.md", "review skill", "review agent", "audit configs", "check quality".
-tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch, WebFetch
+  Reviews CLAUDE.md, SKILL.md, and agent definitions against researched best practices with 100-point scoring.
+  Use when the user asks to review, audit, or check the quality of Claude Code configuration files.
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch, WebFetch
 ---
 
 # Claude Code Config Reviewer

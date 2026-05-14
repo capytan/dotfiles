@@ -1,6 +1,6 @@
 ---
 name: agent-team-review
-description: Parallel multi-agent code review with independent scoring. Five methodology-based reviewers (rules, bugs, git history, PR archaeology, comments) filter false positives. Triggers on "team review", "deep review", "thorough review". Supports PRs and local changes.
+description: Parallel multi-agent code review with independent scoring. Five methodology-based reviewers (rules, bugs, git history, PR archaeology, comments) filter false positives. Use when the user asks for a deep, thorough, or multi-agent code review. Supports PRs and local changes.
 ---
 
 # Agent Team Code Review

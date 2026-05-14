@@ -1,6 +1,6 @@
 # Modularization Guide
 
-last_updated: 2026-04-17
+last_updated: 2026-05-15
 
 > Referenced in Phase 4 when proposing CLAUDE.md splits.
 

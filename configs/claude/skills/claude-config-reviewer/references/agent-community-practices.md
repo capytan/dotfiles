@@ -9,7 +9,7 @@
 > - `[community:mid]` = GitHub 10-50 stars, verified in a tech blog
 > - `[community:low]` = Individual report, unverified but reasonable (reference only)
 
-last_updated: 2026-04-17
+last_updated: 2026-05-15
 
 ---
 

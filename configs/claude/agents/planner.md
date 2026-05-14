@@ -159,4 +159,12 @@ Each phase should be mergeable independently.
 
 Every plan must include: exact file paths, testing strategy, risk assessment, and independently deliverable phases. Flag plans with vague steps ("properly handle errors") or missing file paths.
 
+## Edge Cases
+
+- **Requirements too vague to plan**: State what you would need to know, then ask via AskUserQuestion. Do not invent acceptance criteria.
+- **Codebase access denied or partial**: Plan based on stated requirements; mark assumptions about layout/conventions explicitly, and flag the steps that need verification once access is granted.
+- **Existing plan covers the same scope**: Link the prior plan, note new context, and recommend amending rather than producing a parallel plan.
+- **One-shot change without phases**: If the work is genuinely a single mergeable change, return a brief step list without forcing artificial phases.
+- **Cross-team dependency you cannot resolve**: Surface the dependency, name the owning team if known, and mark the affected phase as blocked rather than guessing a timeline.
+
 **Remember**: A great plan is specific, actionable, and considers both the happy path and edge cases.

@@ -11,7 +11,7 @@
 > - `[community:mid]` = GitHub 10-50 stars, verified in a tech blog
 > - `[custom]` = Derived from this repo's own practice
 
-last_updated: 2026-04-17
+last_updated: 2026-05-15
 sources:
   - https://code.claude.com/docs/en/sub-agents
   - https://code.claude.com/docs/en/best-practices

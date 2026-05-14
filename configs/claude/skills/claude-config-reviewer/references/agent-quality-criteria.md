@@ -13,7 +13,7 @@
 >
 > **Note:** Phase 0 research (2026-04-17) cross-checked against code.claude.com/docs/en/sub-agents.
 
-last_updated: 2026-04-17
+last_updated: 2026-05-15
 
 ---
 
