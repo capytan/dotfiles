@@ -22,6 +22,5 @@ Each hook prefixes the tmux window name with a state emoji (⏳ working / 🤖 s
 
 - Log: `tail -F ~/.cache/claude-tmux-status.log` (key=value, rotates to `.1` at 1MB)
 - Disable: `export CLAUDE_TMUX_LOG=0`
-- Optional dep: `jq` — without it the `session_id` field in logs is `?`
 - Rule: **1 tmux window = 1 Claude Code pane** — multiple panes in the same window will fight over the name
 - ✅ is reset to ⏳ on the next `UserPromptSubmit` (response-complete is preserved until the user takes a new turn)
