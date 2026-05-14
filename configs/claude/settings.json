@@ -386,7 +386,25 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/hooks/tmux-alert.sh"
+            "command": "bash ~/.claude/hooks/tmux-alert.sh permission_prompt"
+          }
+        ]
+      },
+      {
+        "matcher": "idle_prompt",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/tmux-alert.sh idle_prompt"
+          }
+        ]
+      },
+      {
+        "matcher": "elicitation_dialog",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/tmux-alert.sh elicitation_dialog"
           }
         ]
       }
@@ -406,8 +424,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/hooks/tmux-working.sh",
-            "async": true
+            "command": "bash ~/.claude/hooks/tmux-working.sh"
           }
         ]
       }
@@ -417,8 +434,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/hooks/tmux-tool-failure.sh",
-            "async": true
+            "command": "bash ~/.claude/hooks/tmux-tool-failure.sh"
           }
         ]
       }
