@@ -4,7 +4,7 @@
 > Manual edits are fine but may be overwritten on next research run.
 > Items tagged `[custom]` are protected from overwrite.
 
-last_updated: 2026-04-17
+last_updated: 2026-05-15
 sources:
   - https://code.claude.com/docs/en/memory
   - https://code.claude.com/docs/en/best-practices

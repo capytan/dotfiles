@@ -42,6 +42,11 @@ python "${CLAUDE_SKILL_DIR}/scripts/collect.py" [OPTIONS] > /tmp/prompt-review-d
 
 スクリプト実行後、`/tmp/prompt-review-data.json` を Read で読み込む。
 
+### スクリプト失敗・空データのフォールバック
+
+- スクリプトが非ゼロ終了した場合: stderr を要約し、検出された原因 (ログディレクトリが存在しない / 権限がない / 依存パッケージなし等) と推奨対処をユーザーに伝えて停止する
+- `/tmp/prompt-review-data.json` が存在しない、または `summary.total_messages == 0` の場合: フィルタ条件 (`$ARGUMENTS`) を緩めて再試行することを提案し、それでも空ならレポート生成せずに「対象期間/プロジェクトに対話履歴なし」と通知して停止する
+
 出力JSON構造:
 ```json
 {

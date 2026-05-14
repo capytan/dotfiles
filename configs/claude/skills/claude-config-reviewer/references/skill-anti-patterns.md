@@ -3,7 +3,7 @@
 > Referenced during Phase 2, criterion G (Anti-patterns) for SKILL.md reviews.
 > Each pattern has a severity: Critical / Major / Minor.
 
-last_updated: 2026-04-17
+last_updated: 2026-05-15
 
 ---
 

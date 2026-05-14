@@ -10,7 +10,7 @@
 > - `[custom]` = Derived from this repo's own practice
 > - `[custom:derived-from-skill-reviewer]` = Extracted from skill-reviewer agent
 
-last_updated: 2026-04-17
+last_updated: 2026-05-15
 
 ---
 

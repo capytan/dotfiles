@@ -1,6 +1,6 @@
 ---
 name: codebase-review
-description: Full codebase review with seven parallel reviewers (rules, bugs, git hotspots, comments, architecture, OWASP, dependencies) and independent scoring. Triggers on "codebase review", "audit codebase", "全体レビュー". Reviews source files — for diffs use code-review instead.
+description: Full codebase review with seven parallel reviewers (rules, bugs, git hotspots, comments, architecture, OWASP, dependencies) and independent scoring. Use when the user asks to review or audit the whole codebase. Reviews source files — for diff/PR reviews use code-review instead.
 ---
 
 # Codebase Review
@@ -9,6 +9,7 @@ Seven reviewers, each using a **distinct methodology and information source**, a
 
 ## Design Principles
 
+- **Static analysis only**: do NOT build, typecheck, or run tests — read source files via Read, use `git` (not `gh`) for history
 - **Methodology diversity**: Each reviewer uses a different information source — findings don't overlap
 - **Independent scoring**: Findings are scored by separate agents, not by the reviewer that found them
 - **Graduated models**: Haiku for prep/scoring, user-selected model (Opus or Sonnet) for review
@@ -265,7 +266,3 @@ Give `references/false-positives.md` to all reviewers (Phase 2) and scoring agen
 - **No source files found**: Show error and stop
 - **No findings above threshold**: Report "No issues found"
 
-## Notes
-
-- Static analysis only — do NOT build, typecheck, or run tests
-- Use `git` for history analysis, not `gh`

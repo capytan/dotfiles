@@ -1,6 +1,6 @@
 # Quality Criteria
 
-last_updated: 2026-04-17
+last_updated: 2026-05-15
 
 > Referenced during Phase 2 (Quality Assessment).
 > Updated based on Phase 0 research findings.
