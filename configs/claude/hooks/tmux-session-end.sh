@@ -1,7 +1,8 @@
 #!/bin/bash
-# SessionEnd hook: セッション終了時にウィンドウ名をクリーンアップ
 source "$(dirname "$0")/tmux-lib.sh"
-tmux_guard || exit 0
-CLEAN=$(tmux_current_clean_name)
-tmux rename-window "$CLEAN"                     # 絵文字なしで上書き
-tmux set-window-option automatic-rename on      # auto-rename を復元（format 経由でディレクトリ名が出る）
+_tmux_hook_init "$(cat)"
+CURRENT=$(tmux display-message -p '#W' 2>/dev/null)
+CLEAN=$(tmux_get_clean_name "$CURRENT")
+tmux set-window-option automatic-rename on \; rename-window "$CLEAN" >/dev/null 2>&1
+_tmux_log "SessionEnd" "clean" "$CURRENT" "$CLEAN"
+[ -n "$CLAUDE_TMUX_SESSION_ID" ] && tmux_subagent_clear "$CLAUDE_TMUX_SESSION_ID"
