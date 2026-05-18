@@ -15,3 +15,12 @@
 ## Hooks
 
 PreToolUse validators block dangerous patterns (force-push, reset --hard, rm -rf, standalone sed/awk). Source: `~/dotfiles/configs/claude/hooks/pretooluse-validate-command.sh`.
+
+### tmux status emoji
+
+Each hook prefixes the tmux window name with a state emoji (⏳ working / 🤖 subagent / ⚠️ permission/error / ❌ tool failure / ✅ stop). Priority-guarded: a higher-priority state (⚠️ > ❌ > ✅ > 🤖 > ⏳) is not overwritten by a lower one. Only `UserPromptSubmit` / `Stop` / `StopFailure` / `SessionStart` force-update.
+
+- Log: `tail -F ~/.cache/claude-tmux-status.log` (key=value, rotates to `.1` at 1MB)
+- Disable: `export CLAUDE_TMUX_LOG=0`
+- Rule: **1 tmux window = 1 Claude Code pane** — multiple panes in the same window will fight over the name
+- ✅ is reset to ⏳ on the next `UserPromptSubmit` (response-complete is preserved until the user takes a new turn)

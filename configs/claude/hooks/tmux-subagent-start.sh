@@ -1,8 +1,7 @@
 #!/bin/bash
-# SubagentStart hook: サブエージェント起動中アイコンを表示
 source "$(dirname "$0")/tmux-lib.sh"
-tmux_guard || exit 0
-CURRENT=$(tmux display-message -p '#W')
-# ✅, ⚠️, 🤖 は保護、それ以外は 🤖 に更新
-{ [[ "$CURRENT" == "✅"* ]] || [[ "$CURRENT" == "⚠️"* ]] || [[ "$CURRENT" == "⚠"* ]] || [[ "$CURRENT" == "🤖"* ]]; } && exit 0
-tmux_set_status "🤖" "$(tmux_get_clean_name "$CURRENT")"
+_tmux_hook_init "$(cat)"
+COUNT=$(tmux_subagent_inc "$CLAUDE_TMUX_SESSION_ID")
+WIN=$(tmux display-message -p '#W' 2>/dev/null)
+_tmux_log "SubagentStart" "counter_inc" "$WIN" "$WIN" "count=$COUNT"
+[ "$COUNT" = "1" ] && tmux_set_status_if_priority_allows "🤖" "SubagentStart"
