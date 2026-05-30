@@ -11,11 +11,12 @@
 > - `[community:mid]` = GitHub 10-50 stars, verified in a tech blog
 > - `[custom]` = Derived from this repo's own practice
 
-last_updated: 2026-05-15
+last_updated: 2026-05-30
 sources:
   - https://code.claude.com/docs/en/sub-agents
   - https://code.claude.com/docs/en/best-practices
   - https://claude.com/blog/subagents-in-claude-code
+  - https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices
 
 ---
 
@@ -51,11 +52,11 @@ Key benefits:
 
 | Field | Required | Description |
 |-------|----------|-------------|
-| `name` | Yes | Unique identifier using lowercase letters and hyphens |
+| `name` | Yes | Unique identifier using lowercase letters and hyphens. Hooks receive this as `agent_type`. **The filename does not have to match the `name`.** Identity comes only from the `name` field; the subdirectory path does not affect invocation |
 | `description` | Yes | When Claude should delegate to this subagent |
 | `tools` | No | Tools the subagent can use. Inherits all if omitted |
 | `disallowedTools` | No | Tools to deny, removed from inherited or specified list |
-| `model` | No | `sonnet`, `opus`, `haiku`, full model ID (e.g., `claude-opus-4-7`), or `inherit`. Default: `inherit` |
+| `model` | No | `sonnet`, `opus`, `haiku`, full model ID (e.g., `claude-opus-4-8`, `claude-sonnet-4-6`), or `inherit`. Default: `inherit` |
 | `permissionMode` | No | `default`, `acceptEdits`, `auto`, `dontAsk`, `bypassPermissions`, or `plan` |
 | `maxTurns` | No | Maximum agentic turns before stopping |
 | `skills` | No | Skills to preload into context at startup |
@@ -107,6 +108,12 @@ Key benefits:
 
 **Note:** Anthropic's own documented examples use **prose descriptions, not `<example>` blocks**. The `<example>` convention with `Context/user/assistant/<commentary>` is a community pattern (see `agent-community-practices.md`). Neither style is officially required; scoring should not penalize the absence of `<example>` blocks when the prose description already conveys trigger conditions clearly. `[custom]` (interpretation of official examples)
 
+**Description voice — third person `[official]`:** The official subagent example descriptions are written in **third person** describing *what the agent does* ("Expert code review specialist. Proactively reviews code…", "Debugging specialist for errors…", "Data analysis expert for SQL queries…"), not second-person instructions to the agent. The official Skills authoring guidance (which governs the same description-discovery mechanism) makes this explicit:
+> "Always write in third person. The description is injected into the system prompt, and inconsistent point-of-view can cause discovery problems."
+> — https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices (retrieved 2026-05-30)
+
+So the canonical pattern is **third-person description** (routing signal the parent reads) + **second-person body** (the agent's own system prompt: "You are…"). The description should not contain "You are…" / "When invoked, you will…" — that is behavior, and belongs in the body.
+
 ### Model Selection `[official]`
 
 Model resolution order:
@@ -123,6 +130,9 @@ Model resolution order:
 - If both are set, `disallowedTools` applied first, then `tools` resolved against remaining pool
 - `Agent(agent_type)` syntax restricts which subagents can be spawned (main-thread agents only; has no effect inside subagent definitions)
 - As of 2.1.63, the Task tool was renamed to `Agent`; `Task(...)` still works as an alias
+
+**Tools unavailable to subagents `[official]`:** These depend on the main conversation's UI/session state and are *not available to subagents even when listed in `tools`*: `Agent`, `AskUserQuestion`, `EnterPlanMode`, `ExitPlanMode` (unless `permissionMode: plan`), `ScheduleWakeup`, `WaitForMcpServers`. Listing them is a no-op (flag in cross-reference checks).
+> — https://code.claude.com/docs/en/sub-agents (retrieved 2026-05-30)
 
 **Official guidance for read-only/reviewer agents `[official]`:**
 > "For a read-only reviewer, deselect everything except Read-only tools."
@@ -244,6 +254,20 @@ Project-level hooks in `settings.json`:
 > "Subagents cannot spawn other subagents. If your workflow requires nested delegation, use Skills or chain subagents from the main conversation."
 > — https://code.claude.com/docs/en/sub-agents (retrieved 2026-04-17)
 
+### Forked Subagents (experimental) `[official]`
+
+New as of v2.1.117 (env var `CLAUDE_CODE_FORK_SUBAGENT=1`). A **fork** is a subagent that inherits the *entire conversation so far* instead of starting fresh — same system prompt, tools, model, and message history as the main session.
+
+> "A fork is a subagent that inherits the entire conversation so far instead of starting fresh. This drops the input isolation that subagents otherwise provide… Use a fork when a named subagent would need too much background to be useful, or when you want to try several approaches in parallel from the same starting point."
+> — https://code.claude.com/docs/en/sub-agents (retrieved 2026-05-30)
+
+Forks vs named subagents: a fork has full conversation history, shares the main session's prompt cache (cheaper), and surfaces permission prompts in the terminal; a named subagent starts from its own definition with fresh context and a separate cache. Forks cannot spawn further forks. Not authored as `.md` files — relevant context for reviewers, not a new agent-file shape.
+
+### CLI-defined subagents (`--agents` JSON) `[official]`
+
+Subagents can be passed as JSON at launch via `--agents`, session-only and never written to disk. The JSON accepts the same fields as file frontmatter (`description`, `tools`, `disallowedTools`, `model`, `permissionMode`, `mcpServers`, `hooks`, `maxTurns`, `skills`, `initialPrompt`, `memory`, `effort`, `background`, `isolation`, `color`) plus `prompt` — the JSON equivalent of the markdown body (the system prompt).
+> — https://code.claude.com/docs/en/sub-agents (retrieved 2026-05-30)
+
 ---
 
 ## Changelog
@@ -251,3 +275,4 @@ Project-level hooks in `settings.json`:
 - 2026-03-29: Skeleton created
 - 2026-03-30: Populated with official documentation from code.claude.com/docs/en/sub-agents. Added: subagent definition, frontmatter reference (all 15 fields), scope/priority table, description/triggering guidance, model resolution order, tool restriction (allowlist/denylist/Agent syntax), skill preloading, persistent memory (3 scopes), built-in subagents, best practices (4 principles), when-to-use guide, hooks (frontmatter + settings.json), plugin restrictions, auto-compaction.
 - 2026-04-17: Refreshed from 2026-04-17 retrieval of code.claude.com/docs/en/sub-agents. Corrections: `color` palette updated to `red | blue | green | yellow | purple | orange | pink | cyan` (removed `magenta`, added `purple/orange/pink`). `effort` levels now include `xhigh`. Added managed-settings scope (priority 1) and updated scope table to 5 tiers. Added `auto` to `permissionMode` values. Noted `Task → Agent` rename (2.1.63). Added quoted guidance that official examples use **prose descriptions, not `<example>` blocks** — flagged as scoring implication. Added canonical tool sets for the 4 documented example agents, the 5-part system-prompt structural pattern, invocation-pattern escalation, nesting limit, and `initialPrompt` behavior notes.
+- 2026-05-30: Refreshed from 2026-05-30 retrieval of code.claude.com/docs/en/sub-agents + Skills authoring best-practices doc. Material additions: (1) **Description voice — third person** rule, sourced from the official Skills best-practices ("Always write in third person…") and confirmed by all official subagent description examples; canonical pattern is third-person description + second-person body. (2) `name` does not have to match filename; identity is from `name` only (cross-reference implication). (3) Model ID examples bumped to `claude-opus-4-8` / `claude-sonnet-4-6`. (4) **Tools unavailable to subagents** list (`Agent`, `AskUserQuestion`, `EnterPlanMode`, `ExitPlanMode`, `ScheduleWakeup`, `WaitForMcpServers`) — listing them is a no-op. (5) New **forked subagents** (experimental, v2.1.117) and **`--agents` CLI JSON** (`prompt` field) sections. Frontmatter field list, scope table, hooks, plugin restrictions, nesting, auto-compaction all re-verified unchanged.
