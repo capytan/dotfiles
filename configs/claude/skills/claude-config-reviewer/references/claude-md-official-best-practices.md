@@ -4,7 +4,7 @@
 > Manual edits are fine but may be overwritten on next research run.
 > Items tagged `[custom]` are protected from overwrite.
 
-last_updated: 2026-05-15
+last_updated: 2026-05-30
 sources:
   - https://code.claude.com/docs/en/memory
   - https://code.claude.com/docs/en/best-practices
@@ -80,6 +80,8 @@ sources:
 Quoted directly from https://code.claude.com/docs/en/memory (retrieved 2026-03-29):
 
 1. **Size**: "Target under 200 lines per CLAUDE.md file. Longer files consume more context and reduce adherence. If your instructions are growing large, split them using imports or .claude/rules/ files."
+   - **Updated wording (retrieved 2026-05-30)**: official guidance now steers toward path-scoped rules *first*, and explicitly warns imports do not reduce context: "If your instructions are growing large, use path-scoped rules so instructions load only when Claude works with matching files. You can also split content into imports for organization, though imported files still load and enter the context window at launch." — https://code.claude.com/docs/en/memory
+   - Troubleshooting echoes this: "Splitting into @path imports helps organization but does not reduce context, since imported files load at launch."
 
 2. **Structure**: "Use markdown headers and bullets to group related instructions. Claude scans structure the same way readers do: organized sections are easier to follow than dense paragraphs."
 
@@ -128,7 +130,7 @@ From https://code.claude.com/docs/en/best-practices (retrieved 2026-03-29):
 > "Run `/init` to generate a starting CLAUDE.md automatically. Claude analyzes your codebase and creates a file with build commands, test instructions, and project conventions it discovers. If a CLAUDE.md already exists, `/init` suggests improvements rather than overwriting it."
 > — https://code.claude.com/docs/en/memory (retrieved 2026-03-29)
 
-- `CLAUDE_CODE_NEW_INIT=true` enables an interactive multi-phase flow: asks which artifacts to set up (CLAUDE.md files, skills, hooks), explores with a subagent, fills gaps via follow-up questions, presents a reviewable proposal before writing
+- `CLAUDE_CODE_NEW_INIT=1` enables an interactive multi-phase flow (docs now show `=1`; `=true` previously documented): asks which artifacts to set up (CLAUDE.md files, skills, hooks), explores with a subagent, fills gaps via follow-up questions, presents a reviewable proposal before writing
 
 ### Import Syntax (`@path`) `[official]`
 
@@ -137,14 +139,18 @@ From https://code.claude.com/docs/en/best-practices (retrieved 2026-03-29):
 
 - Both relative and absolute paths are allowed
 - Relative paths resolve relative to the file containing the import, not the working directory
-- Maximum depth of five hops for recursive imports
+- Maximum depth of **four hops** for recursive imports (changed from "five hops" — retrieved 2026-05-30: "Imported files can recursively import other files, with a maximum depth of four hops.")
 - Personal preferences can import from home directory: `@~/.claude/my-project-instructions.md`
-- First-time external imports require an approval dialog
+- First-time external imports require an approval dialog (declining disables imports permanently and the dialog does not reappear)
+- Imports do not reduce context — imported files load in full at launch (use path-scoped rules to actually save context)
 
 ### AGENTS.md Compatibility `[official]`
 
 > "Claude Code reads CLAUDE.md, not AGENTS.md. If your repository already uses AGENTS.md for other coding agents, create a CLAUDE.md that imports it so both tools read the same instructions without duplicating them."
 > — https://code.claude.com/docs/en/memory (retrieved 2026-03-29)
+
+- A symlink (`ln -s AGENTS.md CLAUDE.md`) also works when no Claude-specific content is needed; on Windows use the `@AGENTS.md` import instead (symlinks need Administrator/Developer Mode)
+- `/init` in a repo with an existing `AGENTS.md` reads it and incorporates relevant parts into the generated `CLAUDE.md`. It "also reads other tool configs like `.cursorrules` and `.windsurfrules`." (retrieved 2026-05-30)
 
 ### Modularization with `.claude/rules/` `[official]`
 
@@ -221,6 +227,20 @@ paths:
 - "If an instruction disappeared after compaction, it was either given only in conversation or lives in a nested CLAUDE.md that hasn't reloaded yet."
 - Can customize: add "When compacting, always preserve the full list of modified files and any test commands" to CLAUDE.md
 
+### `claudeMd` Key in Managed Settings `[official]`
+
+> "The `claudeMd` key lets you put managed CLAUDE.md content directly inside `managed-settings.json` instead of deploying a separate file."
+> — https://code.claude.com/docs/en/memory (retrieved 2026-05-30)
+
+```json
+{
+  "claudeMd": "Always run `make lint` before committing.\nNever push directly to main."
+}
+```
+
+- Same precedence as a managed CLAUDE.md file (loads before user and project CLAUDE.md)
+- Honored only in managed/policy settings — setting `claudeMd` in user, project, or local settings has no effect
+
 ### Managed CLAUDE.md vs Managed Settings `[official]`
 
 > "A managed CLAUDE.md and managed settings serve different purposes. Use settings for technical enforcement and CLAUDE.md for behavioral guidance"
@@ -282,4 +302,5 @@ For autonomous/long-running Claude sessions:
 
 - 2025-05-01: Initial version (based on Claude Code v2.x official docs)
 - 2026-03-29: Major update — rewrote from official docs at code.claude.com/docs/en/memory and code.claude.com/docs/en/best-practices. Added: two memory systems table, managed policy locations (macOS/Linux/Windows), writing effective instructions (size/structure/specificity/consistency), include/exclude table, pruning guidance with direct quotes, emphasis for adherence, /init with CLAUDE_CODE_NEW_INIT, @path import details (depth limit, approval dialog, relative resolution), AGENTS.md compatibility, path-specific rules with YAML frontmatter and glob patterns, claudeMdExcludes setting, HTML comments stripping, CLAUDE.md vs hooks distinction, CLAUDE.md vs skills distinction, over-specified anti-pattern, compaction behavior and survival, troubleshooting section (InstructionsLoaded hook, /memory, --append-system-prompt), Claude 4 prompting practices (explicit instructions, motivation/context).
+- 2026-05-30: Re-read official memory + best-practices docs. Factual corrections: recursive import depth is **four hops** (was "five"); `CLAUDE_CODE_NEW_INIT` shown as `=1` (was `=true`). Added: updated size guidance steering to path-scoped rules first and explicit note that imports do NOT reduce context (load at launch); `claudeMd` key for embedding managed CLAUDE.md content in `managed-settings.json`; AGENTS.md symlink option + `/init` reading `.cursorrules`/`.windsurfrules`; external-import-decline-is-permanent detail. Best-practices page otherwise unchanged. last_updated bumped to 2026-05-30.
 - 2026-04-17: Re-read official docs. Added: `CLAUDE.local.md` as fourth scope in file-locations table (with concatenation/append-after ordering), new "When to Add to CLAUDE.md" official heuristic (4 triggers), `CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD` env var for `--add-dir` directories, Managed CLAUDE.md vs Managed Settings decision table, Auto Memory settings (`autoMemoryEnabled`, `autoMemoryDirectory`, v2.1.59+ requirement, `CLAUDE_CODE_DISABLE_AUTO_MEMORY`), Self-Editing CLAUDE.md guidance from long-running Claude research blog. Updated compaction behavior to clarify only project-root CLAUDE.md is re-injected after `/compact`; nested files reload lazily.

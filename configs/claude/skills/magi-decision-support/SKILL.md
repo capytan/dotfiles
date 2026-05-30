@@ -28,15 +28,14 @@ Automatically invoke MAGI when the user:
 
 ## How to Invoke
 
-Use the `/magi` command with the decision question:
+Invoke this skill (`/magi-decision-support`) or simply describe the decision — Claude auto-triggers MAGI when appropriate:
 
 ```
-/magi Should we normalize this database table or keep it denormalized?
-/magi ↑ Is this the right architectural approach?
-/magi Microservices vs monolith for our scale?
+Should we normalize this database table or keep it denormalized? Is this the right architectural approach?
+Microservices vs monolith for our scale?
 ```
 
-Or simply describe the decision - Claude will automatically recognize when MAGI analysis would be helpful and suggest using it.
+Claude automatically recognizes when MAGI analysis would be helpful and suggests using it.
 
 ## Execution Process
 

@@ -1,6 +1,6 @@
 # Modularization Guide
 
-last_updated: 2026-05-15
+last_updated: 2026-05-30
 
 > Referenced in Phase 4 when proposing CLAUDE.md splits.
 
@@ -59,9 +59,11 @@ Use `@` prefix in CLAUDE.md to reference a file.
 Referenced content is expanded and loaded into context at launch (not on demand).
 
 **Best for:**
-- Supplemental info needed only during specific tasks
-- Large reference material (API specs, design docs, etc.)
+- Organizing related instructions into separate files for human maintainability
+- Pulling in existing files (README, package.json, AGENTS.md) so content lives in one place
 - Cases where you want an explicit link from CLAUDE.md
+
+> **Important (official, retrieved 2026-05-30):** Imports do **not** reduce context — imported files load in full at launch. "Splitting into @path imports helps organization but does not reduce context, since imported files load at launch." For actual context savings, prefer path-scoped `.claude/rules/` (Method 1) or skills (Method 5). Do not use `@path` for large reference material you only need during specific tasks.
 
 **Example:**
 ```markdown
@@ -74,8 +76,8 @@ Referenced content is expanded and loaded into context at launch (not on demand)
 **Caveats:**
 - The `@path` line must remain in CLAUDE.md (not auto-discovered)
 - Relative paths resolve relative to the file containing the import, not the working directory
-- Maximum depth of five hops for recursive imports
-- First-time external imports require an approval dialog
+- Maximum depth of **four hops** for recursive imports (official docs, retrieved 2026-05-30; previously documented as "five")
+- First-time external imports require an approval dialog; declining disables imports permanently and the dialog does not reappear
 - Both relative and absolute paths are allowed
 
 ## Method 3: Subdirectory CLAUDE.md (Scoped Context)
@@ -224,3 +226,4 @@ Move absolute rules to hooks instead of relying on CLAUDE.md compliance.
 - 2025-05-01: Initial version
 - 2026-03-29: Added path-specific rules (YAML frontmatter), updated @path import details (depth limit, resolution rules, approval dialog), added Method 5 (Skills) and Method 6 (Hooks) for modularization, expanded splitting procedure with skills/hooks/claudeMdExcludes options, added symlink support for rules.
 - 2026-04-17: Renamed Method 4 from `.claude.local.md` to the official `CLAUDE.local.md` (previous spelling was incorrect); added concatenation/ordering and worktree caveats. Added new Method 5b: HumanLayer `agent_docs/` progressive-disclosure pattern with file:line pointers.
+- 2026-05-30: Corrected recursive import depth to **four hops** (official docs now say four, was "five"). Clarified Method 2 (`@path`): official docs now stress imports load in full at launch and do NOT reduce context — reframed "Best for" away from "large reference material / task-specific info" toward organization/file-reuse, and added a prominent caveat pointing to path-scoped rules or skills for real context savings. Added permanent-decline detail for external imports. last_updated bumped to 2026-05-30.

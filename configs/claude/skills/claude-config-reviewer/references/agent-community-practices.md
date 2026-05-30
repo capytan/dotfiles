@@ -9,7 +9,21 @@
 > - `[community:mid]` = GitHub 10-50 stars, verified in a tech blog
 > - `[community:low]` = Individual report, unverified but reasonable (reference only)
 
-last_updated: 2026-05-15
+last_updated: 2026-05-30
+
+---
+
+## Description Field — Voice
+
+### Third-person description + second-person body `[official]` (resolves a community split)
+
+The official Skills authoring doc says the discovery `description` should be written in **third person** ("Always write in third person… inconsistent point-of-view can cause discovery problems" — https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices, retrieved 2026-05-30). All official subagent description examples follow this ("Reviews code for quality…", "Debugging specialist for errors…"). The **body/system prompt** stays second person ("You are…").
+
+Some 2026 community guides muddle this by saying to write the description "as if you're telling Claude when to use it," which reads as imperative. Verified analysis (alexop.dev, tembo.io, digitalapplied.com, 2026-05) concludes this is **not** advocating second person — it is emphasizing *trigger conditions over capabilities*. Net rule: third-person capability + explicit trigger clause. Do not put "You are…" in the description.
+
+Sources:
+- https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices (retrieved 2026-05-30) `[official]`
+- https://www.tembo.io/blog/claude-code-subagents (retrieved 2026-05-30) `[community:mid]`
 
 ---
 
@@ -64,7 +78,7 @@ Community consensus: use 2–4 examples when the triggering condition is ambiguo
 
 ### Three-tier allowlist pattern `[community:high]`
 
-From `VoltAgent/awesome-claude-code-subagents` (17.5k stars, retrieved 2026-04-17):
+From `VoltAgent/awesome-claude-code-subagents` (20.9k stars, retrieved 2026-05-30; was 17.5k in April):
 
 | Role | Tools |
 |------|-------|
@@ -103,6 +117,13 @@ This maps cleanly onto the official example structure (role → "When invoked:" 
 ### Persona specificity `[community:mid]`
 
 Community agents often add qualifying phrases to the persona opener to invoke domain-specific training: `"senior"`, `"specialist"`, `"15+ years of experience"`. Example: `"You are a senior code reviewer with 15+ years of experience."` This is an optional flourish, not required.
+
+### "One job and a clear definition of done" `[community:mid]`
+
+> "Keep the system prompt short. Subagents work best with one job and a clear definition of done."
+> — https://www.tembo.io/blog/claude-code-subagents (retrieved 2026-05-30)
+
+Tembo's recommended body structure (corroborates the five-layer blueprint): job title → "When invoked, do the following in order:" numbered steps → output format (Markdown / severity tags / file grouping) → explicit constraints (e.g., "Do not modify files; you are read-only by design" for read-only agents). The supatest-ai collection notes its agents target **300–800 lines of focused, actionable content** rather than 2000+ line tutorials `[community:mid]`.
 
 ### "Keep scope narrow — one specialty per agent" `[community:high]`
 
@@ -175,3 +196,4 @@ Sources:
 
 - 2026-03-30: Initial skeleton
 - 2026-04-17: Populated from Phase 0 research. Added: MUST BE USED / PROACTIVELY trigger formula (with official-vs-community distinction), action-verb recall guidance, `<example>` block status clarification (community convention, not official — do not penalize prose-only descriptions), three-tier role-based tool allowlist (VoltAgent 17.5k-star repo), model-to-role routing table, five-layer system prompt blueprint, persona specificity tips, "one specialty per agent" rule, description/behavior separation rule, second-person universality, Anthropic's 10-files / 3-tasks delegation heuristic, chain-vs-parallel patterns, `@agent-<name>` typeahead invocation, Japanese community notes on context-isolation framing.
+- 2026-05-30: Refresh. Added **"Description Field — Voice"** section resolving a 2026 community split: description is third person (official Skills guidance), body stays second person — verified against alexop.dev/tembo.io/digitalapplied.com analyses concluding the imperative-sounding guidance is really "trigger conditions over capabilities," not second person. Updated VoltAgent star count 17.5k → 20.9k (still `[community:high]`). Added Tembo "one job and a clear definition of done / keep system prompt short" guidance and supatest-ai 300–800-line target `[community:mid]`. Model routing, allowlist tiers, blueprint, trigger formula re-verified unchanged.

@@ -13,7 +13,7 @@
 >
 > **Note:** Phase 0 research (2026-04-17) cross-checked against code.claude.com/docs/en/sub-agents.
 
-last_updated: 2026-05-15
+last_updated: 2026-05-30
 
 ---
 
@@ -35,7 +35,7 @@ Validate the YAML frontmatter between `---` markers for required fields and valu
 
 **model field (optional):**
 - Absent → PASS (defaults to `inherit`)
-- Present, value in `inherit | sonnet | opus | haiku` or full model ID (e.g., `claude-opus-4-7`) → PASS
+- Present, value in `inherit | sonnet | opus | haiku` or full model ID (e.g., `claude-opus-4-8`, `claude-sonnet-4-6`) → PASS
 - Unrecognized value → -2 pts
 
 **color field (optional):**
@@ -87,6 +87,7 @@ Both are valid. Score the style the author chose against its own rubric below.
 - Action-verb recall hook present → 4 pts
 - Length 80–600 characters (matches all four official examples) → 4 pts
 - No behavioral instructions bleeding into description (routing only) → deduction-only: mixing instructions → -3 pts
+- Third-person voice (describes *what the agent does*, e.g., "Reviews code…", "Debugging specialist…") → deduction-only: second-person/imperative description ("You are…", "When invoked, you will…") → -3 pts `[official]` (Skills authoring guidance: "Always write in third person"). Note: this is the same deduction surface as the "behavioral instructions" check; do not double-count — apply -3 once if the description is written as an instruction to the agent.
 
 #### B2. `<example>`-block scoring (community-aligned)
 
@@ -194,8 +195,9 @@ Verify the agent file is consistent with its environment.
 `[custom:derived-from-agent-reviewer]`
 
 **Checks:**
-- Agent name in frontmatter matches the filename (minus `.md`) → required (-3 pts if mismatch)
+- Agent name in frontmatter matches the filename (minus `.md`) → advisory NOTE only (the official docs state "The filename does not have to match" — identity comes solely from the `name` field; do NOT deduct for a mismatch, but flag it as a maintainability note since a mismatch can confuse human readers) `[official]`
 - Tools listed in `tools` array are real, recognized tool names → required (-2 pts per unknown)
+- Tools listed that are unavailable to subagents (`Agent`, `AskUserQuestion`, `EnterPlanMode`, `ExitPlanMode` unless `permissionMode: plan`, `ScheduleWakeup`, `WaitForMcpServers`) → advisory NOTE (no-op, not a hard error) `[official]`
 - System prompt references to files/paths are valid (spot-check with Glob) → -2 pts per broken ref
 - No contradictions between description and system prompt responsibilities → -3 pts if conflicting
 - Model tier is appropriate for the agent's complexity → advisory NOTE
@@ -228,3 +230,7 @@ Verify the agent file is consistent with its environment.
   - **B. Description**: Rewrote to accept both official prose-only style and community `<example>`-block style as equally valid. Added action-verb specificity check (-3 pts for capability-only descriptions). Split scoring into B1 (prose) and B2 (`<example>`-block) branches. `MUST BE USED` flagged as community convention, not official.
   - **C3. Structure**: Replaced with the 5-part official pattern (Identity / "When invoked:" steps / Checklist / Output format / Focus or edge-case statement). Edge-case section no longer mandatory — closing focus statement is an accepted substitute.
   - **D. Tool Restriction**: Added role-tier table (read-only / research / writer / docs) sourced from VoltAgent/awesome-claude-code-subagents. Noted that official code-reviewer example includes `Bash` for `git diff` — pure `Read/Grep/Glob` is stricter but not required. Added `disallowedTools` as denylist alternative.
+- 2026-05-30: Refreshed against code.claude.com/docs/en/sub-agents (2026-05-30) + Skills authoring best-practices.
+  - **B. Description**: Added a third-person-voice check (`[official]`) — imperative/second-person descriptions ("You are…", "When invoked, you will…") deduct -3 pts, deduplicated with the existing behavioral-instructions deduction (apply once). Sourced from "Always write in third person" in Skills authoring guidance.
+  - **A. Frontmatter**: Model ID examples bumped to `claude-opus-4-8` / `claude-sonnet-4-6`.
+  - **G. Cross-Reference**: Filename↔`name` mismatch downgraded from -3 pts to advisory NOTE — official docs state "The filename does not have to match"; identity is from `name` only. Added advisory note for tools that are unavailable to subagents (`Agent`, `AskUserQuestion`, `EnterPlanMode`, `ExitPlanMode`, `ScheduleWakeup`, `WaitForMcpServers`) — listing them is a no-op, not a hard error.

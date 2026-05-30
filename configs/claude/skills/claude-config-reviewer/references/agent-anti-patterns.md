@@ -3,7 +3,7 @@
 > Referenced during Phase 2, criterion E (Anti-patterns) for agent file reviews.
 > Each pattern has a severity: Critical / Major / Minor.
 
-last_updated: 2026-05-15
+last_updated: 2026-05-30
 
 ---
 
@@ -75,11 +75,11 @@ Description fails to state **when** the agent should fire. The router can't dele
 The description contains behavioral instructions ("Always do X", "You will…", step-by-step procedures) instead of routing signals.
 
 **Detection patterns:**
-- Description contains second-person instructions meant for the agent (e.g., `"You are a reviewer. When invoked, you will…"`)
+- Description contains second-person/imperative instructions meant for the agent (e.g., `"You are a reviewer. When invoked, you will…"`) — official guidance is to write the description in **third person** ("Always write in third person", Skills authoring best-practices, https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices)
 - Description contains numbered procedure steps
 - Description describes *how* the agent works rather than *when* it should fire
 
-**Fix:** Move all behavioral content into the system prompt (body). The description should be routing-only: "when" and "why" the agent fires. "Crystal-clear descriptions guide the router; crystal-clear prompts guide the specialist." (https://github.com/vijaythecoder/awesome-claude-agents)
+**Fix:** Move all behavioral content into the system prompt (body). The description should be routing-only and third person ("Reviews code…", "Debugging specialist…"); the body stays second person ("You are…"). "Crystal-clear descriptions guide the router; crystal-clear prompts guide the specialist." (https://github.com/vijaythecoder/awesome-claude-agents)
 
 ### Thin System Prompt for Autonomous Agent `[custom:derived-from-agent-reviewer]`
 
@@ -135,3 +135,4 @@ System prompt lacks guidance for failure modes or unusual inputs.
   - Renamed **"Description Without Sufficient Examples"** → **"Description Without Trigger Conditions"**. Rewrote so the anti-pattern is missing *trigger conditions / action verbs / when-clauses* rather than missing `<example>` blocks. Anthropic's documented agents use prose-only descriptions, so the `<example>`-block count should not be a Major anti-pattern. Now tagged `[official]` + `[community:high]`.
   - Added new Major anti-pattern: **"Behavioral Instructions in Description"** — description should be routing signals only; behavior belongs in the system prompt.
   - Added `last_updated: 2026-04-17` header.
+- 2026-05-30: Refresh against code.claude.com/docs/en/sub-agents + Skills authoring best-practices (2026-05-30). Reinforced the **"Behavioral Instructions in Description"** anti-pattern with the official third-person rule ("Always write in third person") — second-person/imperative descriptions are now explicitly called out, with the fix clarifying the third-person-description / second-person-body split. No new anti-patterns added; existing catalog re-verified current.
