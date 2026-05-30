@@ -2,7 +2,7 @@
 name: tdd-guide
 color: yellow
 description: |
-  Test-Driven Development specialist enforcing write-tests-first methodology. Use PROACTIVELY when writing new features, fixing bugs, or refactoring code. Ensures 80%+ test coverage.
+  Test-Driven Development specialist enforcing write-tests-first methodology. Use PROACTIVELY when writing new features, fixing bugs, or refactoring code. Targets 80%+ coverage on new code.
 
   <example>
   Context: User wants to write tests before implementing a feature.
