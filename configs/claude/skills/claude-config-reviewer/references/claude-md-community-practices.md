@@ -9,7 +9,7 @@
 > - `[community:mid]` = GitHub 10-50 stars, verified in a tech blog
 > - `[community:low]` = Individual report, unverified but reasonable (reference only, not in scoring)
 
-last_updated: 2026-05-15
+last_updated: 2026-05-30
 sources:
   - https://howborisusesclaudecode.com/
   - https://github.com/shanraisshan/claude-code-best-practice
@@ -28,6 +28,11 @@ sources:
   - https://claudify.tech/blog/claude-code-best-practices
   - https://ccforpms.com/fundamentals/project-memory
   - https://dev.to/_46ea277e677b888e0cd13/claude-code-vs-codex-2026-what-500-reddit-developers-really-think-31pb
+  - https://buildtolaunch.substack.com/p/claude-code-token-optimization
+  - https://www.analyticsvidhya.com/blog/2026/05/tips-for-claude-code-token-saving/
+  - https://qiita.com/kirozero/items/66ebe44f9bd09d5e97b0
+  - https://zenn.dev/imohuke/articles/claude-code-best-practices-2026
+  - https://www.firecrawl.dev/blog/best-claude-code-skills
 
 ---
 
@@ -130,6 +135,13 @@ Use `<!-- -->` in CLAUDE.md for notes visible to humans but stripped before inje
 
 > Source: multiple community references, confirmed official at code.claude.com/docs/en/memory
 
+#### A stable CLAUDE.md improves prompt caching `[community:mid]`
+
+A lean, stable CLAUDE.md sits in the cacheable prefix of every turn, so keeping it unchanged across sessions improves cache hit rate. Cited reductions: cached input tokens cost ~$0.30/M vs ~$3.00/M uncached on Sonnet (10x), with one team reporting a "40% reduction in input tokens per session just by maintaining a well-structured CLAUDE.md."
+
+> Source: https://buildtolaunch.substack.com/p/claude-code-token-optimization, https://www.analyticsvidhya.com/blog/2026/05/tips-for-claude-code-token-saving/ (retrieved 2026-05-30)
+> Caveat: the 40% figure is a single-team self-report; the caching mechanism itself is sound. Implication: frequent edits to CLAUDE.md invalidate the cache prefix, so churn has a token cost beyond the lines themselves.
+
 ### Workflow Patterns
 
 #### Explore -> Plan -> Code -> Commit `[semi-official]`
@@ -155,6 +167,13 @@ Install via `/install-github-action`. Claude automatically updates CLAUDE.md and
 Aakash Gupta (product leader) summarized the effect: "Every mistake becomes a rule. The longer the team works together, the smarter the agent becomes."
 
 > Source: Boris Cherny via VentureBeat, Jan 2026 (retrieved 2026-04-17)
+
+#### Periodically prune CLAUDE.md as models improve `[community:mid]`
+
+> "いま効いている設定が次のモデルでも効くとは限りません。以前のモデル向けに書いた指示が、新しいモデルには過剰な制約になる例もあり、3〜6か月ごと、あるいは大きなモデル更新のあとに、設定の棚卸しをするべき" (Settings that work now may not work for the next model. Instructions written for an older model can become over-constraints for a newer one — do an inventory every 3-6 months or after major model updates, removing "training wheels" the new model no longer needs.)
+
+> Source: https://qiita.com/kirozero/items/66ebe44f9bd09d5e97b0, https://zenn.dev/imohuke/articles/claude-code-best-practices-2026 (retrieved 2026-05-30)
+> Reinforces the official "treat CLAUDE.md like code, prune it regularly" guidance with a concrete cadence and a model-evolution rationale.
 
 #### Stable CLAUDE.md on main; branch-specific rules in `.claude/rules/` `[community:mid]`
 
@@ -224,6 +243,14 @@ Boris runs 5 terminal instances + 5-10 web sessions simultaneously, each in its 
 
 > Source: https://howborisusesclaudecode.com/ (retrieved 2026-03-29)
 
+#### Agent Skills is now a cross-tool standard `[community:mid]`
+
+> "The Agent Skills specification is adopted by Claude Code, OpenAI Codex CLI, Cursor, Gemini CLI, and GitHub Copilot, so a skill you write or install works across all of these tools without modification."
+
+Strengthens the "move on-demand knowledge to skills, not CLAUDE.md" recommendation: skills are now portable across agents, lowering the cost of extracting domain knowledge out of CLAUDE.md.
+
+> Source: https://www.firecrawl.dev/blog/best-claude-code-skills (retrieved 2026-05-30)
+
 #### Systematize learnings into reusable skills `[community:mid]`
 
 > "口頭の指示はスキルへ、手動の作業はスクリプトへ、踏んだ地雷は learned スキルへ" (Verbal instructions become skills, manual tasks become scripts, mistakes become learned skills.)
@@ -267,4 +294,5 @@ Insights found during research but not adopted, for reasons such as:
 
 - 2025-05-01: Initial version (empty template)
 - 2026-03-29: First research run. Added 20+ insights across Structure & Design, Token Efficiency, Workflow Patterns, Tool Integration, and Parallel & Scaling Patterns. Sources include Boris Cherny (semi-official), Trail of Bits (community:high), FlorianBruniaux guide (community:mid), SFEIR Institute (community:mid), ykdojo tips (community:high), wesammustafa guide (community:high), awattar best practices (community:mid), and Japanese community (Qiita/Zenn, community:mid/low).
+- 2026-05-30: Research run. Added three new `[community:mid]` insights: stable CLAUDE.md improves prompt caching (build-to-launch / AnalyticsVidhya; 10x cached-token saving, 40% single-team self-report — implies CLAUDE.md churn invalidates cache); periodically prune CLAUDE.md as models improve, 3-6 month cadence (kirozero Qiita / imohuke Zenn — reinforces official "prune like code"); Agent Skills now a cross-tool standard adopted by Codex CLI/Cursor/Gemini CLI/Copilot (Firecrawl — strengthens "move on-demand knowledge to skills"). Confirmed official best-practices and line-limit consensus unchanged since 2026-05-15. last_updated bumped to 2026-05-30.
 - 2026-04-17: Added HumanLayer "Writing a good CLAUDE.md" (Kyle, Nov 2025) with WHAT/WHY/HOW structure, 60-line benchmark, and agent_docs/ progressive-disclosure pattern. Added abhishekray07/claude-md-templates insight on the 150–200 instruction budget and 80-line adherence cliff. Added rohitg00/awesome-claude-code-toolkit "CLAUDE.md Bible" (stack-specific 80–150 line templates). Added Boris Cherny token breakdown (user 76 / project 4k tokens) and "Compounding Engineering" term for @.claude PR workflow, plus VentureBeat Jan 2026 viral coverage ("Every mistake becomes a rule"). Refreshed Boris howborisusesclaudecode retrieval date.
