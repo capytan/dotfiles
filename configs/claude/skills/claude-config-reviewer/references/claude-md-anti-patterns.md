@@ -1,6 +1,6 @@
 # Anti-Pattern Catalog
 
-last_updated: 2026-05-15
+last_updated: 2026-05-30
 
 > Referenced during Phase 2, criterion F (Anti-patterns).
 > Each pattern has a severity: Critical / Major / Minor.
@@ -203,3 +203,4 @@ Content that only applies to a specific task or session.
 - 2025-05-01: Initial version
 - 2026-03-29: Added new anti-patterns from official docs and community research: Over-Specified CLAUDE.md (official), Conflicting Instructions (official), Guidance That Should Be a Hook (semi-official + community:high), Information That Changes Frequently (official), Session-Specific Content (official). Enhanced existing patterns with direct quotes and source URLs. Added SFEIR bullet-point adherence insight to Verbose Writing.
 - 2026-04-17: Tightened Over-Specified CLAUDE.md detection with community 80-line adherence cliff (abhishekray07) and the ~150–200 instruction budget finding; added progressive-disclosure fix suggestion (HumanLayer agent_docs/ pattern).
+- 2026-05-30: No material change to the anti-pattern catalog. 2026-05-30 research surfaced no new anti-patterns; existing patterns (Over-Specified, Information That Changes Frequently) remain accurate. Awareness note: community now reports that frequent CLAUDE.md edits invalidate the prompt-cache prefix, an additional cost of the "Information That Changes Frequently" pattern, but not severe enough to restructure the entry. last_updated bumped to 2026-05-30.

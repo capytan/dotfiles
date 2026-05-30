@@ -10,7 +10,7 @@
 > - `[custom]` = Derived from this repo's own practice
 > - `[custom:derived-from-skill-reviewer]` = Extracted from skill-reviewer agent
 
-last_updated: 2026-05-15
+last_updated: 2026-05-30
 
 ---
 
@@ -26,7 +26,7 @@ last_updated: 2026-05-15
 
 **when_to_use** `[official]` (new field, 2026): optional; appended to `description` in listing. Combined (`description` + `when_to_use`) truncated at **1,536 chars** in the listing — front-load key triggers.
 
-**Other**: no README.md / CHANGELOG.md in skill dir `[community:high]` (wastes tokens). Optional fields (`allowed-tools`, `paths`, `context`, etc.) validated if present.
+**Other**: no README.md / CHANGELOG.md in skill dir `[community:high]` (wastes tokens). Optional fields validated if present: `allowed-tools`, `disallowed-tools` (new 2026), `arguments` (new 2026; named positional args for `$name`), `paths`, `context`, `effort`, etc.
 
 - **15 pts**: All valid, description covers four components, name-folder match, no README.md
 - **12 pts**: Valid but description missing one component
@@ -61,7 +61,9 @@ High freedom for creative tasks, medium for technical, low for safety-critical/e
 
 `[official]` Large skills must split content into referenced files.
 
-**Size** `[official]`: SKILL.md under **500 lines**; SKILL.md body under 5,000 tokens recommended; references **one level deep only** (no nested links from a reference into another reference).
+**Size** `[official]`: SKILL.md under **500 lines**; SKILL.md body under 5,000 tokens recommended (Anthropic's own `plugin-dev/skill-development` skill targets a tighter **1,500-2,000 words** for the body `[semi-official]`); references **one level deep only** (no nested links from a reference into another reference).
+
+**File references** `[official]`: references are Read-tool instructions (Claude reads them on demand), **not `@` imports** (those only work in CLAUDE.md). Each reference should be named by explicit path in the step that needs it — vague/buried references cause "missed connections" where Claude never reads the file.
 
 **Table of contents** `[official]`: reference files longer than **100 lines** must include a TOC at the top so Claude can see full scope when previewing with partial reads.
 
@@ -158,4 +160,5 @@ Per section: **High** = changes decisions, **Medium** = clarifies ambiguity, **L
 ## Changelog
 
 - 2026-03-29: Initial version. Derived from skill-reviewer agent check items A-J. All items tagged `[custom:derived-from-skill-reviewer]` pending Phase 0 research to update with official sources.
+- 2026-05-30: Minor refresh. Criterion A: added new 2026 frontmatter fields `arguments` / `disallowed-tools` to the validated-optional-fields list. Criterion D: added file-reference clarification (Read-tool instructions, not `@` imports — only CLAUDE.md supports `@`) and noted Anthropic's tighter 1,500-2,000-word body target `[semi-official]`. No scoring-band or criteria-weight changes; all `[custom]` items preserved.
 - 2026-04-17: Upgraded tags from `[custom:derived-from-skill-reviewer]` to `[official]` / `[semi-official]` / `[community:high]` where Phase 0 research confirmed. Added `when_to_use` frontmatter field (new 2026). Clarified description caps: 1024-char hard validation + 1,536-char listing truncation (combined with `when_to_use`). Added "no README/CHANGELOG in skill dir" rule (community consensus). Strengthened structure criterion D with one-level-deep + 100-line TOC rules (now `[official]`). Added "pushy" description guidance, evaluation-driven development, and "Old patterns" archival pattern to supplementary checks.

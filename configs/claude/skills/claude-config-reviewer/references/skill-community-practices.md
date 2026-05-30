@@ -9,9 +9,31 @@
 > - `[community:mid]` = GitHub 10-50 stars, verified in a tech blog
 > - `[community:low]` = Individual report, unverified but reasonable (reference only)
 
-last_updated: 2026-05-15
+last_updated: 2026-05-30
 
 ---
+
+## File References Are Read-Tool Instructions, Not `@` Imports
+
+`[community:high]` Multiple 2026 guides (MindStudio skill-architecture post, sidsaladi "secret weapon" guide) emphasize a Claude-Code-specific gotcha:
+
+- In SKILL.md, a file reference like `See reference/finance.md` is **not** an `@`-import — it is an instruction for Claude to read the file on demand with the Read/bash tools. `@path` imports only work in CLAUDE.md.
+- Practical consequence: name the path explicitly inside the step that needs it. Vague or buried references cause "missed connections" where Claude never reads the file.
+- "Process in SKILL.md, context in reference files" — ordered steps belong in SKILL.md; background/domain knowledge/examples belong in `references/`, written literally for the model, not for humans.
+
+> Sources:
+> - https://www.mindstudio.ai/blog/claude-code-skills-architecture-skill-md-reference-files (retrieved 2026-05-30)
+> - https://github.com/anthropics/claude-code/blob/main/plugins/plugin-dev/skills/skill-development/SKILL.md (retrieved 2026-05-30)
+
+## Tighter Body Target: 1,500-2,000 Words
+
+`[semi-official]` Anthropic's own `plugin-dev/skill-development` skill (bundled in `anthropics/claude-code`) targets a tighter range than the 500-line ceiling:
+
+> "Keep SKILL.md lean: Target 1,500-2,000 words for the body."
+
+It also ships a pre-share checklist: "Check references: All referenced files exist. Validate examples: Examples are complete and correct. Test scripts: Scripts are executable and work correctly."
+
+> Source: https://github.com/anthropics/claude-code/blob/main/plugins/plugin-dev/skills/skill-development/SKILL.md (retrieved 2026-05-30)
 
 ## Context Hygiene & Lean SKILL.md
 
@@ -152,10 +174,12 @@ Consolidated from the sources above:
 8. **No README/CHANGELOG** inside skill folders
 9. **Build evals first** — ≥3 realistic trigger/non-trigger cases before writing body
 10. **Security review** before using community skills — treat as executable code
+11. **Reference files explicitly by path** in the step that needs them — they're Read-tool instructions, not `@` imports
 
 ---
 
 ## Changelog
 
+- 2026-05-30: Added two sections: file references are Read-tool instructions (not `@` imports) `[community:high]`, and Anthropic's own `plugin-dev/skill-development` 1,500-2,000-word body target + pre-share checklist `[semi-official]`. Extended consolidated checklist with item 11. Re-verified existing sources (mgechev, shanraisshan, skill-creator, Japanese consensus, security) — no material change; description-as-trigger, pushy descriptions, JiT loading, and side-effect `disable-model-invocation` rule all reconfirmed by 2026-05 community posts.
 - 2026-03-30: Initial skeleton
 - 2026-04-17: Populated with community research. Added sections: context hygiene (mgechev/skills-best-practices), description-as-trigger (shanraisshan), pushy descriptions (semi-official skill-creator), evaluation-driven development (skill-creator 4-mode pipeline), token economics at scale, cross-language/feature-area reference patterns, Japanese practitioner consensus (Zenn/Qiita), security (awesome-claude-skills + Cisco prompt-injection warning), ecosystem adoption, consolidated 10-item checklist.

@@ -3,7 +3,7 @@
 > Referenced during Phase 2, criterion G (Anti-patterns) for SKILL.md reviews.
 > Each pattern has a severity: Critical / Major / Minor.
 
-last_updated: 2026-05-15
+last_updated: 2026-05-30
 
 ---
 
@@ -117,6 +117,11 @@ Generic names that do not describe the skill's activity.
 Skill has accumulated real-world failure cases but nothing is documented.
 **Fix:** Add a `## Gotchas` section and append observed failure modes over time — highest-signal content in mature skills.
 
+### `@`-Import Syntax in SKILL.md References `[community:high]`
+Using `@path` import syntax (e.g. `@reference/finance.md`) to pull in a reference file. Unlike CLAUDE.md, SKILL.md does **not** support `@` imports — references are plain paths Claude reads on demand via the Read/bash tools.
+Quote: "file references are NOT @ imports — they're instructions for the agent to use the Read tool. (@ imports only work in CLAUDE.md, not in SKILL.md.)" — community 2026 guides (MindStudio, sidsaladi)
+**Fix:** Name the file by plain path inside the step that needs it ("See `reference/finance.md` for revenue metrics"). Make references explicit and prominent so Claude doesn't miss the connection.
+
 ### Railroaded Prescriptive Steps `[community:high]`
 Skill dictates every micro-step, removing Claude's ability to adapt to context.
 Quote: "Don't railroad Claude in skills — give goals and constraints, not prescriptive step-by-step instructions." — shanraisshan/claude-code-best-practice
@@ -127,4 +132,5 @@ Quote: "Don't railroad Claude in skills — give goals and constraints, not pres
 ## Changelog
 
 - 2026-03-29: Initial version. Derived from skill-reviewer agent check items. All items tagged `[custom:derived-from-skill-reviewer]` pending Phase 0 research.
+- 2026-05-30: Minor refresh. Added one Minor anti-pattern: `@`-import syntax in SKILL.md references (`@` imports only work in CLAUDE.md; SKILL.md references are Read-tool instructions) `[community:high]`. Re-verified all existing Critical/Major/Minor patterns against 2026-05 official + community sources — no severity changes, no removals.
 - 2026-04-17: Major expansion against 2026-04 official docs. Added Critical tier (3 items: first/second-person description, >1024-char description, missing `disable-model-invocation` on side-effect skills). Promoted Windows-style paths, option listing without default, and oversized SKILL.md from `[custom:...]` to `[official]` with source quotes. Added 7 new patterns: nested references, reference file >100 lines without TOC, README/CHANGELOG in skill dir, time-sensitive content in body, voodoo constants, unqualified MCP tool refs, punting to Claude in scripts. Added minor patterns: overfitting descriptions, vague names, missing Gotchas, railroaded prescriptive steps. Added a counter-note about not over-using ALL-CAPS MUST/NEVER (skill-creator guidance).

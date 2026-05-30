@@ -53,6 +53,8 @@ When invoked:
 - **Hardcoded secrets**: API keys, passwords in source
 - **Insecure TLS**: `InsecureSkipVerify: true`
 
+When a CRITICAL security issue is found, recommend escalation to the **security-reviewer** agent for a deep audit.
+
 ### CRITICAL -- Error Handling
 - **Ignored errors**: Using `_` to discard errors
 - **Missing error wrapping**: `return err` without `fmt.Errorf("context: %w", err)`

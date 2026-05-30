@@ -11,7 +11,7 @@
 > - `[community:mid]` = GitHub 10-50 stars, verified in a tech blog
 > - `[custom]` = Derived from this repo's own practice
 
-last_updated: 2026-05-15
+last_updated: 2026-05-30
 sources:
   - https://code.claude.com/docs/en/skills
   - https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices
@@ -79,9 +79,11 @@ my-skill/
 | `description` | Recommended | What the skill does and when to use it. Max 1024 characters (hard cap — content is truncated). If omitted, uses the first paragraph of markdown. |
 | `when_to_use` | No | Additional trigger phrases/example requests. Appended to `description` in the skill listing. **NEW 2026.** |
 | `argument-hint` | No | Hint shown during autocomplete (e.g., `[issue-number]`). |
-| `disable-model-invocation` | No | `true` prevents Claude from auto-loading. Default: `false`. |
+| `arguments` | No | Named positional arguments for `$name` substitution. Space-separated string or YAML list; names map to positions in order. **NEW 2026.** |
+| `disable-model-invocation` | No | `true` prevents Claude from auto-loading. Also prevents the skill from being preloaded into subagents. Default: `false`. |
 | `user-invocable` | No | `false` hides from `/` menu. Default: `true`. |
-| `allowed-tools` | No | Tools Claude can use without asking permission when skill is active. Space-separated string or YAML list. |
+| `allowed-tools` | No | Tools Claude can use without asking permission when skill is active. Space- or comma-separated string or YAML list. |
+| `disallowed-tools` | No | Tools removed from Claude's pool while the skill is active (e.g., block `AskUserQuestion` in a background loop). Restriction clears on the next user message. **NEW 2026.** |
 | `model` | No | Model to use when skill is active. |
 | `effort` | No | Effort level: `low`, `medium`, `high`, `xhigh`, `max` (availability depends on model). Overrides session effort. |
 | `context` | No | Set to `fork` to run in a forked subagent context. |
@@ -102,10 +104,11 @@ Two separate limits apply — do not confuse them:
    > "Front-load the key use case: the combined description and when_to_use text is truncated at 1,536 characters in the skill listing to reduce context usage."
    > — https://code.claude.com/docs/en/skills (retrieved 2026-04-17)
 
-> **Note on historical guidance**: The previous documented limit of "250 characters per entry" has been superseded. The 2026-04 docs specify 1,536 characters as the per-entry cap in listings (combined `description` + `when_to_use`), with the 1024-char field-level cap unchanged.
+> **Note on historical guidance**: The previous documented limit of "250 characters per entry" has been superseded. The 2026-04 docs specify 1,536 characters as the per-entry cap in listings (combined `description` + `when_to_use`), with the 1024-char field-level cap unchanged. The 1,536 per-entry cap is itself configurable via the `maxSkillDescriptionChars` setting. `[official]` (2026-05)
 
-- Overall skill-listing budget scales at 1% of context window (fallback 8,000 chars)
-- `SLASH_COMMAND_TOOL_CHAR_BUDGET` env var raises the listing budget
+- Overall skill-listing budget scales at 1% of context window. When the budget overflows, descriptions for the **least-invoked** skills are dropped first, so skills you actually use keep their full text — names are always listed. `[official]` (updated 2026-05)
+- Raise the budget with the `skillListingBudgetFraction` setting (e.g. `0.02` = 2%) or the `SLASH_COMMAND_TOOL_CHAR_BUDGET` env var (fixed char count). Free budget for other skills by setting low-priority entries to `"name-only"` in `skillOverrides`.
+- Run `/doctor` to see whether the budget is overflowing and which skills are affected. `[official]` (2026-05)
 
 ### Description Writing Rules `[official]`
 
@@ -154,6 +157,8 @@ Three-tier loading model:
 
 > "Reference supporting files from SKILL.md so Claude knows what each file contains and when to load it."
 > — https://code.claude.com/docs/en/skills (retrieved 2026-04-17)
+
+**File references are Read-tool instructions, not `@` imports** `[official]` (clarified 2026-05). Unlike CLAUDE.md (which supports `@path` imports), references in SKILL.md are plain paths that Claude reads on demand via the Read/bash tools — they consume zero context tokens until read. Name the file path explicitly in the relevant step so Claude knows to read it. From the official runtime-environment guidance: "Claude uses bash Read tools to access SKILL.md and other files from the filesystem when needed... No context penalty for large files." (platform.claude.com best-practices, retrieved 2026-05-30)
 
 ### References: One Level Deep `[official]`
 
@@ -211,10 +216,12 @@ Match specificity to task fragility:
 
 | Variable | Description |
 |----------|-------------|
-| `$ARGUMENTS` | All arguments passed when invoking |
+| `$ARGUMENTS` | All arguments passed when invoking. If absent from content, args are appended as `ARGUMENTS: <value>`. |
 | `$ARGUMENTS[N]` / `$N` | Specific argument by 0-based index |
+| `$name` | Named argument declared in the `arguments` frontmatter list; maps to positions in order. **NEW 2026.** |
 | `${CLAUDE_SESSION_ID}` | Current session ID |
-| `${CLAUDE_SKILL_DIR}` | Directory containing the skill's SKILL.md |
+| `${CLAUDE_EFFORT}` | Current effort level (`low`/`medium`/`high`/`xhigh`/`max`; ultracode reports `xhigh`). **NEW 2026.** |
+| `${CLAUDE_SKILL_DIR}` | Directory containing the skill's SKILL.md (for plugin skills, the skill's subdirectory, not the plugin root) |
 
 Indexed arguments use shell-style quoting; multi-word values need quotes.
 
@@ -293,9 +300,9 @@ Per-model considerations: Haiku (does the skill give enough guidance?), Sonnet (
 2. Add `disable-model-invocation: true`
 
 **Skill descriptions cut short:**
-- Budget scales at 1% of context window (fallback 8,000 chars)
-- Front-load key use case (1,536-char per-entry cap in listing)
-- Set `SLASH_COMMAND_TOOL_CHAR_BUDGET` to raise budget
+- Budget scales at 1% of context window; least-invoked skills' descriptions are dropped first when it overflows (names always kept)
+- Front-load key use case (1,536-char per-entry cap in listing; configurable via `maxSkillDescriptionChars`)
+- Raise budget with `skillListingBudgetFraction` setting or `SLASH_COMMAND_TOOL_CHAR_BUDGET` env var; run `/doctor` to diagnose overflow; set low-priority entries to `"name-only"` in `skillOverrides`
 
 ### Checklist for Effective Skills `[official]`
 
@@ -330,4 +337,5 @@ Per-model considerations: Haiku (does the skill give enough guidance?), Sonnet (
 
 - 2026-03-29: Initial skeleton
 - 2026-03-30: Populated with official documentation from code.claude.com/docs/en/skills. Added: skill structure, frontmatter reference, 250-char truncation, invocation control, supporting files (500-line limit), subagent execution, string substitutions, dynamic context injection, CLAUDE.md vs skills, troubleshooting.
+- 2026-05-30: Minor refresh against code.claude.com/docs/en/skills + platform.claude.com best-practices. Added new 2026 frontmatter fields `arguments` and `disallowed-tools`. Added new substitutions `$name` and `${CLAUDE_EFFORT}`. Updated description-budget behavior: least-invoked descriptions dropped first on overflow; new settings `skillListingBudgetFraction`, `maxSkillDescriptionChars`; `/doctor` diagnostics; `skillOverrides` (on/name-only/user-invocable-only/off). Clarified file references are Read-tool instructions, not `@` imports. `disable-model-invocation` also blocks subagent preload. No conflicts with prior content; core rules (1024/1,536 caps, 500-line, one-level-deep, TOC>100 lines, third-person, pushy, gerund, degrees-of-freedom) unchanged.
 - 2026-04-17: Major refresh against latest docs. Corrected description limits: hard cap is 1024 chars (field), truncation is 1,536 chars (combined `description` + `when_to_use` in listings) — previous 250-char figure was outdated. Added new frontmatter field `when_to_use`. Added `xhigh` effort level. Added skill content lifecycle section (session-wide persistence, compaction budgets: 5k tokens per skill, 25k combined). Added third-person rule, "pushy" description guidance, gerund naming, one-level-deep references rule, 100-line TOC rule, evaluation-driven development, degrees-of-freedom framing, workflows/feedback-loops, content guidelines, anti-patterns (official), per-model testing, explicit checklist. Added sources: platform.claude.com best-practices, skill-creator repo.
