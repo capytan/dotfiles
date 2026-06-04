@@ -9,9 +9,24 @@
 > - `[community:mid]` = GitHub 10-50 stars, verified in a tech blog
 > - `[community:low]` = Individual report, unverified but reasonable (reference only)
 
-last_updated: 2026-05-30
+last_updated: 2026-06-05
 
 ---
+
+## Contents
+
+- File References Are Read-Tool Instructions, Not @ Imports
+- Tighter Body Target: 1,500-2,000 Words
+- Context Hygiene & Lean SKILL.md
+- Description as Trigger, Not Summary
+- Pushy Descriptions
+- Evaluation-Driven Skill Creation
+- Token Economics at Scale
+- Organization Patterns for References
+- Japanese Community Consensus (Zenn / Qiita)
+- Security: Treat Skills as Code
+- Ecosystem Adoption
+- Practical Community Checklist
 
 ## File References Are Read-Tool Instructions, Not `@` Imports
 
@@ -183,3 +198,5 @@ Consolidated from the sources above:
 - 2026-05-30: Added two sections: file references are Read-tool instructions (not `@` imports) `[community:high]`, and Anthropic's own `plugin-dev/skill-development` 1,500-2,000-word body target + pre-share checklist `[semi-official]`. Extended consolidated checklist with item 11. Re-verified existing sources (mgechev, shanraisshan, skill-creator, Japanese consensus, security) — no material change; description-as-trigger, pushy descriptions, JiT loading, and side-effect `disable-model-invocation` rule all reconfirmed by 2026-05 community posts.
 - 2026-03-30: Initial skeleton
 - 2026-04-17: Populated with community research. Added sections: context hygiene (mgechev/skills-best-practices), description-as-trigger (shanraisshan), pushy descriptions (semi-official skill-creator), evaluation-driven development (skill-creator 4-mode pipeline), token economics at scale, cross-language/feature-area reference patterns, Japanese practitioner consensus (Zenn/Qiita), security (awesome-claude-skills + Cisco prompt-injection warning), ecosystem adoption, consolidated 10-item checklist.
+
+- 2026-06-05: Freshness re-run (references were 6 days stale). Re-read official skills + sub-agents docs and a 2026-06 CLAUDE.md best-practices survey (Medium/orchestrator.dev/substack, community:mid). No material change: ~80-120 line practical limit / under-200 / 150-200 instruction budget, the "five things", custom-commands-merged-into-skills, agentskills.io open standard, and auto memory / MEMORY.md (200-line auto-load, routing rules stay in CLAUDE.md) all already captured. last_updated bumped to 2026-06-05.

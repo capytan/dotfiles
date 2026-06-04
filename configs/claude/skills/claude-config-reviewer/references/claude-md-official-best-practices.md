@@ -4,7 +4,7 @@
 > Manual edits are fine but may be overwritten on next research run.
 > Items tagged `[custom]` are protected from overwrite.
 
-last_updated: 2026-05-30
+last_updated: 2026-06-05
 sources:
   - https://code.claude.com/docs/en/memory
   - https://code.claude.com/docs/en/best-practices
@@ -13,6 +13,35 @@ sources:
   - https://www.anthropic.com/research/long-running-Claude
 
 ---
+
+## Contents
+
+Summary from Official Documentation:
+- What CLAUDE.md Is
+- Two Memory Systems
+- File Locations and Hierarchy
+- When to Add to CLAUDE.md
+- Writing Effective Instructions
+- Recommended Content (Include / Exclude)
+- Pruning Guidance
+- Emphasis for Adherence
+- /init Command
+- Import Syntax (@path)
+- AGENTS.md Compatibility
+- Modularization with .claude/rules/
+- Path-Specific Rules
+- claudeMdExcludes Setting
+- HTML Comments
+- CLAUDE.md vs Hooks
+- CLAUDE.md vs Skills
+- Anti-Pattern: Over-Specified CLAUDE.md
+- Compaction Behavior
+- claudeMd Key in Managed Settings
+- Managed CLAUDE.md vs Managed Settings
+- Auto Memory Settings
+- Self-Editing CLAUDE.md in Long-Running Sessions
+- Troubleshooting
+- Claude 4 Prompting Practices
 
 ## Summary from Official Documentation
 

@@ -1,6 +1,6 @@
 # Quality Criteria
 
-last_updated: 2026-05-30
+last_updated: 2026-06-05
 
 > Referenced during Phase 2 (Quality Assessment).
 > Updated based on Phase 0 research findings.
@@ -13,6 +13,19 @@ last_updated: 2026-05-30
 > - `[custom]` = Derived from this repo's own practice
 
 ---
+
+## Contents
+
+Criteria & Scoring (100 points total):
+- A. Token Efficiency (20)
+- B. Commands & Workflows (15)
+- C. Architecture Clarity (15)
+- D. Non-Obvious Patterns (15)
+- E. Actionability (15)
+- F. Anti-patterns (10)
+- G. Behavioral Impact (10)
+
+Plus: Grading Scale
 
 ## Criteria & Scoring (100 points total)
 

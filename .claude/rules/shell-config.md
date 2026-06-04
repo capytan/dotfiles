@@ -7,5 +7,5 @@ paths:
 # Shell Config Rules
 
 - Keep numbered module naming in `shell/zsh/` (`01-options` … `08-zeno`)
-- Never commit `local.zsh` or `tmux-start.local.sh`
+- Never commit `shell/zsh/local.zsh` (full sacred-file list lives in root `CLAUDE.md`)
 - Place platform-specific settings in `platform/{macos,ubuntu}/`

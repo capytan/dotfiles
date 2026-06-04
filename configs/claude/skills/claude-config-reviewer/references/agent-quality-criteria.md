@@ -13,9 +13,22 @@
 >
 > **Note:** Phase 0 research (2026-04-17) cross-checked against code.claude.com/docs/en/sub-agents.
 
-last_updated: 2026-05-30
+last_updated: 2026-06-05
 
 ---
+
+## Contents
+
+Criteria & Scoring (100 points total):
+- A. Frontmatter Correctness (15)
+- B. Description & Triggering Quality (20)
+- C. System Prompt Quality (25)
+- D. Tool Restriction (10)
+- E. Anti-patterns (10)
+- F. Behavioral Impact (10)
+- G. Cross-Reference Consistency (10)
+
+Plus: Grading Scale
 
 ## Criteria & Scoring (100 points total)
 
