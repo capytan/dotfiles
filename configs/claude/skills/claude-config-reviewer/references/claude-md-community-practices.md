@@ -9,7 +9,7 @@
 > - `[community:mid]` = GitHub 10-50 stars, verified in a tech blog
 > - `[community:low]` = Individual report, unverified but reasonable (reference only, not in scoring)
 
-last_updated: 2026-05-30
+last_updated: 2026-06-05
 sources:
   - https://howborisusesclaudecode.com/
   - https://github.com/shanraisshan/claude-code-best-practice
@@ -35,6 +35,12 @@ sources:
   - https://www.firecrawl.dev/blog/best-claude-code-skills
 
 ---
+
+## Contents
+
+- Collected Insights
+- Incorporation into Scoring Criteria
+- Rejected / Deferred Insights
 
 ## Collected Insights
 
@@ -296,3 +302,5 @@ Insights found during research but not adopted, for reasons such as:
 - 2026-03-29: First research run. Added 20+ insights across Structure & Design, Token Efficiency, Workflow Patterns, Tool Integration, and Parallel & Scaling Patterns. Sources include Boris Cherny (semi-official), Trail of Bits (community:high), FlorianBruniaux guide (community:mid), SFEIR Institute (community:mid), ykdojo tips (community:high), wesammustafa guide (community:high), awattar best practices (community:mid), and Japanese community (Qiita/Zenn, community:mid/low).
 - 2026-05-30: Research run. Added three new `[community:mid]` insights: stable CLAUDE.md improves prompt caching (build-to-launch / AnalyticsVidhya; 10x cached-token saving, 40% single-team self-report — implies CLAUDE.md churn invalidates cache); periodically prune CLAUDE.md as models improve, 3-6 month cadence (kirozero Qiita / imohuke Zenn — reinforces official "prune like code"); Agent Skills now a cross-tool standard adopted by Codex CLI/Cursor/Gemini CLI/Copilot (Firecrawl — strengthens "move on-demand knowledge to skills"). Confirmed official best-practices and line-limit consensus unchanged since 2026-05-15. last_updated bumped to 2026-05-30.
 - 2026-04-17: Added HumanLayer "Writing a good CLAUDE.md" (Kyle, Nov 2025) with WHAT/WHY/HOW structure, 60-line benchmark, and agent_docs/ progressive-disclosure pattern. Added abhishekray07/claude-md-templates insight on the 150–200 instruction budget and 80-line adherence cliff. Added rohitg00/awesome-claude-code-toolkit "CLAUDE.md Bible" (stack-specific 80–150 line templates). Added Boris Cherny token breakdown (user 76 / project 4k tokens) and "Compounding Engineering" term for @.claude PR workflow, plus VentureBeat Jan 2026 viral coverage ("Every mistake becomes a rule"). Refreshed Boris howborisusesclaudecode retrieval date.
+
+- 2026-06-05: Freshness re-run (references were 6 days stale). Re-read official skills + sub-agents docs and a 2026-06 CLAUDE.md best-practices survey (Medium/orchestrator.dev/substack, community:mid). No material change: ~80-120 line practical limit / under-200 / 150-200 instruction budget, the "five things", custom-commands-merged-into-skills, agentskills.io open standard, and auto memory / MEMORY.md (200-line auto-load, routing rules stay in CLAUDE.md) all already captured. last_updated bumped to 2026-06-05.

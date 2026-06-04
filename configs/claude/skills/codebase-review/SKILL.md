@@ -1,6 +1,7 @@
 ---
 name: codebase-review
 description: Full codebase review with seven parallel reviewers (rules, bugs, git hotspots, comments, architecture, OWASP, dependencies) and independent scoring. Use when the user asks to review or audit the whole codebase. Reviews source files — for diff/PR reviews use code-review instead.
+allowed-tools: Read, Bash, Agent, AskUserQuestion
 ---
 
 # Codebase Review

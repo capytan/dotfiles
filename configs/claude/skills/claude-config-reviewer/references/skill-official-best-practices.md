@@ -11,7 +11,7 @@
 > - `[community:mid]` = GitHub 10-50 stars, verified in a tech blog
 > - `[custom]` = Derived from this repo's own practice
 
-last_updated: 2026-05-30
+last_updated: 2026-06-05
 sources:
   - https://code.claude.com/docs/en/skills
   - https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices
@@ -20,6 +20,35 @@ sources:
   - https://agentskills.io
 
 ---
+
+## Contents
+
+Summary from Official Documentation:
+- What Skills Are
+- SKILL.md Structure
+- Where Skills Live
+- Frontmatter Reference
+- Description: Length Limits & Truncation
+- Description Writing Rules
+- Naming Conventions
+- Types of Skill Content
+- Progressive Disclosure
+- References: One Level Deep
+- Table of Contents for Long Reference Files
+- Degrees of Freedom
+- Invocation Control
+- Skill Content Lifecycle
+- Running Skills in Subagents
+- String Substitutions
+- Dynamic Context Injection
+- Workflows & Feedback Loops
+- Content Guidelines
+- Evaluation-Driven Development
+- CLAUDE.md vs Skills
+- Anti-patterns (Official)
+- Testing
+- Troubleshooting
+- Checklist for Effective Skills
 
 ## Summary from Official Documentation
 

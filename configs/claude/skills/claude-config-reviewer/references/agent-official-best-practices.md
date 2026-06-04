@@ -11,7 +11,7 @@
 > - `[community:mid]` = GitHub 10-50 stars, verified in a tech blog
 > - `[custom]` = Derived from this repo's own practice
 
-last_updated: 2026-05-30
+last_updated: 2026-06-05
 sources:
   - https://code.claude.com/docs/en/sub-agents
   - https://code.claude.com/docs/en/best-practices
@@ -19,6 +19,30 @@ sources:
   - https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices
 
 ---
+
+## Contents
+
+Summary from Official Documentation:
+- What Subagents Are
+- Subagent File Structure
+- Frontmatter Reference
+- Where Subagents Live
+- Description & Triggering
+- Model Selection
+- Tool Restriction
+- Preloading Skills
+- Persistent Memory
+- Built-in Subagents
+- Best Practices
+- System Prompt Style
+- When to Use Subagents vs Main Conversation
+- Invocation Patterns
+- Hooks in Subagents
+- Plugin Subagent Restrictions
+- Auto-Compaction
+- Nesting Limit
+- Forked Subagents (experimental)
+- CLI-defined subagents (--agents JSON)
 
 ## Summary from Official Documentation
 

@@ -1,6 +1,7 @@
 ---
 name: auditing-claude-config
 description: Audit Claude Code's six-layer setup (CLAUDE.md, rules, skills, hooks, subagents, verifiers) for misconfigurations. Use when Claude ignores rules, hooks misfire, MCP access fails, skills don't trigger, or startup context feels bloated. Tier-calibrated (simple/standard/complex).
+allowed-tools: Bash, Read, Agent
 ---
 
 # Claude Code Configuration Health Audit
