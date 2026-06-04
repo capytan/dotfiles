@@ -352,7 +352,7 @@
       "mcp__*__drop*",
       "mcp__*__truncate*"
     ],
-    "defaultMode": "acceptEdits"
+    "defaultMode": "auto"
   },
   "enableAllProjectMcpServers": false,
   "enabledMcpjsonServers": [
