@@ -1,10 +1,23 @@
 # Modularization Guide
 
-last_updated: 2026-05-30
+last_updated: 2026-06-05
 
 > Referenced in Phase 4 when proposing CLAUDE.md splits.
 
 ---
+
+## Contents
+
+- When to Consider Splitting
+- Method 1: .claude/rules/*.md (Auto-Loaded)
+- Method 2: @path/to/file.md (Explicit Reference)
+- Detailed References
+- Method 3: Subdirectory CLAUDE.md (Scoped Context)
+- Method 4: CLAUDE.local.md (Personal Settings)
+- Method 5: Skills (SKILL.md) for On-Demand Knowledge
+- Method 5b: agent_docs/ with file:line pointers
+- Method 6: Hooks for Deterministic Enforcement
+- Splitting Procedure
 
 ## When to Consider Splitting
 

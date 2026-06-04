@@ -9,9 +9,21 @@
 > - `[community:mid]` = GitHub 10-50 stars, verified in a tech blog
 > - `[community:low]` = Individual report, unverified but reasonable (reference only)
 
-last_updated: 2026-05-30
+last_updated: 2026-06-05
 
 ---
+
+## Contents
+
+- Description Field — Voice
+- Description Field — Trigger Language
+- `<example>` Blocks in Descriptions
+- Tool Scoping — Role-Based Allowlists
+- System Prompt Structure
+- Second-Person Voice
+- Session Budget Heuristics
+- Invocation in 2026
+- Japanese Community Notes
 
 ## Description Field — Voice
 
@@ -197,3 +209,5 @@ Sources:
 - 2026-03-30: Initial skeleton
 - 2026-04-17: Populated from Phase 0 research. Added: MUST BE USED / PROACTIVELY trigger formula (with official-vs-community distinction), action-verb recall guidance, `<example>` block status clarification (community convention, not official — do not penalize prose-only descriptions), three-tier role-based tool allowlist (VoltAgent 17.5k-star repo), model-to-role routing table, five-layer system prompt blueprint, persona specificity tips, "one specialty per agent" rule, description/behavior separation rule, second-person universality, Anthropic's 10-files / 3-tasks delegation heuristic, chain-vs-parallel patterns, `@agent-<name>` typeahead invocation, Japanese community notes on context-isolation framing.
 - 2026-05-30: Refresh. Added **"Description Field — Voice"** section resolving a 2026 community split: description is third person (official Skills guidance), body stays second person — verified against alexop.dev/tembo.io/digitalapplied.com analyses concluding the imperative-sounding guidance is really "trigger conditions over capabilities," not second person. Updated VoltAgent star count 17.5k → 20.9k (still `[community:high]`). Added Tembo "one job and a clear definition of done / keep system prompt short" guidance and supatest-ai 300–800-line target `[community:mid]`. Model routing, allowlist tiers, blueprint, trigger formula re-verified unchanged.
+
+- 2026-06-05: Freshness re-run (references were 6 days stale). Re-read official skills + sub-agents docs and a 2026-06 CLAUDE.md best-practices survey (Medium/orchestrator.dev/substack, community:mid). No material change: ~80-120 line practical limit / under-200 / 150-200 instruction budget, the "five things", custom-commands-merged-into-skills, agentskills.io open standard, and auto memory / MEMORY.md (200-line auto-load, routing rules stay in CLAUDE.md) all already captured. last_updated bumped to 2026-06-05.

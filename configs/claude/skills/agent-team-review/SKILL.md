@@ -1,6 +1,7 @@
 ---
 name: agent-team-review
 description: Parallel multi-agent code review with independent scoring. Five methodology-based reviewers (rules, bugs, git history, PR archaeology, comments) filter false positives. Use when the user asks for a deep, thorough, or multi-agent code review. Supports PRs and local changes.
+allowed-tools: Read, Bash, Agent, AskUserQuestion
 ---
 
 # Agent Team Code Review

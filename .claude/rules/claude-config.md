@@ -27,5 +27,3 @@ When adding a new hook, choose one of the three `tmux-lib.sh` APIs:
 - `tmux_demote_status <from> <to> <hook>` — downgrade only when current matches `<from>`. Used by SubagentStop (🤖→⏳)
 
 Each hook must call `_tmux_hook_init "$(cat)"` first (runs `tmux_guard` and extracts `session_id` from stdin for log lines).
-
-Log: `tail -F ~/.cache/claude-tmux-status.log`. Disable with `CLAUDE_TMUX_LOG=0`.

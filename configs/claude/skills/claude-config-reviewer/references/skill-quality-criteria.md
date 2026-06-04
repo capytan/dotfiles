@@ -10,9 +10,23 @@
 > - `[custom]` = Derived from this repo's own practice
 > - `[custom:derived-from-skill-reviewer]` = Extracted from skill-reviewer agent
 
-last_updated: 2026-05-30
+last_updated: 2026-06-05
 
 ---
+
+## Contents
+
+Criteria & Scoring (100 points total):
+- A. Frontmatter Correctness (15)
+- B. Conciseness & Token Cost (15)
+- C. Degrees of Freedom (10)
+- D. Structure & Progressive Disclosure (15)
+- E. Content Quality (15)
+- F. Workflows & Error Handling (10)
+- G. Anti-patterns (10)
+- H. Behavioral Impact (10)
+
+Plus: Supplementary Checks (advisory), Grading Scale
 
 ## Criteria & Scoring (100 points total)
 
