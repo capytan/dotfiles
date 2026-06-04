@@ -1,11 +1,17 @@
 # Anti-Pattern Catalog
 
-last_updated: 2026-05-30
+last_updated: 2026-06-05
 
 > Referenced during Phase 2, criterion F (Anti-patterns).
 > Each pattern has a severity: Critical / Major / Minor.
 
 ---
+
+## Contents
+
+- Critical — Immediate Action Required
+- Major — Strongly Recommended to Fix
+- Minor — Recommended to Improve
 
 ## Critical — Immediate Action Required
 

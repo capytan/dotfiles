@@ -1,6 +1,7 @@
 ---
 name: magi-decision-support
 description: Multi-perspective decision support using three AI agents (Scientist, Mother, Realist) with APPROVE/CONDITIONAL/REJECT verdicts. Use when the user weighs trade-offs, compares approaches, or faces a technical/architectural choice with multiple valid options.
+allowed-tools: Agent, AskUserQuestion
 ---
 
 # MAGI - Consensus-Based Decision Support System
