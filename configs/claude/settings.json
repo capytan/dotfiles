@@ -190,6 +190,7 @@
       "WebFetch(domain:www.schemastore.org)",
       "WebFetch(domain:zenn.dev)",
       "WebFetch(domain:docs.anthropic.com)",
+      "WebFetch(domain:resources.anthropic.com)",
       "WebFetch(domain:claude.com)",
       "// Web access (Japanese developers)",
       "WebFetch(domain:qiita.com)",
@@ -205,6 +206,13 @@
       "WebFetch(domain:nodejs.org)",
       "WebFetch(domain:docs.docker.com)",
       "WebFetch(domain:kubernetes.io)",
+      "// Web access (CLI/terminal tools)",
+      "WebFetch(domain:starship.rs)",
+      "WebFetch(domain:ghostty.org)",
+      "// Web access (Claude config references)",
+      "WebFetch(domain:www.builder.io)",
+      "WebFetch(domain:www.humanlayer.dev)",
+      "WebFetch(domain:medium.com)",
       "// tmux & shell utilities",
       "Bash(tmux list-panes *)",
       "Bash(tmux show-options *)",
@@ -212,6 +220,8 @@
       "Bash(printf *)",
       "// Skills",
       "Skill(commit-commands:commit)",
+      "Skill(dig:dig)",
+      "Skill(code-review:code-review)",
       "// ~/.claude files (cross-project read)",
       "Read(~/.claude/*.md)",
       "Read(~/.claude/skills/**)",
@@ -686,9 +696,9 @@
   "autoMemoryEnabled": true,
   "showTurnDuration": true,
   "teammateMode": "auto",
+  "skipAutoPermissionPrompt": true,
   "additionalDirectories": [
     "~/ghq",
     "~/dev"
-  ],
-  "skipAutoPermissionPrompt": true
+  ]
 }
