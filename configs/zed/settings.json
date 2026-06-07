@@ -16,6 +16,9 @@
   "scrollbar": {
     "show": "never"
   },
+  "project_panel": {
+    "dock": "left"
+  },
   "terminal": {
     "font_family": "JetBrainsMonoNL Nerd Font Mono",
     "font_size": 14,
