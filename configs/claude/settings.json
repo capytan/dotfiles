@@ -364,6 +364,7 @@
     ],
     "defaultMode": "auto"
   },
+  "model": "sonnet",
   "enableAllProjectMcpServers": false,
   "enabledMcpjsonServers": [
     "context7"
