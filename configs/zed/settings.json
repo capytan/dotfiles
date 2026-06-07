@@ -1,0 +1,26 @@
+{
+  "ui_font_size": 14,
+  "buffer_font_family": "JetBrainsMonoNL Nerd Font Mono",
+  "buffer_font_size": 14,
+  "theme": {
+    "mode": "system",
+    "light": "One Light",
+    "dark": "One Dark"
+  },
+  "tab_size": 2,
+  "soft_wrap": "editor_width",
+  "vim_mode": true,
+  "format_on_save": "on",
+  "autosave": "on_focus_change",
+  "show_whitespaces": "selection",
+  "scrollbar": {
+    "show": "never"
+  },
+  "terminal": {
+    "font_family": "JetBrainsMonoNL Nerd Font Mono",
+    "font_size": 14,
+    "shell": {
+      "program": "/bin/zsh"
+    }
+  }
+}
