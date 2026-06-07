@@ -119,7 +119,13 @@ if [[ -x "$DOTFILES_DIR/configs/claude/setup-claude.sh" ]]; then
 fi
 
 # =============================================================================
-# 11. zeno.zsh (optional - snippet expansion engine)
+# 11. Zed configuration
+# =============================================================================
+info "Setting up Zed configuration..."
+link_file "$DOTFILES_DIR/configs/zed/settings.json" "$HOME/.config/zed/settings.json"
+
+# =============================================================================
+# 12. zeno.zsh (optional - snippet expansion engine)
 # =============================================================================
 ZENO_DIR="$HOME/.local/share/zeno"
 if [[ -d "$ZENO_DIR" ]]; then
@@ -135,7 +141,7 @@ info "Setting up zeno configuration..."
 link_file "$DOTFILES_DIR/configs/zeno" "$HOME/.config/zeno"
 
 # =============================================================================
-# 12. Platform-specific setup
+# 13. Platform-specific setup
 # =============================================================================
 if [[ "$PLATFORM" == "macos" ]]; then
   info "Setting up macOS-specific configurations..."
@@ -163,7 +169,7 @@ elif [[ "$PLATFORM" == "ubuntu" ]]; then
 fi
 
 # =============================================================================
-# 13. Migrate local.zsh from old path (if needed)
+# 14. Migrate local.zsh from old path (if needed)
 # =============================================================================
 OLD_LOCAL_ZSH="$HOME/dotfiles/macos/.zsh/local.zsh"
 NEW_LOCAL_ZSH="$DOTFILES_DIR/shell/zsh/local.zsh"
@@ -176,7 +182,7 @@ if [[ -f "$OLD_LOCAL_ZSH" && ! -f "$NEW_LOCAL_ZSH" ]]; then
 fi
 
 # =============================================================================
-# 14. Symlink verification report
+# 15. Symlink verification report
 # =============================================================================
 echo ""
 echo "============================================="
