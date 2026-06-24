@@ -8,7 +8,7 @@ paths:
 - Hooks must use shared functions from `configs/claude/hooks/tmux-lib.sh`
 - Keep permissions comments in settings.json (`// Git operations` etc.)
 - Update `setup-claude.sh` when adding new symlink targets
-- Use `set -euo pipefail` in hook scripts (except tmux hooks — guard pattern `tmux_guard || exit 0` and emoji matching conflict with `-e`/`-u`)
+- Use `set -euo pipefail` in hook scripts (except tmux hooks — guard pattern `tmux_guard || exit 0` and emoji matching conflict with `-e`/`-u` — and `pretooluse-validate-command.sh` — validators must fail open; with `-e` a jq parse failure exits 2, which PreToolUse treats as "block all commands")
 
 ## tmux status emoji priority model
 
