@@ -1,16 +1,16 @@
 ---
-name: dig
-description: "Clarifies ambiguities in plans with structured questions. Invoked explicitly with /dig or automatically during plan mode when ambiguous requirements, underspecified behavior, or unvalidated assumptions are detected."
+name: dig-plan
+description: "Clarifies ambiguities in plans with structured questions. Invoked explicitly with /dig-plan or automatically during plan mode when ambiguous requirements, underspecified behavior, or unvalidated assumptions are detected."
 ---
 
-# dig - Plan Requirements Clarifier
+# dig-plan - Plan Requirements Clarifier
 
 Finds and resolves every ambiguity in the user's plan through structured interviewing using the AskUserQuestion tool.
 
 ## When to Use This Skill
 
 **Explicit invocation:**
-- `/dig` command
+- `/dig-plan` command
 - User says "掘り下げて", "曖昧な点を明確にして", "要件を詰めて", etc.
 
 **Automatic trigger (suggest to user):**
