@@ -1,6 +1,6 @@
 # Modularization Guide
 
-last_updated: 2026-06-05
+last_updated: 2026-06-24
 
 > Referenced in Phase 4 when proposing CLAUDE.md splits.
 
@@ -240,3 +240,5 @@ Move absolute rules to hooks instead of relying on CLAUDE.md compliance.
 - 2026-03-29: Added path-specific rules (YAML frontmatter), updated @path import details (depth limit, resolution rules, approval dialog), added Method 5 (Skills) and Method 6 (Hooks) for modularization, expanded splitting procedure with skills/hooks/claudeMdExcludes options, added symlink support for rules.
 - 2026-04-17: Renamed Method 4 from `.claude.local.md` to the official `CLAUDE.local.md` (previous spelling was incorrect); added concatenation/ordering and worktree caveats. Added new Method 5b: HumanLayer `agent_docs/` progressive-disclosure pattern with file:line pointers.
 - 2026-05-30: Corrected recursive import depth to **four hops** (official docs now say four, was "five"). Clarified Method 2 (`@path`): official docs now stress imports load in full at launch and do NOT reduce context — reframed "Best for" away from "large reference material / task-specific info" toward organization/file-reuse, and added a prominent caveat pointing to path-scoped rules or skills for real context savings. Added permanent-decline detail for external imports. last_updated bumped to 2026-05-30.
+- 2026-06-10: Freshness re-run against code.claude.com/docs/en/memory (retrieved 2026-06-10). All methods re-verified current (rules recursion/symlinks/user-level, four-hop imports, path-scoped triggering, CLAUDE.local.md ordering, skills, hooks). No content changes. last_updated bumped to 2026-06-10.
+- 2026-06-24: Freshness re-run (14 days stale). All six modularization methods re-verified current against memory + skills docs (rules recursion/symlinks/user-level, four-hop imports, path-scoped triggering, CLAUDE.local.md ordering, skills, hooks). Skills doc reconfirms "custom commands merged into skills" and the agentskills.io open standard. No new splitting methods; 2026-06 changelog items (`/cd`, `--safe-mode`) are session/troubleshooting features, not modularization techniques. No content changes. last_updated bumped to 2026-06-24.

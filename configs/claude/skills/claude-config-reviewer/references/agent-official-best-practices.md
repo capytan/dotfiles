@@ -11,7 +11,7 @@
 > - `[community:mid]` = GitHub 10-50 stars, verified in a tech blog
 > - `[custom]` = Derived from this repo's own practice
 
-last_updated: 2026-06-05
+last_updated: 2026-06-10
 sources:
   - https://code.claude.com/docs/en/sub-agents
   - https://code.claude.com/docs/en/best-practices
@@ -80,8 +80,8 @@ Key benefits:
 | `description` | Yes | When Claude should delegate to this subagent |
 | `tools` | No | Tools the subagent can use. Inherits all if omitted |
 | `disallowedTools` | No | Tools to deny, removed from inherited or specified list |
-| `model` | No | `sonnet`, `opus`, `haiku`, full model ID (e.g., `claude-opus-4-8`, `claude-sonnet-4-6`), or `inherit`. Default: `inherit` |
-| `permissionMode` | No | `default`, `acceptEdits`, `auto`, `dontAsk`, `bypassPermissions`, or `plan` |
+| `model` | No | `sonnet`, `opus`, `haiku`, `fable`, full model ID (e.g., `claude-opus-4-8`, `claude-sonnet-4-6`), or `inherit`. Default: `inherit`. **`fable` added to the official alias list (retrieved 2026-06-10)** |
+| `permissionMode` | No | `default`, `acceptEdits`, `auto`, `dontAsk`, `bypassPermissions`, or `plan`. `auto` = background classifier reviews commands; `dontAsk` = auto-deny prompts (explicitly allowed tools still work). Parent `bypassPermissions`/`acceptEdits` take precedence and cannot be overridden; a parent in auto mode forces auto mode (frontmatter ignored) |
 | `maxTurns` | No | Maximum agentic turns before stopping |
 | `skills` | No | Skills to preload into context at startup |
 | `mcpServers` | No | MCP servers available to subagent |
@@ -108,6 +108,14 @@ Key benefits:
 
 > "Project subagents (.claude/agents/) are ideal for subagents specific to a codebase. Check them into version control so your team can use and improve them collaboratively."
 > — https://code.claude.com/docs/en/sub-agents (retrieved 2026-04-17)
+
+**Recursive scanning & name uniqueness `[official]` (2026-06):**
+> "Claude Code scans `.claude/agents/` and `~/.claude/agents/` recursively, so you can organize definitions into subfolders such as `agents/review/` or `agents/research/`. The subdirectory path does not affect how a subagent is identified or invoked, because identity comes only from the `name` frontmatter field. Keep `name` values unique across the whole tree: if two files within one scope declare the same name, Claude Code keeps one and discards the other without warning."
+> — https://code.claude.com/docs/en/sub-agents (retrieved 2026-06-10)
+
+Plugin `agents/` subfolders, unlike project/user scopes, DO become part of the scoped identifier: `agents/review/security.md` in plugin `my-plugin` registers as `my-plugin:review:security`.
+
+**Load timing `[official]` (2026-06):** "Subagents are loaded at session start. If you add or edit a subagent file directly on disk, restart your session to load it. Subagents created through the `/agents` interface take effect immediately without a restart." (No live change detection for agents, unlike skills.)
 
 ### Description & Triggering `[official]`
 
@@ -173,8 +181,14 @@ Canonical tool sets seen in the official example agents:
 > "Use the skills field to inject skill content into a subagent's context at startup. This gives the subagent domain knowledge without requiring it to discover and load skills during execution."
 > — https://code.claude.com/docs/en/sub-agents (retrieved 2026-04-17)
 
-> "Subagents don't inherit skills from the parent conversation; you must list them explicitly."
-> — https://code.claude.com/docs/en/sub-agents (retrieved 2026-04-17)
+**Clarified (2026-06-10, supersedes earlier "don't inherit skills" wording):** the `skills` field controls *preloading*, not access.
+> "The full content of each listed skill is injected into the subagent's context at startup. This field controls which skills are preloaded, not which skills the subagent can access: without it, the subagent can still discover and invoke project, user, and plugin skills through the Skill tool during execution."
+> — https://code.claude.com/docs/en/sub-agents (retrieved 2026-06-10)
+
+> "You cannot preload skills that set `disable-model-invocation: true`, since preloading draws from the same set of skills Claude can invoke. If a listed skill is missing or disabled, Claude Code skips it and logs a warning to the debug log."
+> — https://code.claude.com/docs/en/sub-agents (retrieved 2026-06-10)
+
+To prevent a subagent from invoking skills entirely, omit `Skill` from `tools` or add it to `disallowedTools`. To preload Skills, use the `skills` field rather than listing `Skill` in `tools`.
 
 ### Persistent Memory `[official]`
 
@@ -195,7 +209,27 @@ Canonical tool sets seen in the official example agents:
 | Plan | Inherits | Read-only | Codebase research for planning |
 | General-purpose | Inherits | All | Complex multi-step tasks |
 | statusline-setup | Sonnet | — | `/statusline` configuration |
-| Claude Code Guide | Haiku | — | Claude Code feature Q&A |
+| claude-code-guide | Haiku | — | Claude Code feature Q&A |
+
+### What Loads at Startup `[official]` (NEW 2026-06)
+
+A non-fork subagent's initial context contains: system prompt (agent's own prompt + environment details, **not** the full Claude Code system prompt), the delegation/task message, CLAUDE.md and memory hierarchy, a git status snapshot from the parent session start, and preloaded skills (`skills` field).
+
+> "Explore and Plan skip your CLAUDE.md files and the parent session's git status to keep research fast and inexpensive. Every other built-in and custom subagent loads both."
+> — https://code.claude.com/docs/en/sub-agents (retrieved 2026-06-10)
+
+> "Explore and Plan are the only subagents that omit CLAUDE.md and git status. There is no frontmatter field or per-agent setting to change which agents skip them."
+> — https://code.claude.com/docs/en/sub-agents (retrieved 2026-06-10)
+
+Implication: if a CLAUDE.md rule must reach an Explore/Plan delegation (e.g. "ignore `vendor/`"), restate it in the delegation prompt.
+
+### Resuming Subagents `[official]` (NEW 2026-06)
+
+Subagents can be resumed with full prior conversation history. Claude uses the `SendMessage` tool with the agent ID (available only when agent teams are enabled via `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`).
+> "The built-in Explore and Plan agents are one-shot and return no agent ID, so they can't be resumed; use `general-purpose` or a custom subagent when you need to continue the work."
+> — https://code.claude.com/docs/en/sub-agents (retrieved 2026-06-10)
+
+Transcripts persist at `~/.claude/projects/{project}/{sessionId}/subagents/agent-{agentId}.jsonl`, independent of main-conversation compaction; cleaned up per `cleanupPeriodDays` (default 30 days).
 
 ### Best Practices `[official]`
 
@@ -256,8 +290,10 @@ Subagent-specific hooks in frontmatter:
 - `PostToolUse`: After tool use
 - `Stop`: When subagent finishes (converted to `SubagentStop` at runtime)
 
-> "Frontmatter hooks fire when the agent is spawned as a subagent through the Agent tool or an @-mention. They do not fire when the agent runs as the main session via --agent or the agent setting."
-> — https://code.claude.com/docs/en/sub-agents (retrieved 2026-04-17)
+> "Frontmatter hooks fire when the agent is spawned as a subagent through the Agent tool or an @-mention, and when the agent runs as the main session via `--agent` or the `agent` setting. In the main-session case they run alongside any hooks defined in settings.json."
+> — https://code.claude.com/docs/en/sub-agents (retrieved 2026-06-10)
+
+**Correction (2026-06-10):** earlier docs (retrieved 2026-04-17) said frontmatter hooks "do not fire when the agent runs as the main session via --agent". Current official docs state the opposite — they now DO fire in the main-session case. Official wins; reviewers should not flag main-session hook reliance as broken.
 
 Project-level hooks in `settings.json`:
 - `SubagentStart`: When subagent begins
@@ -278,9 +314,9 @@ Project-level hooks in `settings.json`:
 > "Subagents cannot spawn other subagents. If your workflow requires nested delegation, use Skills or chain subagents from the main conversation."
 > — https://code.claude.com/docs/en/sub-agents (retrieved 2026-04-17)
 
-### Forked Subagents (experimental) `[official]`
+### Forked Subagents `[official]`
 
-New as of v2.1.117 (env var `CLAUDE_CODE_FORK_SUBAGENT=1`). A **fork** is a subagent that inherits the *entire conversation so far* instead of starting fresh — same system prompt, tools, model, and message history as the main session.
+New as of v2.1.117 (env var `CLAUDE_CODE_FORK_SUBAGENT=1`). **From v2.1.161 the `/fork` command is enabled by default**; making forks the model's *default* spawn behavior remains experimental ("Forked subagents require Claude Code v2.1.117 or later. From v2.1.161 the /fork command is enabled by default" — retrieved 2026-06-10). A **fork** is a subagent that inherits the *entire conversation so far* instead of starting fresh — same system prompt, tools, model, and message history as the main session.
 
 > "A fork is a subagent that inherits the entire conversation so far instead of starting fresh. This drops the input isolation that subagents otherwise provide… Use a fork when a named subagent would need too much background to be useful, or when you want to try several approaches in parallel from the same starting point."
 > — https://code.claude.com/docs/en/sub-agents (retrieved 2026-05-30)
@@ -300,3 +336,4 @@ Subagents can be passed as JSON at launch via `--agents`, session-only and never
 - 2026-03-30: Populated with official documentation from code.claude.com/docs/en/sub-agents. Added: subagent definition, frontmatter reference (all 15 fields), scope/priority table, description/triggering guidance, model resolution order, tool restriction (allowlist/denylist/Agent syntax), skill preloading, persistent memory (3 scopes), built-in subagents, best practices (4 principles), when-to-use guide, hooks (frontmatter + settings.json), plugin restrictions, auto-compaction.
 - 2026-04-17: Refreshed from 2026-04-17 retrieval of code.claude.com/docs/en/sub-agents. Corrections: `color` palette updated to `red | blue | green | yellow | purple | orange | pink | cyan` (removed `magenta`, added `purple/orange/pink`). `effort` levels now include `xhigh`. Added managed-settings scope (priority 1) and updated scope table to 5 tiers. Added `auto` to `permissionMode` values. Noted `Task → Agent` rename (2.1.63). Added quoted guidance that official examples use **prose descriptions, not `<example>` blocks** — flagged as scoring implication. Added canonical tool sets for the 4 documented example agents, the 5-part system-prompt structural pattern, invocation-pattern escalation, nesting limit, and `initialPrompt` behavior notes.
 - 2026-05-30: Refreshed from 2026-05-30 retrieval of code.claude.com/docs/en/sub-agents + Skills authoring best-practices doc. Material additions: (1) **Description voice — third person** rule, sourced from the official Skills best-practices ("Always write in third person…") and confirmed by all official subagent description examples; canonical pattern is third-person description + second-person body. (2) `name` does not have to match filename; identity is from `name` only (cross-reference implication). (3) Model ID examples bumped to `claude-opus-4-8` / `claude-sonnet-4-6`. (4) **Tools unavailable to subagents** list (`Agent`, `AskUserQuestion`, `EnterPlanMode`, `ExitPlanMode`, `ScheduleWakeup`, `WaitForMcpServers`) — listing them is a no-op. (5) New **forked subagents** (experimental, v2.1.117) and **`--agents` CLI JSON** (`prompt` field) sections. Frontmatter field list, scope table, hooks, plugin restrictions, nesting, auto-compaction all re-verified unchanged.
+- 2026-06-10: Refreshed from 2026-06-10 retrieval of code.claude.com/docs/en/sub-agents. Scoring-relevant changes: (1) **`fable` is now a valid model alias** (`sonnet | opus | haiku | fable`) — do not flag as invalid. (2) **Hooks correction**: frontmatter hooks now ALSO fire when the agent runs as the main session via `--agent` / `agent` setting (official docs reversed the 2026-04 wording; conflict noted, official wins). (3) New **What Loads at Startup** section: Explore/Plan skip CLAUDE.md + parent git status, no opt-out field; all other subagents load both. (4) **Recursive scanning + name uniqueness**: agents dirs scanned recursively; duplicate `name` within one scope → one file silently discarded; plugin subfolders join the scoped ID (`my-plugin:review:security`). (5) `skills` preload clarified — controls preloading, not access (supersedes "don't inherit skills" wording); skills with `disable-model-invocation: true` cannot be preloaded (skipped + debug-log warning). (6) `permissionMode` behaviors detailed (`auto` classifier, `dontAsk` auto-deny, parent-precedence rules). (7) `/fork` enabled by default from v2.1.161. (8) New **Resuming Subagents** section (SendMessage + agent ID; Explore/Plan are one-shot, no ID). (9) Load timing: file-on-disk agent edits need session restart; `/agents`-created agents take effect immediately.

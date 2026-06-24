@@ -9,7 +9,7 @@
 > - `[community:mid]` = GitHub 10-50 stars, verified in a tech blog
 > - `[community:low]` = Individual report, unverified but reasonable (reference only)
 
-last_updated: 2026-06-05
+last_updated: 2026-06-10
 
 ---
 
@@ -19,7 +19,10 @@ last_updated: 2026-06-05
 - Tighter Body Target: 1,500-2,000 Words
 - Context Hygiene & Lean SKILL.md
 - Description as Trigger, Not Summary
+- Measured Description Optimization ("Use when...", Examples)
 - Pushy Descriptions
+- Curate Aggressively: 8-12 Skills, Monthly Audit
+- CLAUDE.md = Always-On, Skills = On-Demand (Mental Model)
 - Evaluation-Driven Skill Creation
 - Token Economics at Scale
 - Organization Patterns for References
@@ -81,12 +84,41 @@ skill-name/
 
 > Source: https://github.com/shanraisshan/claude-code-best-practice (retrieved 2026-04-17)
 
+## Measured Description Optimization ("Use when...", Examples)
+
+`[community:mid]` Testing across 200+ prompts (mellanon gist, 2026):
+
+- Optimized descriptions improve skill activation from ~20% to ~50% of relevant prompts
+- Adding concrete examples to the description/when_to_use improves activation from ~72% to ~90%
+- "Use when..." phrasing recommended as the trigger-clause template
+
+First quantified evidence for the long-standing "description is the trigger" and "pushy descriptions" guidance; numbers are one author's benchmark, so treat the deltas as directional, not exact.
+
+> Source: https://gist.github.com/mellanon/50816550ecb5f3b239aa77eef7b8ed8d (retrieved 2026-06-10)
+
 ## Pushy Descriptions
 
 `[semi-official]` Anthropic's official `skill-creator`:
 
 > "currently Claude has a tendency to 'undertrigger' skills -- to not use them when they'd be useful. To combat this, please make the skill descriptions a little bit 'pushy'. So for instance, instead of 'How to build a simple fast dashboard to display internal Anthropic data.', you might write 'How to build a simple fast dashboard to display internal Anthropic data. Make sure to use this skill whenever the user mentions dashboards, data visualization, internal metrics, or wants to display any kind of company data, even if they don't explicitly ask for a "dashboard."'"
 > — https://github.com/anthropics/skills/blob/main/skills/skill-creator/SKILL.md (retrieved 2026-04-17)
+
+## Curate Aggressively: 8-12 Skills, Monthly Audit
+
+`[community:mid]` 2026 skill-roundup consensus (Firecrawl, Developers Digest):
+
+- 8-12 well-chosen skills cover most needs; large installed collections dilute the listing budget and trigger accuracy
+- Run a monthly skill audit; delete skills that haven't triggered in 30 days
+- Complements the official skill-listing budget mechanics (1% of context window; least-invoked descriptions dropped first on overflow) — fewer, better skills keep full descriptions in context
+
+> Sources: https://www.firecrawl.dev/blog/best-claude-code-skills , https://www.developersdigest.tech/blog/best-claude-code-skills-2026 (retrieved 2026-06-10)
+
+## CLAUDE.md = Always-On, Skills = On-Demand (Mental Model)
+
+`[community:mid]` Widely-shared 2026 mental model: CLAUDE.md is always-on context, skills are on-demand capability. Misplacing workflows in CLAUDE.md wastes context every turn; misplacing always-true facts in a skill means Claude often won't see them.
+
+> Source: https://levelup.gitconnected.com/a-mental-model-for-claude-code-skills-subagents-and-plugins-3dea9924bf05 (retrieved 2026-06-10)
+> Corroborates official guidance ("a skill's body loads only when it's used") and the Japanese-community 使い分け rule above.
 
 ## Evaluation-Driven Skill Creation
 
@@ -173,6 +205,10 @@ azure-ai-agents/
 - OpenAI Codex CLI adopted the Agent Skills standard; official Skills Catalog: `openai/skills` (13K+ stars, 35 curated skills)
 - Microsoft GitHub Copilot adopted the same format
 
+Updates as of 2026-06-10:
+- obra/superpowers skill library now at ~40.9k GitHub stars — strongest single ecosystem signal for skill-based workflows `[community:high]` (https://github.com/obra/superpowers, retrieved 2026-06-10)
+- Vercel maintains skills.sh as a searchable skill directory `[community:mid]` (https://skills.sh, retrieved 2026-06-10)
+
 ---
 
 ## Practical Community Checklist
@@ -200,3 +236,4 @@ Consolidated from the sources above:
 - 2026-04-17: Populated with community research. Added sections: context hygiene (mgechev/skills-best-practices), description-as-trigger (shanraisshan), pushy descriptions (semi-official skill-creator), evaluation-driven development (skill-creator 4-mode pipeline), token economics at scale, cross-language/feature-area reference patterns, Japanese practitioner consensus (Zenn/Qiita), security (awesome-claude-skills + Cisco prompt-injection warning), ecosystem adoption, consolidated 10-item checklist.
 
 - 2026-06-05: Freshness re-run (references were 6 days stale). Re-read official skills + sub-agents docs and a 2026-06 CLAUDE.md best-practices survey (Medium/orchestrator.dev/substack, community:mid). No material change: ~80-120 line practical limit / under-200 / 150-200 instruction budget, the "five things", custom-commands-merged-into-skills, agentskills.io open standard, and auto memory / MEMORY.md (200-line auto-load, routing rules stay in CLAUDE.md) all already captured. last_updated bumped to 2026-06-05.
+- 2026-06-10: Added three sections: **Measured Description Optimization** (mellanon gist, 200+ prompt benchmark: 20%→50% activation from optimized descriptions, 72%→90% from examples, "Use when..." phrasing) `[community:mid]`; **Curate Aggressively** (8-12 skills, monthly audit, delete untriggered-in-30-days — Firecrawl/Developers Digest) `[community:mid]`; **CLAUDE.md = always-on / skills = on-demand mental model** (levelup.gitconnected) `[community:mid]`. Ecosystem Adoption updated: obra/superpowers ~40.9k stars `[community:high]`, Vercel skills.sh directory `[community:mid]`. last_updated bumped to 2026-06-10.

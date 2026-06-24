@@ -3,7 +3,7 @@
 > Referenced during Phase 2, criterion E (Anti-patterns) for agent file reviews.
 > Each pattern has a severity: Critical / Major / Minor.
 
-last_updated: 2026-06-05
+last_updated: 2026-06-10
 
 ---
 
@@ -142,3 +142,4 @@ System prompt lacks guidance for failure modes or unusual inputs.
   - Added new Major anti-pattern: **"Behavioral Instructions in Description"** — description should be routing signals only; behavior belongs in the system prompt.
   - Added `last_updated: 2026-04-17` header.
 - 2026-05-30: Refresh against code.claude.com/docs/en/sub-agents + Skills authoring best-practices (2026-05-30). Reinforced the **"Behavioral Instructions in Description"** anti-pattern with the official third-person rule ("Always write in third person") — second-person/imperative descriptions are now explicitly called out, with the fix clarifying the third-person-description / second-person-body split. No new anti-patterns added; existing catalog re-verified current.
+- 2026-06-10: Freshness re-run against code.claude.com/docs/en/sub-agents (retrieved 2026-06-10). No new anti-patterns; catalog re-verified current. Note for assessors: `fable` model alias and `auto`/`dontAsk` permission modes are now official — not anti-patterns (see agent-quality-criteria.md / agent-official-best-practices.md).

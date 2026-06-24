@@ -3,6 +3,8 @@
 > Referenced during Phase 3 (Report) for Cross-Artifact Summary.
 > These checks detect issues spanning multiple configuration artifact types.
 
+last_updated: 2026-06-10
+
 ---
 
 ## Check Categories
@@ -39,6 +41,17 @@
 - CLAUDE.md mentions commands or workflows tied to removed skills
 - Detection: Collect all referenced names, diff against discovered file list
 
+### 6. Subagent Skill-Preload Validity `[official]` (2026-06)
+[Verify agent `skills:` frontmatter entries are preloadable]
+- Each skill listed in an agent's `skills:` field exists as a discoverable skill
+- No listed skill sets `disable-model-invocation: true` — such skills "cannot be preloaded… Claude Code skips it and logs a warning to the debug log" (https://code.claude.com/docs/en/sub-agents, retrieved 2026-06-10)
+- Detection: Parse `skills:` from agent frontmatter, Glob for each SKILL.md, grep its frontmatter for `disable-model-invocation`
+
+### 7. Duplicate Agent Names Within a Scope `[official]` (2026-06)
+[Agents dirs are scanned recursively; identity comes only from `name`]
+- "if two files within one scope declare the same name, Claude Code keeps one and discards the other without warning" (https://code.claude.com/docs/en/sub-agents, retrieved 2026-06-10)
+- Detection: Collect `name:` values across all `.md` files under `.claude/agents/` (recursive) and `~/.claude/agents/` (recursive) per scope; flag duplicates within the same scope
+
 ---
 
 ## Severity Classification
@@ -50,9 +63,12 @@
 | Circular References | Minor (flag for review) |
 | Tool Consistency | Major |
 | Stale References | Major |
+| Subagent Skill-Preload Validity | Major |
+| Duplicate Agent Names Within a Scope | Major (silent discard) |
 
 ---
 
 ## Changelog
 
 - 2026-03-30: Initial version
+- 2026-06-10: Added `last_updated` header (was missing). Added two new checks from code.claude.com/docs/en/sub-agents (retrieved 2026-06-10): Subagent Skill-Preload Validity (skills with `disable-model-invocation: true` are silently skipped at preload) and Duplicate Agent Names Within a Scope (recursive scan; one file silently discarded). Both classified Major.

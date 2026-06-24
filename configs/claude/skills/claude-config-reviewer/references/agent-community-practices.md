@@ -9,7 +9,7 @@
 > - `[community:mid]` = GitHub 10-50 stars, verified in a tech blog
 > - `[community:low]` = Individual report, unverified but reasonable (reference only)
 
-last_updated: 2026-06-05
+last_updated: 2026-06-10
 
 ---
 
@@ -142,6 +142,13 @@ Tembo's recommended body structure (corroborates the five-layer blueprint): job 
 > "One agent should equal one domain of expertise (e.g., code-reviewer, api-architect). Avoid 'mega-agents'; smaller prompts stay in-context and converge faster."
 > — https://github.com/vijaythecoder/awesome-claude-agents/blob/main/docs/best-practices.md (retrieved 2026-04-17)
 
+### Feature-specific subagents with preloaded skills over generic role agents `[community:mid]`
+
+Prefer feature-specific subagents (e.g., `payments-api-reviewer` with `skills: [api-conventions, payment-flows]`) over general "qa engineer" / "backend engineer" role agents. Generic role agents duplicate what the main conversation already does; feature-specific agents with preloaded skill content carry actual domain deltas into the isolated context.
+
+> Source: https://github.com/shanraisshan/claude-code-best-practice (retrieved 2026-06-10)
+> Aligns with the official `skills` preload mechanism (full skill content injected at subagent startup) and the "one specialty per agent" rule above.
+
 ### Don't mix behavioral instructions into the description `[community:high]`
 
 > "Never mix behavioural instructions meant for the agent into the description block."
@@ -211,3 +218,4 @@ Sources:
 - 2026-05-30: Refresh. Added **"Description Field — Voice"** section resolving a 2026 community split: description is third person (official Skills guidance), body stays second person — verified against alexop.dev/tembo.io/digitalapplied.com analyses concluding the imperative-sounding guidance is really "trigger conditions over capabilities," not second person. Updated VoltAgent star count 17.5k → 20.9k (still `[community:high]`). Added Tembo "one job and a clear definition of done / keep system prompt short" guidance and supatest-ai 300–800-line target `[community:mid]`. Model routing, allowlist tiers, blueprint, trigger formula re-verified unchanged.
 
 - 2026-06-05: Freshness re-run (references were 6 days stale). Re-read official skills + sub-agents docs and a 2026-06 CLAUDE.md best-practices survey (Medium/orchestrator.dev/substack, community:mid). No material change: ~80-120 line practical limit / under-200 / 150-200 instruction budget, the "five things", custom-commands-merged-into-skills, agentskills.io open standard, and auto memory / MEMORY.md (200-line auto-load, routing rules stay in CLAUDE.md) all already captured. last_updated bumped to 2026-06-05.
+- 2026-06-10: Added one `[community:mid]` insight: prefer feature-specific subagents with preloaded skills over generic "qa engineer"/"backend engineer" role agents (shanraisshan/claude-code-best-practice). Existing sections re-verified, no other changes. last_updated bumped to 2026-06-10.

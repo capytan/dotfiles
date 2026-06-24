@@ -9,7 +9,7 @@
 > - `[community:mid]` = GitHub 10-50 stars, verified in a tech blog
 > - `[community:low]` = Individual report, unverified but reasonable (reference only, not in scoring)
 
-last_updated: 2026-06-05
+last_updated: 2026-06-24
 sources:
   - https://howborisusesclaudecode.com/
   - https://github.com/shanraisshan/claude-code-best-practice
@@ -66,7 +66,8 @@ Explicit token breakdown from Boris's team (2026-04): `~/.claude/CLAUDE.md` ~76 
 
 Frontier models reliably follow roughly 150–200 instructions. Claude Code's default system prompt already consumes ~50 of them, leaving ~100–150 for your CLAUDE.md, skills metadata, and conversation instructions combined.
 
-> Source: https://github.com/abhishekray07/claude-md-templates (retrieved 2026-04-17)
+> Source: https://www.humanlayer.dev/blog/writing-a-good-claude-md (re-verified 2026-06-10 — HumanLayer's "Writing a good CLAUDE.md" states frontier models reliably follow ~150-200 instructions and the Claude Code system prompt uses ~50 of them)
+> Also: https://github.com/abhishekray07/claude-md-templates (retrieved 2026-04-17)
 > Corroborated: https://zenn.dev/tmasuyama1114/articles/claude_code_best_practice_guide
 
 #### WHAT / WHY / HOW structure `[community:high]`
@@ -126,6 +127,7 @@ Each skill uses only ~100 tokens during metadata scanning to determine relevance
 
 > Source: https://github.com/ykdojo/claude-code-tips (retrieved 2026-03-29)
 > Corroborated: https://github.com/travisvn/awesome-claude-skills
+> Corroborated (2026-06-10): https://levelup.gitconnected.com/a-mental-model-for-claude-code-skills-subagents-and-plugins-3dea9924bf05 `[community:mid]` — "CLAUDE.md = always-on context, skills = on-demand"; misplacing workflows in CLAUDE.md wastes context every turn
 
 #### Context thresholds for long sessions `[community:mid]`
 
@@ -304,3 +306,5 @@ Insights found during research but not adopted, for reasons such as:
 - 2026-04-17: Added HumanLayer "Writing a good CLAUDE.md" (Kyle, Nov 2025) with WHAT/WHY/HOW structure, 60-line benchmark, and agent_docs/ progressive-disclosure pattern. Added abhishekray07/claude-md-templates insight on the 150–200 instruction budget and 80-line adherence cliff. Added rohitg00/awesome-claude-code-toolkit "CLAUDE.md Bible" (stack-specific 80–150 line templates). Added Boris Cherny token breakdown (user 76 / project 4k tokens) and "Compounding Engineering" term for @.claude PR workflow, plus VentureBeat Jan 2026 viral coverage ("Every mistake becomes a rule"). Refreshed Boris howborisusesclaudecode retrieval date.
 
 - 2026-06-05: Freshness re-run (references were 6 days stale). Re-read official skills + sub-agents docs and a 2026-06 CLAUDE.md best-practices survey (Medium/orchestrator.dev/substack, community:mid). No material change: ~80-120 line practical limit / under-200 / 150-200 instruction budget, the "five things", custom-commands-merged-into-skills, agentskills.io open standard, and auto memory / MEMORY.md (200-line auto-load, routing rules stay in CLAUDE.md) all already captured. last_updated bumped to 2026-06-05.
+- 2026-06-10: Re-verified the 150–200 instruction budget against HumanLayer's "Writing a good CLAUDE.md" and promoted HumanLayer to the primary `[community:high]` source for it (abhishekray07 kept as secondary). Added levelup.gitconnected mental-model article (`[community:mid]`) as corroboration for "use skills for on-demand knowledge". No threshold or scoring changes. last_updated bumped to 2026-06-10.
+- 2026-06-24: Freshness re-run (14 days stale). Surveyed 2026-06 community articles (Medium "Complete Guide to CLAUDE.md", TECHSY "9 Rules for 2026", Firecrawl token-efficiency, branch8 cost-optimization). No new community insights: under-200 / ~60-line / 150–200-instruction-budget consensus, "two strikes before adding a note," "treat it like code not docs," HTML-comments-are-free, prompt-cache 0.1x cache-read benefit, and skills-for-on-demand-knowledge all already captured. New tooling surfaced this run (`--safe-mode`, `/cd`, MEMORY.md compaction) is official-doc/changelog material, recorded in official-best-practices, not a community practice. last_updated bumped to 2026-06-24.
