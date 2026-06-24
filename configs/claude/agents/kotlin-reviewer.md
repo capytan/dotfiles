@@ -57,15 +57,13 @@ Check for:
 - `CLAUDE.md` for project-specific conventions
 - Whether this is Android-only, KMP, or Compose Multiplatform
 
+### Step 2a: Static Analysis
+
+Run `ktlint` and `detekt` if available — prefer the project's Gradle tasks (`./gradlew ktlintCheck detekt`) when configured in `build.gradle*`; otherwise check standalone binaries with `command -v ktlint` / `command -v detekt`. If neither is available, skip with a note rather than fabricating findings.
+
 ### Step 2b: Security Review
 
-Apply the Kotlin/Android security guidance before continuing:
-- exported Android components, deep links, and intent filters
-- insecure crypto, WebView, and network configuration usage
-- keystore, token, and credential handling
-- platform-specific storage and permission risks
-
-If you find a CRITICAL security issue, stop the review and hand off to `security-reviewer` before doing any further analysis.
+Apply the **Security (CRITICAL)** checklist below before continuing — if you find a CRITICAL security issue, stop the review and hand off to `security-reviewer` before doing any further analysis.
 
 ### Step 3: Read and Review
 
@@ -142,8 +140,8 @@ Button(onClick = onClick)
 - **Insecure crypto/storage** — Homegrown crypto, plaintext secrets, or weak keystore usage
 - **Unsafe WebView/network config** — JavaScript bridges, cleartext traffic, permissive trust settings
 - **Sensitive logging** — Tokens, credentials, PII, or secrets emitted to logs
-
-If any CRITICAL security issue is present, stop and escalate to `security-reviewer`.
+- **Unvalidated deep links/intents** — Deep link URLs and intent extras acted on without validation
+- **Storage and permission risks** — Sensitive data outside platform-secure storage; dangerous permissions without justification
 
 ### Gradle & Build (LOW)
 

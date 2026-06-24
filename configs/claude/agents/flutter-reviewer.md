@@ -62,12 +62,7 @@ Check for:
 
 ### Step 2b: Security Review
 
-Check before continuing — if any CRITICAL security issue is found, stop and hand off to `security-reviewer`:
-- Hardcoded API keys, tokens, or secrets in Dart source
-- Sensitive data in plaintext storage instead of platform-secure storage
-- Missing input validation on user input and deep link URLs
-- Cleartext HTTP traffic; sensitive data logged via `print()`/`debugPrint()`
-- Exported Android components and iOS URL schemes without proper guards
+Apply the **Security (CRITICAL)** checklist below before continuing — if any CRITICAL security issue is found, stop and hand off to `security-reviewer`.
 
 ### Step 3: Read and Review
 
@@ -230,8 +225,7 @@ Adapt to the project's chosen architecture (Clean Architecture, MVVM, feature-fi
 - **Sensitive logging** — Tokens, PII, or credentials in `print()`/`debugPrint()`
 - **Missing input validation** — User input passed to APIs/navigation without sanitization
 - **Unsafe deep links** — Handlers that act without validation
-
-If any CRITICAL security issue is present, stop and escalate to `security-reviewer`.
+- **Unguarded platform entry points** — Exported Android components and iOS URL schemes without proper guards
 
 ## Output Format
 
