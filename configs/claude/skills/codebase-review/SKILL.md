@@ -1,6 +1,6 @@
 ---
 name: codebase-review
-description: Full codebase review with seven parallel reviewers (rules, bugs, git hotspots, comments, architecture, OWASP, dependencies) and independent scoring. Use when the user asks to review or audit the whole codebase. Reviews source files — for diff/PR reviews use code-review instead.
+description: Full codebase review: seven parallel reviewers (rules, bugs, git hotspots, comments, architecture, OWASP, dependencies) plus independent scoring. Use when asked to review or audit the whole codebase; for diff/PR reviews use code-review instead.
 allowed-tools: Read, Bash, Agent, AskUserQuestion
 ---
 
@@ -263,7 +263,6 @@ Give `references/false-positives.md` to all reviewers (Phase 2) and scoring agen
 
 - **Individual reviewer failure**: Skip failed reviewer, note in Summary, generate report from remaining
 - **File read failure**: Skip file, continue with remaining files
-- **`gh` unavailable**: History Analyst falls back to `git log` only
 - **No source files found**: Show error and stop
 - **No findings above threshold**: Report "No issues found"
 

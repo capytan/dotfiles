@@ -1,6 +1,6 @@
 ---
 name: agent-team-review
-description: Parallel multi-agent code review with independent scoring. Five methodology-based reviewers (rules, bugs, git history, PR archaeology, comments) filter false positives. Use when the user asks for a deep, thorough, or multi-agent code review. Supports PRs and local changes.
+description: Parallel code review: five methodology-based reviewers (rules, bugs, git history, PR archaeology, comments) plus independent scoring to filter false positives. Use when the user asks for a deep, thorough, or multi-agent review of PRs or local diffs.
 allowed-tools: Read, Bash, Agent, AskUserQuestion
 ---
 
@@ -210,15 +210,16 @@ No issues found. All reviewers confirmed the changes look correct.
 
 ### 4.5 GitHub Comment (PR only)
 
-1. Re-check eligibility (Haiku) — PR still open, no newer review from you
-2. Post via `gh pr comment`
-3. Link format — **full git SHA required** (no bash interpolation):
+1. Show the final report in chat first, then get explicit user approval (AskUserQuestion) before posting — never post a public PR comment without confirmation
+2. Re-check eligibility (Haiku) — PR still open, no newer review from you
+3. Post via `gh pr comment`
+4. Link format — **full git SHA required** (no bash interpolation):
    ```
    https://github.com/owner/repo/blob/<full-sha>/path/file.ts#L44-L47
    ```
    - Include at least 1 line of context before/after in the line range
    - SHA must be the full 40-char hash, not abbreviated
-4. Footer (omit unless the user explicitly requests an attribution/feedback line):
+5. Footer (omit unless the user explicitly requests an attribution/feedback line):
    ```
    Generated with Claude Code (https://claude.ai/code).
    ```
