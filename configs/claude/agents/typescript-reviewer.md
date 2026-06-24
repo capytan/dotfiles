@@ -126,6 +126,16 @@ vitest run                          # Tests (Vitest)
 jest --ci                           # Tests (Jest)
 ```
 
+## Review Output Format
+
+```
+### [SEVERITY] Issue title
+
+**File**: path/to/file.ts:42
+**Issue**: Description of the problem
+**Fix**: Concrete fix with code example
+```
+
 ## Approval Criteria
 
 - **Approve**: No CRITICAL or HIGH issues
