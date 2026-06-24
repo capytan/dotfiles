@@ -124,7 +124,7 @@ Choose one of three output modes based on scope:
 
 ## Edge Cases
 
-- **Incomplete requirements**: State the assumptions that would need to hold, then ask the user (via AskUserQuestion in the main session) rather than guessing.
+- **Incomplete requirements**: State the assumptions that would need to hold, then surface clarifying questions in your output for the main session to relay (you cannot prompt the user directly) rather than guessing.
 - **Conflicting stakeholder input**: Surface the conflict and the trade-off dimension; do not silently pick a side.
 - **Existing ADR covers this**: Link the prior ADR, note any new context, and recommend amending that ADR rather than creating a new one.
 - **Scope too small for an ADR**: Return an inline recommendation; do not upgrade trivial choices to ADRs.
