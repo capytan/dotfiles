@@ -1,6 +1,6 @@
 ---
 name: magi-decision-support
-description: Multi-perspective decision support using three AI agents (Scientist, Mother, Realist) with APPROVE/CONDITIONAL/REJECT verdicts. Use when the user weighs trade-offs, compares approaches, or faces a technical/architectural choice with multiple valid options.
+description: Multi-perspective decision support using three AI agents (Scientist, Mother, Realist) with APPROVE/CONDITIONAL/REJECT verdicts. Use when the user weighs trade-offs, compares approaches, or faces a technical/architectural choice.
 allowed-tools: Agent, AskUserQuestion
 ---
 
@@ -69,7 +69,7 @@ REJECT triggers:
 
 ## Consensus Rules
 
-Determine consensus from the three verdicts (APPROVE=1, CONDITIONAL=0.5, REJECT=0):
+Determine consensus from the three verdicts:
 
 | Verdicts | Result |
 |----------|--------|
@@ -77,6 +77,8 @@ Determine consensus from the three verdicts (APPROVE=1, CONDITIONAL=0.5, REJECT=
 | 2× APPROVE + 1× CONDITIONAL | **MAJORITY APPROVAL** — Proceed with noted conditions |
 | 2× APPROVE + 1× REJECT | **MAJORITY APPROVAL (contested)** — Proceed, but address the dissent |
 | 1× APPROVE + 2× CONDITIONAL | **CONDITIONAL APPROVAL** — Proceed only if conditions are met |
+| 3× CONDITIONAL | **CONDITIONAL APPROVAL (weak)** — Proceed only if all stated conditions are met |
+| 2× CONDITIONAL + 1× REJECT | **CONDITIONAL (contested)** — Meet all conditions and address the dissent before proceeding |
 | Any 2× REJECT | **MAJORITY REJECTION** — Do not proceed without major revision |
 | 3× REJECT | **UNANIMOUS REJECTION** — Abandon this approach |
 | 1× each APPROVE/CONDITIONAL/REJECT | **SPLIT DECISION** — No consensus; present trade-offs and let user decide |

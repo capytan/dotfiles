@@ -1,8 +1,7 @@
 ---
 name: prompt-review
 description: >
-  このスキルは、ユーザーが「プロンプトをレビューして」「対話履歴を分析して」「理解度を診断して」
-  と依頼したとき、または /prompt-review で呼び出されたときに使用する。
+  このスキルは /prompt-review で明示的に呼び出されたときに使用する（自動発動はしない）。
   過去のAIエージェント対話履歴（Claude Code, GitHub Copilot Chat, Cline, Roo Code, Windsurf,
   Antigravity, OpenCode）を読み取り、技術理解度・プロンプティングパターン・AI依存度を推定してレポートを生成する。
 disable-model-invocation: true
