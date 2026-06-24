@@ -11,7 +11,7 @@
 > - `[community:mid]` = GitHub 10-50 stars, verified in a tech blog
 > - `[custom]` = Derived from this repo's own practice
 
-last_updated: 2026-06-05
+last_updated: 2026-06-10
 sources:
   - https://code.claude.com/docs/en/skills
   - https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices
@@ -66,6 +66,12 @@ Summary from Official Documentation:
 - Skills follow the [Agent Skills](https://agentskills.io) open standard
 - Claude Code extends the standard with invocation control, subagent execution, and dynamic context injection
 
+**Bundled skills `[official]` (2026-06):**
+> "Claude Code includes a set of bundled skills that are available in every session unless disabled with the `disableBundledSkills` setting, including `/code-review`, `/batch`, `/debug`, `/loop`, and `/claude-api`."
+> — https://code.claude.com/docs/en/skills (retrieved 2026-06-10)
+
+Three bundled skills work together to launch the app and confirm changes against the running app: `/run` (launch and drive the app), `/verify` (build and run to confirm a change), `/run-skill-generator` (records the build/launch recipe as a per-project skill at `.claude/skills/run-<name>/`). All three require Claude Code v2.1.145+.
+
 ### SKILL.md Structure `[official]`
 
 > "Every skill needs a SKILL.md file with two parts: YAML frontmatter (between --- markers) that tells Claude when to use the skill, and markdown content with instructions Claude follows when the skill is invoked."
@@ -113,7 +119,7 @@ my-skill/
 | `user-invocable` | No | `false` hides from `/` menu. Default: `true`. |
 | `allowed-tools` | No | Tools Claude can use without asking permission when skill is active. Space- or comma-separated string or YAML list. |
 | `disallowed-tools` | No | Tools removed from Claude's pool while the skill is active (e.g., block `AskUserQuestion` in a background loop). Restriction clears on the next user message. **NEW 2026.** |
-| `model` | No | Model to use when skill is active. |
+| `model` | No | Model to use when skill is active. Turn-scoped: "The override applies for the rest of the current turn and is not saved to settings; the session model resumes on your next prompt." Accepts same values as `/model`, or `inherit`. |
 | `effort` | No | Effort level: `low`, `medium`, `high`, `xhigh`, `max` (availability depends on model). Overrides session effort. |
 | `context` | No | Set to `fork` to run in a forked subagent context. |
 | `agent` | No | Subagent type when `context: fork`. Built-in (`Explore`, `Plan`, `general-purpose`) or custom. Defaults to `general-purpose`. |
@@ -223,13 +229,19 @@ Match specificity to task fragility:
 > "The `user-invocable` field only controls menu visibility, not Skill tool access. Use `disable-model-invocation: true` to block programmatic invocation."
 > — https://code.claude.com/docs/en/skills (retrieved 2026-04-17)
 
+**Permission rules for skills `[official]` (2026-06):** specific skills can be allowed/denied via permission rules — `Skill(name)` for exact match, `Skill(name *)` for prefix match with any arguments; denying `Skill` itself disables all skills. `disable-model-invocation: true` "removes the skill from Claude's context entirely."
+> — https://code.claude.com/docs/en/skills (retrieved 2026-06-10)
+
 ### Skill Content Lifecycle `[official]` (NEW)
 
 > "When you or Claude invoke a skill, the rendered SKILL.md content enters the conversation as a single message and stays there for the rest of the session. Claude Code does not re-read the skill file on later turns, so write guidance that should apply throughout a task as standing instructions rather than one-time steps."
 > — https://code.claude.com/docs/en/skills (retrieved 2026-04-17)
 
-> "Auto-compaction carries invoked skills forward within a token budget. When the conversation is summarized to free context, Claude Code re-attaches the most recent invocation of each skill after the summary, keeping the first 5,000 tokens of each. Re-attached skills share a combined budget of 25,000 tokens."
-> — https://code.claude.com/docs/en/skills (retrieved 2026-04-17)
+> "Auto-compaction carries invoked skills forward within a token budget. When the conversation is summarized to free context, Claude Code re-attaches the most recent invocation of each skill after the summary, keeping the first 5,000 tokens of each. Re-attached skills share a combined budget of 25,000 tokens. Claude Code fills this budget starting from the most recently invoked skill, so older skills can be dropped entirely after compaction if you have invoked many in one session."
+> — https://code.claude.com/docs/en/skills (retrieved 2026-06-10)
+
+> "Keep the body itself concise. Once a skill loads, its content stays in context across turns, so every line is a recurring token cost. State what to do rather than narrating how or why."
+> — https://code.claude.com/docs/en/skills (retrieved 2026-06-10)
 
 ### Running Skills in Subagents `[official]`
 
@@ -238,8 +250,11 @@ Match specificity to task fragility:
 
 | Approach | System prompt | Task | Also loads |
 |----------|--------------|------|------------|
-| Skill with `context: fork` | From agent type | SKILL.md content | CLAUDE.md |
+| Skill with `context: fork` | From agent type | SKILL.md content | CLAUDE.md, **except when the agent is Explore or Plan** |
 | Subagent with `skills` field | Subagent's markdown body | Claude's delegation message | Preloaded skills + CLAUDE.md |
+
+> "The built-in Explore and Plan agents skip CLAUDE.md and git status to keep their context small, so a forked skill using `agent: Explore` sees only the SKILL.md content and the agent's own system prompt."
+> — https://code.claude.com/docs/en/skills (retrieved 2026-06-10)
 
 ### String Substitutions `[official]`
 
@@ -368,3 +383,4 @@ Per-model considerations: Haiku (does the skill give enough guidance?), Sonnet (
 - 2026-03-30: Populated with official documentation from code.claude.com/docs/en/skills. Added: skill structure, frontmatter reference, 250-char truncation, invocation control, supporting files (500-line limit), subagent execution, string substitutions, dynamic context injection, CLAUDE.md vs skills, troubleshooting.
 - 2026-05-30: Minor refresh against code.claude.com/docs/en/skills + platform.claude.com best-practices. Added new 2026 frontmatter fields `arguments` and `disallowed-tools`. Added new substitutions `$name` and `${CLAUDE_EFFORT}`. Updated description-budget behavior: least-invoked descriptions dropped first on overflow; new settings `skillListingBudgetFraction`, `maxSkillDescriptionChars`; `/doctor` diagnostics; `skillOverrides` (on/name-only/user-invocable-only/off). Clarified file references are Read-tool instructions, not `@` imports. `disable-model-invocation` also blocks subagent preload. No conflicts with prior content; core rules (1024/1,536 caps, 500-line, one-level-deep, TOC>100 lines, third-person, pushy, gerund, degrees-of-freedom) unchanged.
 - 2026-04-17: Major refresh against latest docs. Corrected description limits: hard cap is 1024 chars (field), truncation is 1,536 chars (combined `description` + `when_to_use` in listings) — previous 250-char figure was outdated. Added new frontmatter field `when_to_use`. Added `xhigh` effort level. Added skill content lifecycle section (session-wide persistence, compaction budgets: 5k tokens per skill, 25k combined). Added third-person rule, "pushy" description guidance, gerund naming, one-level-deep references rule, 100-line TOC rule, evaluation-driven development, degrees-of-freedom framing, workflows/feedback-loops, content guidelines, anti-patterns (official), per-model testing, explicit checklist. Added sources: platform.claude.com best-practices, skill-creator repo.
+- 2026-06-10: Refresh against code.claude.com/docs/en/skills (retrieved 2026-06-10). Added: bundled skills (`/run`, `/verify`, `/run-skill-generator` v2.1.145+, `disableBundledSkills`); compaction detail that the 25k budget fills from the most recently invoked skill so **oldest skills can be dropped entirely**; "keep the body concise — recurring token cost" quote; `context: fork` correction — CLAUDE.md is loaded **except** when the agent is Explore or Plan; `model` field is turn-scoped (not saved to settings); `Skill(name)` / `Skill(name *)` permission-rule syntax. Core scoring facts re-verified unchanged: 1,536-char combined cap (`maxSkillDescriptionChars` configurable), 1% listing budget (`skillListingBudgetFraction` / `SLASH_COMMAND_TOOL_CHAR_BUDGET`, `/doctor` diagnostics), 500-line SKILL.md guidance, all 2026 frontmatter fields (`when_to_use`, `arguments`, `disallowed-tools`, `effort`, `paths`, `shell`, `hooks`), `skillOverrides` states, live change detection, `disable-model-invocation` removing description from context and blocking subagent preload.

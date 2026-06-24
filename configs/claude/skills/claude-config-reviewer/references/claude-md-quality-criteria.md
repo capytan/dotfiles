@@ -1,6 +1,6 @@
 # Quality Criteria
 
-last_updated: 2026-06-05
+last_updated: 2026-06-24
 
 > Referenced during Phase 2 (Quality Assessment).
 > Updated based on Phase 0 research findings.
@@ -36,8 +36,8 @@ CLAUDE.md is loaded every session. Evaluate whether each line justifies its toke
 **Line count thresholds** `[official]` + `[semi-official]` + `[community:high]`
 Official docs: "target under 200 lines per CLAUDE.md file" (code.claude.com/docs/en/memory).
 Boris Cherny (Claude Code creator): ~100 lines / ~2,500 tokens is his personal config. His team's `~/.claude/CLAUDE.md` is ~76 tokens; project CLAUDE.md is ~4k tokens.
-HumanLayer (Nov 2025): "general consensus is that under 300 lines is best, and shorter is even better. At HumanLayer, the root CLAUDE.md file is less than sixty lines."
-abhishekray07 (2026): "if your project CLAUDE.md is over 80 lines, Claude starts ignoring parts of it" — and frontier models reliably follow ~150–200 total instructions, ~50 of which are consumed by Claude Code's system prompt.
+HumanLayer (Nov 2025): "general consensus is that under 300 lines is best, and shorter is even better. At HumanLayer, the root CLAUDE.md file is less than sixty lines." HumanLayer also states frontier models reliably follow ~150–200 total instructions, ~50 of which are consumed by Claude Code's system prompt (re-verified 2026-06-10, www.humanlayer.dev/blog/writing-a-good-claude-md).
+abhishekray07 (2026): "if your project CLAUDE.md is over 80 lines, Claude starts ignoring parts of it".
 - Under 80 lines → ideal (20 pts)
 - 80–150 lines → good (17 pts)
 - 150–200 lines → acceptable, within official target (13 pts)
@@ -178,3 +178,5 @@ Deduct when Low/None exceeds 30% of total sections.
 - 2026-03-29: Updated line count thresholds with official 200-line target and Boris Cherny's ~100-line reference. Expanded inferable content detection to match official Exclude list. Added hook-convertible rules detection sub-criterion under Token Efficiency (semi-official + community:high).
 - 2026-04-17: Tightened line-count thresholds: new "ideal" bar is under 80 lines (HumanLayer 60-line benchmark + abhishekray07 "80 lines → Claude starts ignoring" finding) with a 6-tier rubric. Added note on the ~150–200 total-instruction budget (~50 used by Claude Code's system prompt). Cited specific Boris token numbers (user 76 / project 4k).
 - 2026-05-30: No material change to scoring criteria. 2026-05-30 research confirmed official line-count thresholds (under 200) and the ~150–200 instruction budget are unchanged. New community insight (CLAUDE.md churn invalidates prompt cache — community:mid) noted in community-practices but not strong enough to alter Token Efficiency scoring; recorded as awareness only. last_updated bumped to 2026-05-30.
+- 2026-06-10: No scoring changes. Attribution fix: the ~150–200 instruction budget is primarily sourced to HumanLayer's "Writing a good CLAUDE.md" (`[community:high]`, re-verified 2026-06-10); abhishekray07 retained for the 80-line adherence cliff. Official under-200-line target re-verified against code.claude.com/docs/en/memory (retrieved 2026-06-10). last_updated bumped to 2026-06-10.
+- 2026-06-24: Freshness re-run (14 days stale). No scoring changes. The official under-200-line authoring target is unchanged; the only 2026-06 development is that Claude Code's in-product "too long" *warning* now scales with the model context window (changelog v2.1.169) — this affects when the tool nags, not the authoring target, so the line-count rubric stays as-is. All thresholds and sub-criteria re-verified current. last_updated bumped to 2026-06-24.

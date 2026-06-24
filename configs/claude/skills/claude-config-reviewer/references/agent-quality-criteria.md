@@ -13,7 +13,7 @@
 >
 > **Note:** Phase 0 research (2026-04-17) cross-checked against code.claude.com/docs/en/sub-agents.
 
-last_updated: 2026-06-05
+last_updated: 2026-06-10
 
 ---
 
@@ -48,7 +48,7 @@ Validate the YAML frontmatter between `---` markers for required fields and valu
 
 **model field (optional):**
 - Absent → PASS (defaults to `inherit`)
-- Present, value in `inherit | sonnet | opus | haiku` or full model ID (e.g., `claude-opus-4-8`, `claude-sonnet-4-6`) → PASS
+- Present, value in `inherit | sonnet | opus | haiku | fable` or full model ID (e.g., `claude-opus-4-8`, `claude-sonnet-4-6`) → PASS — `fable` is an official alias as of 2026-06 (https://code.claude.com/docs/en/sub-agents, retrieved 2026-06-10); do NOT deduct for it
 - Unrecognized value → -2 pts
 
 **color field (optional):**
@@ -61,6 +61,12 @@ Validate the YAML frontmatter between `---` markers for required fields and valu
 - Absent → PASS (inherits all)
 - Present as comma-separated string or YAML array of recognized tool names → PASS
 - Unrecognized tool name → -1 pt each
+
+**Other optional fields (validate if present) `[official]` (2026-06):**
+- `permissionMode`: value in `default | acceptEdits | auto | dontAsk | bypassPermissions | plan` → PASS; unrecognized → -2 pts (`auto` and `dontAsk` are official modes — do NOT flag as invalid)
+- `memory`: value in `user | project | local` → PASS
+- Recognized 2026 fields — do NOT flag as unknown: `disallowedTools`, `maxTurns`, `skills`, `mcpServers`, `hooks`, `memory`, `background`, `effort`, `isolation` (`worktree`), `color`, `initialPrompt`
+- Plugin-distributed agents: `hooks`, `mcpServers`, `permissionMode` are **ignored** for plugin subagents → advisory NOTE if present in a plugin agent file
 
 **15 pts**: All present required fields valid, optional fields valid if present
 **10 pts**: Minor warnings (generic name, unusual optional values)
@@ -214,6 +220,8 @@ Verify the agent file is consistent with its environment.
 - System prompt references to files/paths are valid (spot-check with Glob) → -2 pts per broken ref
 - No contradictions between description and system prompt responsibilities → -3 pts if conflicting
 - Model tier is appropriate for the agent's complexity → advisory NOTE
+- `name` is unique within its scope (agents dirs are scanned recursively, including subfolders) → -3 pts if duplicated: "if two files within one scope declare the same name, Claude Code keeps one and discards the other without warning" `[official]` (https://code.claude.com/docs/en/sub-agents, retrieved 2026-06-10)
+- `skills` field entries exist and none set `disable-model-invocation: true` (such skills cannot be preloaded; they are skipped with only a debug-log warning) → -2 pts per invalid entry `[official]` (2026-06)
 
 **10 pts**: Fully consistent
 **7 pts**: Minor mismatches (name casing, advisory notes)
@@ -247,3 +255,6 @@ Verify the agent file is consistent with its environment.
   - **B. Description**: Added a third-person-voice check (`[official]`) — imperative/second-person descriptions ("You are…", "When invoked, you will…") deduct -3 pts, deduplicated with the existing behavioral-instructions deduction (apply once). Sourced from "Always write in third person" in Skills authoring guidance.
   - **A. Frontmatter**: Model ID examples bumped to `claude-opus-4-8` / `claude-sonnet-4-6`.
   - **G. Cross-Reference**: Filename↔`name` mismatch downgraded from -3 pts to advisory NOTE — official docs state "The filename does not have to match"; identity is from `name` only. Added advisory note for tools that are unavailable to subagents (`Agent`, `AskUserQuestion`, `EnterPlanMode`, `ExitPlanMode`, `ScheduleWakeup`, `WaitForMcpServers`) — listing them is a no-op, not a hard error.
+- 2026-06-10: Refreshed against code.claude.com/docs/en/sub-agents (retrieved 2026-06-10).
+  - **A. Frontmatter**: `fable` added to valid model aliases (do not deduct). Added optional-field validation: `permissionMode` values now include official `auto` and `dontAsk`; listed all recognized 2026 fields (`disallowedTools`, `maxTurns`, `skills`, `mcpServers`, `hooks`, `memory`, `background`, `effort`, `isolation`, `color`, `initialPrompt`) so assessors don't flag them as unknown; advisory NOTE for `hooks`/`mcpServers`/`permissionMode` in plugin agents (ignored fields).
+  - **G. Cross-Reference**: Added duplicate-`name`-within-scope check (-3 pts; one file silently discarded) and `skills`-preload validity check (-2 pts per missing or `disable-model-invocation: true` entry). Scoring weights and bands unchanged.

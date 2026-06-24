@@ -10,7 +10,7 @@
 > - `[custom]` = Derived from this repo's own practice
 > - `[custom:derived-from-skill-reviewer]` = Extracted from skill-reviewer agent
 
-last_updated: 2026-06-05
+last_updated: 2026-06-10
 
 ---
 
@@ -40,7 +40,7 @@ Plus: Supplementary Checks (advisory), Grading Scale
 
 **when_to_use** `[official]` (new field, 2026): optional; appended to `description` in listing. Combined (`description` + `when_to_use`) truncated at **1,536 chars** in the listing — front-load key triggers.
 
-**Other**: no README.md / CHANGELOG.md in skill dir `[community:high]` (wastes tokens). Optional fields validated if present: `allowed-tools`, `disallowed-tools` (new 2026), `arguments` (new 2026; named positional args for `$name`), `paths`, `context`, `effort`, etc.
+**Other**: no README.md / CHANGELOG.md in skill dir `[community:high]` (wastes tokens). Optional fields validated if present: `allowed-tools`, `disallowed-tools` (new 2026), `arguments` (new 2026; named positional args for `$name`), `paths`, `context`, `agent`, `effort`, `hooks`, `shell`, `model`, `argument-hint`, `disable-model-invocation`, `user-invocable` — all official as of 2026-06; do NOT flag these as unknown fields.
 
 - **15 pts**: All valid, description covers four components, name-folder match, no README.md
 - **12 pts**: Valid but description missing one component
@@ -154,6 +154,8 @@ Per section: **High** = changes decisions, **Medium** = clarifies ambiguity, **L
 
 **"Pushy" descriptions** `[semi-official]`: combat undertriggering by making descriptions slightly assertive — include explicit trigger phrases beyond the bare "what" statement.
 
+**"Use when..." phrasing + examples (measured)** `[community:mid]`: a 200+ prompt benchmark reports optimized descriptions lift activation ~20%→50%, and adding concrete examples lifts it ~72%→90%; "Use when..." is the recommended trigger-clause template (https://gist.github.com/mellanon/50816550ecb5f3b239aa77eef7b8ed8d, retrieved 2026-06-10). Directional evidence supporting the existing trigger-clause requirement in criterion A — no scoring-band change.
+
 **"Old patterns" archival** `[official]`: deprecated info should move into a collapsed `<details>` section titled "Old patterns" rather than being deleted or flagged with dates.
 
 ---
@@ -176,3 +178,4 @@ Per section: **High** = changes decisions, **Medium** = clarifies ambiguity, **L
 - 2026-03-29: Initial version. Derived from skill-reviewer agent check items A-J. All items tagged `[custom:derived-from-skill-reviewer]` pending Phase 0 research to update with official sources.
 - 2026-05-30: Minor refresh. Criterion A: added new 2026 frontmatter fields `arguments` / `disallowed-tools` to the validated-optional-fields list. Criterion D: added file-reference clarification (Read-tool instructions, not `@` imports — only CLAUDE.md supports `@`) and noted Anthropic's tighter 1,500-2,000-word body target `[semi-official]`. No scoring-band or criteria-weight changes; all `[custom]` items preserved.
 - 2026-04-17: Upgraded tags from `[custom:derived-from-skill-reviewer]` to `[official]` / `[semi-official]` / `[community:high]` where Phase 0 research confirmed. Added `when_to_use` frontmatter field (new 2026). Clarified description caps: 1024-char hard validation + 1,536-char listing truncation (combined with `when_to_use`). Added "no README/CHANGELOG in skill dir" rule (community consensus). Strengthened structure criterion D with one-level-deep + 100-line TOC rules (now `[official]`). Added "pushy" description guidance, evaluation-driven development, and "Old patterns" archival pattern to supplementary checks.
+- 2026-06-10: Refresh against code.claude.com/docs/en/skills (retrieved 2026-06-10). Criterion A: expanded the recognized-optional-fields list (`hooks`, `shell`, `agent`, `model`, etc.) so assessors don't flag official 2026 fields as invalid. Supplementary checks: added measured "Use when..." + examples activation data (mellanon 200+ prompt benchmark, `[community:mid]`, advisory only). Core caps re-verified unchanged (1024 hard / 1,536 combined listing, 500-line SKILL.md). No scoring-band or weight changes; all `[custom]` items preserved.
