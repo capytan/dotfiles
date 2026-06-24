@@ -18,7 +18,7 @@ PreToolUse validators block dangerous patterns (force-push, reset --hard, rm -rf
 
 ### tmux status emoji
 
-Each hook prefixes the tmux window name with a state emoji (⏳ working / 🤖 subagent / ⚠️ permission/error / ❌ tool failure / ✅ stop). Priority-guarded: a higher-priority state is not overwritten by a lower one (full priority table in `.claude/rules/claude-config.md`). Only `UserPromptSubmit` / `Stop` / `StopFailure` / `SessionStart` force-update.
+Each hook prefixes the tmux window name with a state emoji (⏳ working / 🤖 subagent / ⚠️ permission/error / ❌ tool failure / ✅ stop). Priority-guarded: a higher-priority state is not overwritten by a lower one (full priority table in `~/dotfiles/.claude/rules/claude-config.md`). Only `UserPromptSubmit` / `Stop` / `StopFailure` / `SessionStart` force-update.
 
 - Log: `tail -F ~/.cache/claude-tmux-status.log` (key=value, rotates to `.1` at 1MB)
 - Disable: `export CLAUDE_TMUX_LOG=0`
