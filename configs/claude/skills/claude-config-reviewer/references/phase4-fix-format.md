@@ -47,33 +47,28 @@ Rough conversion only — not exact:
 
 Use the proposal's actual diff lines, not the file's total length, when computing per-section savings.
 
-## Worked example
+## Worked example (synthetic)
 
 ```markdown
-### Fix 1: configs/claude/CLAUDE.md — Hooks / tmux status emoji
+### Fix 1: skills/example-skill/SKILL.md — Phase 2 worked example
 
-**Reason:** Engineering details (priority table, force-update events, ✅→⏳ reset) only matter to hook authors but are loaded into every global session. Move to path-scoped `.claude/rules/claude-config.md`.
+**Reason:** Worked example only needed when authoring new skills; loaded on every invocation. Move to `references/worked-examples.md`.
 **Severity:** Minor
-**Lines:** 26 → 18 (−8 lines, ~120 tokens saved per session)
+**Lines:** 64 → 38 (−26 lines, ~390 tokens saved per session)
 
 \```diff
-- ### tmux status emoji
+- ## Worked Example
 -
-- Each hook prefixes the tmux window name with a state emoji (...). Priority-guarded: a higher-priority state is not overwritten by a lower one (full priority table in `~/dotfiles/.claude/rules/claude-config.md`). Only `UserPromptSubmit` / `Stop` / `StopFailure` / `SessionStart` force-update.
--
-- - Log: `tail -F ~/.cache/claude-tmux-status.log` (key=value, rotates to `.1` at 1MB)
-- - Disable: `export CLAUDE_TMUX_LOG=0`
-- - Rule: **1 tmux window = 1 Claude Code pane** — multiple panes in the same window will fight over the name
-- - ✅ is reset to ⏳ on the next `UserPromptSubmit` (response-complete is preserved until the user takes a new turn)
-+ - tmux window-name emoji state: ⏳ working / 🤖 subagent / ⚠️ permission/error / ❌ tool failure / ✅ stop. **1 tmux window = 1 Claude Code pane** (panes in the same window fight over the name). Log: `tail -F ~/.cache/claude-tmux-status.log`. Disable: `export CLAUDE_TMUX_LOG=0`. Engineering details (priority table, force-update events, ✅→⏳ reset) live in `~/dotfiles/.claude/rules/claude-config.md` (path-scoped to `configs/claude/**`)
+- (... 26 lines of tutorial walk-through ...)
++ See [references/worked-examples.md](references/worked-examples.md) for full walk-throughs.
 \```
 
 ### Token Savings Summary
 
 | Section | Action | Lines Saved | ~Tokens Saved |
 |---------|--------|-------------|---------------|
-| Hooks / tmux | Move engineering details to path-scoped rules file | −8 | ~120 |
-| **Total** | | **−8** | **~120** |
+| Worked Example | Move to on-demand reference | −26 | ~390 |
+| **Total** | | **−26** | **~390** |
 
-**Before:** 26 lines (~390 tokens) → **After:** 18 lines (~270 tokens)
+**Before:** 64 lines (~960 tokens) → **After:** 38 lines (~570 tokens)
 ```

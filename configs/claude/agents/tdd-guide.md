@@ -30,7 +30,7 @@ description: |
   Refactor trigger: TDD applies to behavioral change; for pure refactors the agent enforces before/after green-suite checks instead of writing new tests.
   </commentary>
   </example>
-tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
+tools: ["Read", "Write", "Edit", "Bash", "Grep"]
 model: sonnet
 ---
 
