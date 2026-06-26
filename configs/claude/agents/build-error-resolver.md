@@ -100,7 +100,7 @@ flutter analyze
 flutter build
 ```
 
-## Workflow
+## When invoked:
 
 ### 1. Collect All Errors
 - Run the appropriate build/check command for the project

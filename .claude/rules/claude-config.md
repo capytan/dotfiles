@@ -20,6 +20,8 @@ paths:
 | 🤖 | 20 | Subagent running (SubagentStart, when counter == 1) |
 | ⏳ | 10 | Working (SessionStart / UserPromptSubmit / PostToolUse) |
 
+Priority-guarded: a higher-priority state is not overwritten by a lower one. Only `UserPromptSubmit` / `Stop` / `StopFailure` / `SessionStart` force-update. ✅ is reset to ⏳ on the next `UserPromptSubmit` so response-complete is preserved until the user takes a new turn.
+
 When adding a new hook, choose one of the three `tmux-lib.sh` APIs:
 
 - `tmux_force_set_status <emoji> <hook> [<base>]` — force update, ignores priority. For new-turn / completion events only

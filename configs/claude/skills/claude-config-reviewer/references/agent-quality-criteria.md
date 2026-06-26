@@ -13,7 +13,7 @@
 >
 > **Note:** Phase 0 research (2026-04-17) cross-checked against code.claude.com/docs/en/sub-agents.
 
-last_updated: 2026-06-10
+last_updated: 2026-06-26
 
 ---
 
@@ -258,3 +258,8 @@ Verify the agent file is consistent with its environment.
 - 2026-06-10: Refreshed against code.claude.com/docs/en/sub-agents (retrieved 2026-06-10).
   - **A. Frontmatter**: `fable` added to valid model aliases (do not deduct). Added optional-field validation: `permissionMode` values now include official `auto` and `dontAsk`; listed all recognized 2026 fields (`disallowedTools`, `maxTurns`, `skills`, `mcpServers`, `hooks`, `memory`, `background`, `effort`, `isolation`, `color`, `initialPrompt`) so assessors don't flag them as unknown; advisory NOTE for `hooks`/`mcpServers`/`permissionMode` in plugin agents (ignored fields).
   - **G. Cross-Reference**: Added duplicate-`name`-within-scope check (-3 pts; one file silently discarded) and `skills`-preload validity check (-2 pts per missing or `disable-model-invocation: true` entry). Scoring weights and bands unchanged.
+- 2026-06-26: Refreshed against code.claude.com/docs/en/sub-agents (retrieved 2026-06-26) and changelog v2.1.172–v2.1.193. No scoring-weight changes. **Advisory updates only**:
+  - **A. Frontmatter**: `background: true` is no longer a hazard (was: risk of silent permission auto-deny). Since changelog v2.1.186, background subagent permission prompts surface in the main session — do NOT flag `background: true` as a reliability risk on its own.
+  - **G. Cross-Reference**: For nested project agents along the cwd walk that share a `name`, **the closest-to-cwd file wins** (deterministic since v2.1.178). Previously assessors might warn about this collision; now it should be downgraded to advisory NOTE only (the deeper file deterministically takes effect), reserving the -3 pt deduction for the within-one-scope silent-discard case.
+  - **Tool restriction (D)**: Listing `Agent` in `tools` is still required for an agent that needs to spawn nested subagents (now allowed up to depth 5, changelog v2.1.172). No deduction change.
+  - **General**: Agents whose only purpose is depth-5 orchestration should not be flagged for nesting alone — the limit is the platform's, not a smell.

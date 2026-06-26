@@ -4,7 +4,7 @@
 > Manual edits are fine but may be overwritten on next research run.
 > Items tagged `[custom]` are protected from overwrite.
 
-last_updated: 2026-06-24
+last_updated: 2026-06-26
 sources:
   - https://code.claude.com/docs/en/memory
   - https://code.claude.com/docs/en/best-practices
@@ -175,6 +175,7 @@ From https://code.claude.com/docs/en/best-practices (retrieved 2026-03-29):
 - Personal preferences can import from home directory: `@~/.claude/my-project-instructions.md`
 - First-time external imports require an approval dialog (declining disables imports permanently and the dialog does not reappear)
 - Imports do not reduce context — imported files load in full at launch (use path-scoped rules to actually save context)
+- **Import parsing skips fenced code blocks and code spans (added 2026-06-26 from memory docs):** "Import parsing skips Markdown code spans and fenced code blocks. To mention a path in your CLAUDE.md without importing it, wrap it in backticks: writing `` `@README` `` keeps the text literal, while `@README` outside backticks imports the file." — https://code.claude.com/docs/en/memory (retrieved 2026-06-26)
 
 ### AGENTS.md Compatibility `[official]`
 
@@ -321,6 +322,8 @@ For autonomous/long-running Claude sessions:
 - For system-prompt-level instructions: `--append-system-prompt` flag (better for scripts/automation)
 - Check for conflicting instructions across files
 - **New in 2026-06 (changelog v2.1.169, 2026-06-08)**: `--safe-mode` flag (and `CLAUDE_CODE_SAFE_MODE` env var) starts Claude Code with **all customizations disabled** — CLAUDE.md, plugins, skills, hooks, and MCP servers — to isolate whether a problem comes from your config. Useful for confirming a misbehavior is caused by a CLAUDE.md instruction rather than the model itself.
+- **New in 2026-06 (changelog v2.1.191, 2026-06-24)**: `/rewind` resumes the conversation from before `/clear` was run. Lets you recover a session (and the CLAUDE.md/instruction state in it) if you accidentally cleared it.
+- **New in 2026-06 (changelog v2.1.181, 2026-06-17)**: CLAUDE.md Write/Edit now work on network drives and cloud-synced folders (previously failed silently in some sync clients).
 
 ### Claude 4 Prompting Practices `[official]`
 
@@ -340,3 +343,4 @@ For autonomous/long-running Claude sessions:
 - 2026-04-17: Re-read official docs. Added: `CLAUDE.local.md` as fourth scope in file-locations table (with concatenation/append-after ordering), new "When to Add to CLAUDE.md" official heuristic (4 triggers), `CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD` env var for `--add-dir` directories, Managed CLAUDE.md vs Managed Settings decision table, Auto Memory settings (`autoMemoryEnabled`, `autoMemoryDirectory`, v2.1.59+ requirement, `CLAUDE_CODE_DISABLE_AUTO_MEMORY`), Self-Editing CLAUDE.md guidance from long-running Claude research blog. Updated compaction behavior to clarify only project-root CLAUDE.md is re-injected after `/compact`; nested files reload lazily.
 - 2026-06-24: Freshness re-run (14 days stale). Re-read memory + skills docs (unchanged vs 2026-06-10) and cross-checked the official changelog for May–June 2026. **Material additions from changelog v2.1.169–v2.1.181**: (1) `--safe-mode` / `CLAUDE_CODE_SAFE_MODE` disables all customizations incl. CLAUDE.md for troubleshooting (added to Troubleshooting); (2) the in-product "CLAUDE.md is too long" warning threshold now scales with the model's context window — authoring target of under-200 lines unchanged (added to Size guidance); (3) `/cd` command relocates a session to a new working dir, appending the new CLAUDE.md as a message without rebuilding the prompt cache, plus v2.1.172 branch-reporting fix (added to File Locations); (4) MEMORY.md compaction reminder (v2.1.181) and `CLAUDE_MEMORY_STORES` remote team-memory-store fix (v2.1.176) (added to Auto Memory). Added changelog to sources. last_updated bumped to 2026-06-24.
 - 2026-06-10: Re-read code.claude.com/docs/en/memory (retrieved 2026-06-10). Factual correction: **`autoMemoryDirectory` is now read from any settings scope (user, project, local, policy, `--settings`)** — previously documented as not accepted from project settings; the project-scope restriction was replaced by the workspace-trust-dialog gate. Auto memory scope wording updated to "Per repository, shared across worktrees" (and machine-local). `/init` tool-config reading now includes `.devin/rules/`. All other content re-verified unchanged: under-200-line target, four-hop import depth, imports-load-at-launch, `.claude/rules/` recursion + symlinks + user-level rules, path-scoped rule triggering, HTML-comment stripping, `claudeMdExcludes`, `claudeMd` managed key, compaction re-injection (project-root only), `InstructionsLoaded` hook, MEMORY.md 200-line/25KB load limit.
+- 2026-06-26: Freshness re-run (2 days stale). Re-read memory docs (https://code.claude.com/docs/en/memory, retrieved 2026-06-26) and cross-checked changelog through v2.1.193 (2026-06-25). **Material additions**: (1) **Import parsing skips fenced code blocks and code spans** — to mention an `@path` without importing, wrap in backticks (added to Import Syntax). (2) v2.1.181: CLAUDE.md Write/Edit fixed for network drives and cloud-synced folders (added to Troubleshooting). (3) v2.1.191: `/rewind` recovers conversation state after `/clear` (added to Troubleshooting). All other content re-verified unchanged: under-200-line authoring target (warning threshold still scales with context window per v2.1.169), four-hop import depth, `/cd`, `--safe-mode`, MEMORY.md compaction reminder, `claudeMd` managed key, `claudeMdExcludes`, compaction re-injection, auto-memory storage and trust-gate. last_updated bumped to 2026-06-26.

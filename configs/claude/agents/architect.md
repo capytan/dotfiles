@@ -45,7 +45,7 @@ You are a senior software architect specializing in scalable, maintainable syste
 - Plan for future growth
 - Ensure consistency across codebase
 
-## Architecture Review Process
+## When invoked:
 
 ### 1. Current State Analysis
 - Review existing architecture

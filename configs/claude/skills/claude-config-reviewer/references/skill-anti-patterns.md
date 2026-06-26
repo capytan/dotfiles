@@ -3,7 +3,7 @@
 > Referenced during Phase 2, criterion G (Anti-patterns) for SKILL.md reviews.
 > Each pattern has a severity: Critical / Major / Minor.
 
-last_updated: 2026-06-10
+last_updated: 2026-06-26
 
 ---
 
@@ -141,3 +141,4 @@ Quote: "Don't railroad Claude in skills — give goals and constraints, not pres
 - 2026-05-30: Minor refresh. Added one Minor anti-pattern: `@`-import syntax in SKILL.md references (`@` imports only work in CLAUDE.md; SKILL.md references are Read-tool instructions) `[community:high]`. Re-verified all existing Critical/Major/Minor patterns against 2026-05 official + community sources — no severity changes, no removals.
 - 2026-04-17: Major expansion against 2026-04 official docs. Added Critical tier (3 items: first/second-person description, >1024-char description, missing `disable-model-invocation` on side-effect skills). Promoted Windows-style paths, option listing without default, and oversized SKILL.md from `[custom:...]` to `[official]` with source quotes. Added 7 new patterns: nested references, reference file >100 lines without TOC, README/CHANGELOG in skill dir, time-sensitive content in body, voodoo constants, unqualified MCP tool refs, punting to Claude in scripts. Added minor patterns: overfitting descriptions, vague names, missing Gotchas, railroaded prescriptive steps. Added a counter-note about not over-using ALL-CAPS MUST/NEVER (skill-creator guidance).
 - 2026-06-10: Freshness re-run against code.claude.com/docs/en/skills (retrieved 2026-06-10). No new anti-patterns; severities re-verified. Note: 2026 frontmatter fields (`when_to_use`, `arguments`, `disallowed-tools`, `effort`, `paths`, `shell`, `hooks`) are official — do not flag as unknown.
+- 2026-06-26: Freshness re-run against code.claude.com/docs/en/skills (retrieved 2026-06-26). No new anti-patterns; catalog re-verified. Assessor notes (negative findings worth flagging): (1) **Frontmatter keys** are case-tolerant (kebab/snake/camelCase all accepted as of changelog v2.1.186) — do NOT flag camelCase variants. (2) **Malformed YAML** still loads the skill body with empty metadata, so a "missing description" can be a YAML parse failure rather than an author omission — recommend running with `--debug` to disambiguate. (3) **Naming collision with bundled skills**: if a project/personal/plugin skill shares a name with a bundled skill (e.g. `code-review`, `debug`, `loop`), it silently replaces the bundled one — surface as advisory NOTE so authors realize they're overriding `/code-review`.

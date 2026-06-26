@@ -40,7 +40,8 @@ When invoked:
 1. Run `git diff --staged` and `git diff` with `-- '*.cpp' '*.hpp' '*.cc' '*.hh' '*.cxx' '*.h'` to see staged and unstaged C++ file changes; if both are empty, fall back to `git show --patch HEAD`
 2. Run `clang-tidy` and `cppcheck` if available
 3. Focus on modified C++ files
-4. Begin review immediately
+4. If any CRITICAL Security issue is found, stop and hand off to `security-reviewer` before continuing
+5. Begin review immediately
 
 ## Review Priorities
 
