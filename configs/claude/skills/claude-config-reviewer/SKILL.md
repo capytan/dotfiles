@@ -201,7 +201,16 @@ Always include when reviewing multiple artifact types (even when scope is limite
 - Cross-cutting issues: ...
 ```
 
-Run all checks defined in `references/cross-artifact-checks.md` (reference existence, description consistency, circular references, tool consistency, stale references, plus the official 2026-06 checks: subagent skill-preload validity, duplicate agent names, bundled-skill name collision).
+Run all checks defined in `references/cross-artifact-checks.md`:
+
+- Reference existence (referenced skills/agents exist on disk)
+- Description consistency (CLAUDE.md ↔ skill/agent claims)
+- Circular references (skill→agent→skill)
+- Tool consistency (frontmatter `tools:` ↔ actual usage)
+- Stale references (deleted/renamed artifacts)
+- Subagent skill-preload validity `[official 2026-06]`
+- Duplicate agent names within a scope `[official 2026-06]`
+- Skill name vs bundled-skill collision `[official 2026-06]`
 
 ### Grading Scale
 
@@ -255,17 +264,13 @@ See [references/claude-md-modularization-guide.md](references/claude-md-modulari
 
 Evaluation criteria and templates. Updated during Phase 0 research.
 
-**CLAUDE.md pool** (Phase 0 & Phase 2):
-- [claude-md-official-best-practices.md](references/claude-md-official-best-practices.md), [claude-md-community-practices.md](references/claude-md-community-practices.md), [claude-md-quality-criteria.md](references/claude-md-quality-criteria.md), [claude-md-anti-patterns.md](references/claude-md-anti-patterns.md), [claude-md-modularization-guide.md](references/claude-md-modularization-guide.md)
+Each pool has 4-5 references; suffix indicates which phase opens it (`*-official-best-practices.md` / `*-community-practices.md` for **Phase 0**; `*-quality-criteria.md` / `*-anti-patterns.md` for **Phase 2**; `claude-md-modularization-guide.md` for **Phase 4 CLAUDE.md fixes**):
 
-**SKILL.md pool** (Phase 0 & Phase 2):
-- [skill-official-best-practices.md](references/skill-official-best-practices.md), [skill-community-practices.md](references/skill-community-practices.md), [skill-quality-criteria.md](references/skill-quality-criteria.md), [skill-anti-patterns.md](references/skill-anti-patterns.md)
-
-**Agent pool** (Phase 0 & Phase 2):
-- [agent-official-best-practices.md](references/agent-official-best-practices.md), [agent-community-practices.md](references/agent-community-practices.md), [agent-quality-criteria.md](references/agent-quality-criteria.md), [agent-anti-patterns.md](references/agent-anti-patterns.md)
-
-**Cross-Artifact & Phase 4:**
-- [cross-artifact-checks.md](references/cross-artifact-checks.md) (Phase 3), [phase4-fix-format.md](references/phase4-fix-format.md) (Phase 4 template & worked example)
+- `references/claude-md-*.md` — CLAUDE.md pool (5 files)
+- `references/skill-*.md` — SKILL.md pool (4 files)
+- `references/agent-*.md` — Agent pool (4 files)
+- [references/cross-artifact-checks.md](references/cross-artifact-checks.md) — **Phase 3** validations
+- [references/phase4-fix-format.md](references/phase4-fix-format.md) — **Phase 4** fix-proposal template & worked example
 
 ---
 
