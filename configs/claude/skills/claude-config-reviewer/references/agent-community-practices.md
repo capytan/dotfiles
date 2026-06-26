@@ -9,7 +9,7 @@
 > - `[community:mid]` = GitHub 10-50 stars, verified in a tech blog
 > - `[community:low]` = Individual report, unverified but reasonable (reference only)
 
-last_updated: 2026-06-10
+last_updated: 2026-06-26
 
 ---
 
@@ -219,3 +219,4 @@ Sources:
 
 - 2026-06-05: Freshness re-run (references were 6 days stale). Re-read official skills + sub-agents docs and a 2026-06 CLAUDE.md best-practices survey (Medium/orchestrator.dev/substack, community:mid). No material change: ~80-120 line practical limit / under-200 / 150-200 instruction budget, the "five things", custom-commands-merged-into-skills, agentskills.io open standard, and auto memory / MEMORY.md (200-line auto-load, routing rules stay in CLAUDE.md) all already captured. last_updated bumped to 2026-06-05.
 - 2026-06-10: Added one `[community:mid]` insight: prefer feature-specific subagents with preloaded skills over generic "qa engineer"/"backend engineer" role agents (shanraisshan/claude-code-best-practice). Existing sections re-verified, no other changes. last_updated bumped to 2026-06-10.
+- 2026-06-26: Freshness re-run (16 days stale). No new community insights worth adopting. Re-verified existing sections against late-June 2026 sources: third-person description + second-person body, MUST BE USED / Use PROACTIVELY trigger formula, action-verb specificity, role-based tool tiers, model routing (Opus/Sonnet/Haiku), five-layer system-prompt blueprint, "one job and a clear definition of done," 300–800-line body target, feature-specific over generic role agents, second-person voice universality, chain vs parallel patterns, @agent-<name> typeahead, Japanese context-isolation framing — all current. Notable official additions in this window (nested subagent spawning v2.1.172, background subagent permission surfacing v2.1.186, nested project agent tie-break v2.1.178) are recorded in official-best-practices, not here. last_updated bumped to 2026-06-26.

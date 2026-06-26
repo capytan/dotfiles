@@ -9,7 +9,7 @@
 > - `[community:mid]` = GitHub 10-50 stars, verified in a tech blog
 > - `[community:low]` = Individual report, unverified but reasonable (reference only, not in scoring)
 
-last_updated: 2026-06-24
+last_updated: 2026-06-26
 sources:
   - https://howborisusesclaudecode.com/
   - https://github.com/shanraisshan/claude-code-best-practice
@@ -308,3 +308,4 @@ Insights found during research but not adopted, for reasons such as:
 - 2026-06-05: Freshness re-run (references were 6 days stale). Re-read official skills + sub-agents docs and a 2026-06 CLAUDE.md best-practices survey (Medium/orchestrator.dev/substack, community:mid). No material change: ~80-120 line practical limit / under-200 / 150-200 instruction budget, the "five things", custom-commands-merged-into-skills, agentskills.io open standard, and auto memory / MEMORY.md (200-line auto-load, routing rules stay in CLAUDE.md) all already captured. last_updated bumped to 2026-06-05.
 - 2026-06-10: Re-verified the 150–200 instruction budget against HumanLayer's "Writing a good CLAUDE.md" and promoted HumanLayer to the primary `[community:high]` source for it (abhishekray07 kept as secondary). Added levelup.gitconnected mental-model article (`[community:mid]`) as corroboration for "use skills for on-demand knowledge". No threshold or scoring changes. last_updated bumped to 2026-06-10.
 - 2026-06-24: Freshness re-run (14 days stale). Surveyed 2026-06 community articles (Medium "Complete Guide to CLAUDE.md", TECHSY "9 Rules for 2026", Firecrawl token-efficiency, branch8 cost-optimization). No new community insights: under-200 / ~60-line / 150–200-instruction-budget consensus, "two strikes before adding a note," "treat it like code not docs," HTML-comments-are-free, prompt-cache 0.1x cache-read benefit, and skills-for-on-demand-knowledge all already captured. New tooling surfaced this run (`--safe-mode`, `/cd`, MEMORY.md compaction) is official-doc/changelog material, recorded in official-best-practices, not a community practice. last_updated bumped to 2026-06-24.
+- 2026-06-26: Freshness re-run (2 days stale). No material change. Re-verified key community insights against late-June 2026 sources — under-100 / under-60 / under-300-line consensus, WHAT/WHY/HOW, agent_docs/ pattern, "compounding engineering" / "every mistake becomes a rule," prompt-cache stability, and 3-6 month pruning cadence all still consensus. New tooling shipped this period (`/rewind` v2.1.191, network-drive Edit fixes v2.1.181, `autoMode.classifyAllShell` v2.1.193) is official-doc material, recorded there. last_updated bumped to 2026-06-26.

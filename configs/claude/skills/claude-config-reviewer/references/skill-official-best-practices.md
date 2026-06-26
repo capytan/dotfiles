@@ -11,12 +11,14 @@
 > - `[community:mid]` = GitHub 10-50 stars, verified in a tech blog
 > - `[custom]` = Derived from this repo's own practice
 
-last_updated: 2026-06-10
+last_updated: 2026-06-26
 sources:
   - https://code.claude.com/docs/en/skills
+  - https://code.claude.com/docs/en/changelog
   - https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices
   - https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview
   - https://github.com/anthropics/skills/blob/main/skills/skill-creator/SKILL.md
+  - https://github.com/anthropics/claude-plugins-official/tree/main/plugins/skill-creator
   - https://agentskills.io
 
 ---
@@ -72,6 +74,8 @@ Summary from Official Documentation:
 
 Three bundled skills work together to launch the app and confirm changes against the running app: `/run` (launch and drive the app), `/verify` (build and run to confirm a change), `/run-skill-generator` (records the build/launch recipe as a per-project skill at `.claude/skills/run-<name>/`). All three require Claude Code v2.1.145+.
 
+**A skill at any scope (personal/project/plugin) overrides a bundled skill with the same name `[official]` (added 2026-06-26).** For example, a `code-review` skill in your project's `.claude/skills/` replaces the bundled `/code-review`. Plugin skills use a `plugin-name:skill-name` namespace, so they cannot conflict with other levels. — https://code.claude.com/docs/en/skills (retrieved 2026-06-26)
+
 ### SKILL.md Structure `[official]`
 
 > "Every skill needs a SKILL.md file with two parts: YAML frontmatter (between --- markers) that tells Claude when to use the skill, and markdown content with instructions Claude follows when the skill is invoked."
@@ -101,7 +105,9 @@ my-skill/
 > — https://code.claude.com/docs/en/skills (retrieved 2026-04-17)
 
 - Live change detection: Claude Code watches skill directories; adding/editing/removing under `~/.claude/skills/`, project `.claude/skills/`, or `--add-dir` skills directories takes effect within the session without restart (new top-level directories still require restart). `[official]`
+- **Plugin-skill folders `[official]` (added 2026-06-26):** "Add a `.claude-plugin/plugin.json` to a skill folder and it loads as a plugin named `<name>@skills-dir`, so it can bundle agents, hooks, and MCP servers." (project skills require accepting the workspace-trust dialog first.) — https://code.claude.com/docs/en/skills (retrieved 2026-06-26)
 - Automatic discovery from nested `.claude/skills/` under the current working tree (monorepo support). `[official]`
+- **Live change detection scope `[official]` (clarified 2026-06-26):** covers `SKILL.md` text only; for a skill folder that is also a plugin, edits to `hooks/`, `.mcp.json`, `agents/`, and `output-styles/` need `/reload-plugins` to take effect.
 
 ### Frontmatter Reference `[official]`
 
@@ -310,6 +316,23 @@ Recommended eval format:
 
 skill-creator 2026-04 supports 4 modes: Create, Eval, Improve, Benchmark. Tests 20 realistic trigger/non-trigger queries across up to 5 rounds of description optimization.
 
+**`skill-creator` is now an officially-distributed plugin `[official]` (updated 2026-06-26).** Install with `/plugin install skill-creator@claude-plugins-official`; if not found, refresh marketplaces with `/plugin marketplace update claude-plugins-official` or `/plugin marketplace add anthropics/claude-plugins-official`. Then `/reload-plugins`. The plugin produces these artifacts in the skill directory:
+- `evals/evals.json` — test prompts, input files, expected behavior
+- `grading.json` — pass/fail per assertion with evidence
+- `benchmark.json` — pass rate, time, tokens for with-skill vs without-skill
+- HTML report viewer for qualitative review
+- Blind A/B between two skill versions ("confirm an edit is an improvement before committing it")
+- Description tuning measures should-trigger / should-not-trigger hit rate and proposes edits
+
+> — https://code.claude.com/docs/en/skills (retrieved 2026-06-26)
+> Implication: when reviewing skills, check for `evals/evals.json` as a positive signal of evaluation-driven authoring.
+
+**Baseline comparison rule `[official]` (clarified 2026-06-26):**
+> "A fresh session matters because leftover context from authoring the skill will mask gaps in the written instructions."
+> — https://code.claude.com/docs/en/skills (retrieved 2026-06-26)
+
+Run the same prompt in a fresh session with the skill available and again with it disabled (via `skillOverrides: "off"` or `Skill(name)` deny); compare results.
+
 ### CLAUDE.md vs Skills `[official]`
 
 > "CLAUDE.md is loaded every session, so only include things that apply broadly. For domain knowledge or workflows that are only relevant sometimes, use skills instead."
@@ -348,6 +371,12 @@ Per-model considerations: Haiku (does the skill give enough guidance?), Sonnet (
 - Front-load key use case (1,536-char per-entry cap in listing; configurable via `maxSkillDescriptionChars`)
 - Raise budget with `skillListingBudgetFraction` setting or `SLASH_COMMAND_TOOL_CHAR_BUDGET` env var; run `/doctor` to diagnose overflow; set low-priority entries to `"name-only"` in `skillOverrides`
 
+**Malformed YAML frontmatter `[official]` (added 2026-06-26):** "If the frontmatter YAML is malformed, Claude Code loads the skill body with empty metadata, so `/skill-name` still works but Claude has no `description` to match against. Run with `--debug` to see the parse error." — https://code.claude.com/docs/en/skills (retrieved 2026-06-26). Implication for reviewers: a skill whose `/name` works manually but never auto-triggers may have invalid YAML — check the description field exists.
+
+**Frontmatter key-case tolerance `[official]` (added 2026-06-26, changelog v2.1.186, 2026-06-22):** SKILL.md frontmatter now accepts kebab-case, snake_case, and camelCase keys equivalently (e.g. `when_to_use`, `whenToUse`, `when-to-use` all work). Keeps loading even when the SKILL.md YAML is otherwise malformed — loads with empty metadata.
+
+**`/reload-skills` command `[official]` (added 2026-06-26, late-June 2026):** force-reload skill definitions in the current session without restarting Claude Code (useful when editing nested skills below the start directory, since those load on demand).
+
 ### Checklist for Effective Skills `[official]`
 
 **Core quality:**
@@ -384,3 +413,4 @@ Per-model considerations: Haiku (does the skill give enough guidance?), Sonnet (
 - 2026-05-30: Minor refresh against code.claude.com/docs/en/skills + platform.claude.com best-practices. Added new 2026 frontmatter fields `arguments` and `disallowed-tools`. Added new substitutions `$name` and `${CLAUDE_EFFORT}`. Updated description-budget behavior: least-invoked descriptions dropped first on overflow; new settings `skillListingBudgetFraction`, `maxSkillDescriptionChars`; `/doctor` diagnostics; `skillOverrides` (on/name-only/user-invocable-only/off). Clarified file references are Read-tool instructions, not `@` imports. `disable-model-invocation` also blocks subagent preload. No conflicts with prior content; core rules (1024/1,536 caps, 500-line, one-level-deep, TOC>100 lines, third-person, pushy, gerund, degrees-of-freedom) unchanged.
 - 2026-04-17: Major refresh against latest docs. Corrected description limits: hard cap is 1024 chars (field), truncation is 1,536 chars (combined `description` + `when_to_use` in listings) — previous 250-char figure was outdated. Added new frontmatter field `when_to_use`. Added `xhigh` effort level. Added skill content lifecycle section (session-wide persistence, compaction budgets: 5k tokens per skill, 25k combined). Added third-person rule, "pushy" description guidance, gerund naming, one-level-deep references rule, 100-line TOC rule, evaluation-driven development, degrees-of-freedom framing, workflows/feedback-loops, content guidelines, anti-patterns (official), per-model testing, explicit checklist. Added sources: platform.claude.com best-practices, skill-creator repo.
 - 2026-06-10: Refresh against code.claude.com/docs/en/skills (retrieved 2026-06-10). Added: bundled skills (`/run`, `/verify`, `/run-skill-generator` v2.1.145+, `disableBundledSkills`); compaction detail that the 25k budget fills from the most recently invoked skill so **oldest skills can be dropped entirely**; "keep the body concise — recurring token cost" quote; `context: fork` correction — CLAUDE.md is loaded **except** when the agent is Explore or Plan; `model` field is turn-scoped (not saved to settings); `Skill(name)` / `Skill(name *)` permission-rule syntax. Core scoring facts re-verified unchanged: 1,536-char combined cap (`maxSkillDescriptionChars` configurable), 1% listing budget (`skillListingBudgetFraction` / `SLASH_COMMAND_TOOL_CHAR_BUDGET`, `/doctor` diagnostics), 500-line SKILL.md guidance, all 2026 frontmatter fields (`when_to_use`, `arguments`, `disallowed-tools`, `effort`, `paths`, `shell`, `hooks`), `skillOverrides` states, live change detection, `disable-model-invocation` removing description from context and blocking subagent preload.
+- 2026-06-26: Refresh against code.claude.com/docs/en/skills (retrieved 2026-06-26) and changelog v2.1.181–v2.1.193. **Material additions**: (1) **Project/personal/plugin skills override bundled skills with the same name** — e.g. a `code-review` skill in `.claude/skills/` replaces the bundled `/code-review`. (2) **Plugin-skill folders**: adding `.claude-plugin/plugin.json` to a skill folder turns it into a plugin (`<name>@skills-dir`) that can bundle agents, hooks, MCP servers; trust-gated for project skills. (3) **Live change detection scope clarified**: covers SKILL.md text only; plugin extras (hooks/, .mcp.json, agents/, output-styles/) need `/reload-plugins`. (4) **Malformed YAML behavior**: invalid frontmatter still loads the skill body with empty metadata; use `--debug` to see parse errors (changelog v2.1.186, 2026-06-22). (5) **Frontmatter key-case tolerance**: kebab/snake/camelCase keys all accepted (v2.1.186). (6) **`/reload-skills` command** to force-reload definitions without restarting. (7) **`skill-creator` is now an officially-distributed plugin** at `anthropics/claude-plugins-official` — produces `evals/evals.json`, `grading.json`, `benchmark.json`, plus HTML report viewer and blind A/B version comparison. (8) **Baseline comparison rule**: fresh session matters because authoring-session context masks gaps. Core scoring facts unchanged. last_updated bumped to 2026-06-26.
