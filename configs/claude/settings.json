@@ -701,5 +701,6 @@
   "additionalDirectories": [
     "~/ghq",
     "~/dev"
-  ]
+  ],
+  "skipWorkflowUsageWarning": true
 }
