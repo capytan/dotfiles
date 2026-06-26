@@ -11,10 +11,11 @@
 > - `[community:mid]` = GitHub 10-50 stars, verified in a tech blog
 > - `[custom]` = Derived from this repo's own practice
 
-last_updated: 2026-06-10
+last_updated: 2026-06-26
 sources:
   - https://code.claude.com/docs/en/sub-agents
   - https://code.claude.com/docs/en/best-practices
+  - https://code.claude.com/docs/en/changelog
   - https://claude.com/blog/subagents-in-claude-code
   - https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices
 
@@ -115,7 +116,17 @@ Key benefits:
 
 Plugin `agents/` subfolders, unlike project/user scopes, DO become part of the scoped identifier: `agents/review/security.md` in plugin `my-plugin` registers as `my-plugin:review:security`.
 
+**Nested project agents tie-break — closest-to-cwd wins `[official]` (added 2026-06-26, changelog v2.1.178):**
+> "Project subagents are discovered by walking up from the current working directory, so every `.claude/agents/` between there and the repository root is scanned. As of v2.1.178, when more than one of these nested directories defines the same `name`, Claude Code uses the definition closest to the working directory."
+> — https://code.claude.com/docs/en/sub-agents (retrieved 2026-06-26)
+
+This is a *different* rule from the within-one-scope "duplicates silently discarded" behavior: nested project `.claude/agents/` directories along the cwd walk now have a deterministic tie-break (closest wins), rather than silent loss.
+
 **Load timing `[official]` (2026-06):** "Subagents are loaded at session start. If you add or edit a subagent file directly on disk, restart your session to load it. Subagents created through the `/agents` interface take effect immediately without a restart." (No live change detection for agents, unlike skills.)
+
+**`--add-dir` scope for agents `[official]` (added 2026-06-26):**
+> "Directories added with `--add-dir` are also scanned: a `.claude/agents/` folder inside an added directory loads alongside project subagents."
+> — https://code.claude.com/docs/en/sub-agents (retrieved 2026-06-26)
 
 ### Description & Triggering `[official]`
 
@@ -304,6 +315,24 @@ Project-level hooks in `settings.json`:
 > "For security reasons, plugin subagents do not support the hooks, mcpServers, or permissionMode frontmatter fields."
 > — https://code.claude.com/docs/en/sub-agents (retrieved 2026-04-17)
 
+### Foreground vs Background; Permission Surfacing `[official]` (added 2026-06-26)
+
+> "Foreground subagents block the main conversation until complete. Permission prompts are passed through to you as they come up. Background subagents run concurrently while you continue working. As of v2.1.186, when a background subagent reaches a tool call that needs permission, the prompt surfaces in your main session and names the subagent that is asking. Approve to let the subagent continue, or press Esc to deny that one tool call without stopping the subagent. Before v2.1.186, background subagents auto-denied any tool call that would have prompted."
+> — https://code.claude.com/docs/en/sub-agents (retrieved 2026-06-26)
+
+Implication for reviewers: an agent with `background: true` is no longer at risk of silent auto-deny on permission prompts (since v2.1.186). Ctrl+B backgrounds the running task; `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS=1` disables background entirely. When `CLAUDE_CODE_FORK_SUBAGENT=1`, every subagent spawn runs in the background regardless of `background` field.
+
+### MCP Server Restrictions on Subagent-Inline Servers `[official]` (added 2026-06-26)
+
+As of v2.1.153, the MCP restrictions that apply to the main session also cover servers declared in subagent `mcpServers` frontmatter:
+- `--strict-mcp-config` and `--bare`
+- Enterprise managed MCP configuration
+- `allowedMcpServers` and `deniedMcpServers` policies
+
+When one of these blocks a server, Claude Code skips it and shows a warning naming the blocked servers. Note: `--strict-mcp-config` does **not** filter servers passed inline via `--agents` JSON or the SDK `agents` option (those are explicit caller input).
+
+> — https://code.claude.com/docs/en/sub-agents (retrieved 2026-06-26)
+
 ### Auto-Compaction `[official]`
 
 > "Subagents support automatic compaction using the same logic as the main conversation. By default, auto-compaction triggers at approximately 95% capacity."
@@ -313,6 +342,15 @@ Project-level hooks in `settings.json`:
 
 > "Subagents cannot spawn other subagents. If your workflow requires nested delegation, use Skills or chain subagents from the main conversation."
 > — https://code.claude.com/docs/en/sub-agents (retrieved 2026-04-17)
+
+**Correction (2026-06-26, changelog v2.1.172, 2026-06):** Nested subagent spawning is now allowed up to depth 5.
+> "As of Claude Code v2.1.172, a subagent can spawn its own subagents… A subagent at depth five does not receive the Agent tool and cannot spawn further. The limit is fixed and not configurable."
+> — https://code.claude.com/docs/en/sub-agents (retrieved 2026-06-26)
+
+- A fork still cannot spawn another fork; it can spawn other subagent types and those count toward the depth limit.
+- As of v2.1.187, a background subagent's depth is fixed at first spawn; resuming it later from a shallower context does not let it spawn additional levels.
+- To prevent a specific subagent from spawning others, omit `Agent` from its `tools` list or add it to `disallowedTools`.
+- The subagent panel shows the full tree (`(+N)` count per row); `/agents` Running tab lists them flat.
 
 ### Forked Subagents `[official]`
 
@@ -337,3 +375,4 @@ Subagents can be passed as JSON at launch via `--agents`, session-only and never
 - 2026-04-17: Refreshed from 2026-04-17 retrieval of code.claude.com/docs/en/sub-agents. Corrections: `color` palette updated to `red | blue | green | yellow | purple | orange | pink | cyan` (removed `magenta`, added `purple/orange/pink`). `effort` levels now include `xhigh`. Added managed-settings scope (priority 1) and updated scope table to 5 tiers. Added `auto` to `permissionMode` values. Noted `Task → Agent` rename (2.1.63). Added quoted guidance that official examples use **prose descriptions, not `<example>` blocks** — flagged as scoring implication. Added canonical tool sets for the 4 documented example agents, the 5-part system-prompt structural pattern, invocation-pattern escalation, nesting limit, and `initialPrompt` behavior notes.
 - 2026-05-30: Refreshed from 2026-05-30 retrieval of code.claude.com/docs/en/sub-agents + Skills authoring best-practices doc. Material additions: (1) **Description voice — third person** rule, sourced from the official Skills best-practices ("Always write in third person…") and confirmed by all official subagent description examples; canonical pattern is third-person description + second-person body. (2) `name` does not have to match filename; identity is from `name` only (cross-reference implication). (3) Model ID examples bumped to `claude-opus-4-8` / `claude-sonnet-4-6`. (4) **Tools unavailable to subagents** list (`Agent`, `AskUserQuestion`, `EnterPlanMode`, `ExitPlanMode`, `ScheduleWakeup`, `WaitForMcpServers`) — listing them is a no-op. (5) New **forked subagents** (experimental, v2.1.117) and **`--agents` CLI JSON** (`prompt` field) sections. Frontmatter field list, scope table, hooks, plugin restrictions, nesting, auto-compaction all re-verified unchanged.
 - 2026-06-10: Refreshed from 2026-06-10 retrieval of code.claude.com/docs/en/sub-agents. Scoring-relevant changes: (1) **`fable` is now a valid model alias** (`sonnet | opus | haiku | fable`) — do not flag as invalid. (2) **Hooks correction**: frontmatter hooks now ALSO fire when the agent runs as the main session via `--agent` / `agent` setting (official docs reversed the 2026-04 wording; conflict noted, official wins). (3) New **What Loads at Startup** section: Explore/Plan skip CLAUDE.md + parent git status, no opt-out field; all other subagents load both. (4) **Recursive scanning + name uniqueness**: agents dirs scanned recursively; duplicate `name` within one scope → one file silently discarded; plugin subfolders join the scoped ID (`my-plugin:review:security`). (5) `skills` preload clarified — controls preloading, not access (supersedes "don't inherit skills" wording); skills with `disable-model-invocation: true` cannot be preloaded (skipped + debug-log warning). (6) `permissionMode` behaviors detailed (`auto` classifier, `dontAsk` auto-deny, parent-precedence rules). (7) `/fork` enabled by default from v2.1.161. (8) New **Resuming Subagents** section (SendMessage + agent ID; Explore/Plan are one-shot, no ID). (9) Load timing: file-on-disk agent edits need session restart; `/agents`-created agents take effect immediately.
+- 2026-06-26: Refreshed from 2026-06-26 retrieval of code.claude.com/docs/en/sub-agents + changelog through v2.1.193. **Material additions**: (1) **Nesting Limit superseded** (changelog v2.1.172): subagents CAN now spawn nested subagents up to depth 5; a depth-5 agent does not receive the Agent tool. Forks count toward the limit but cannot spawn other forks. v2.1.187 fixes background subagent depth at first spawn (resuming from a shallower context does not reset). (2) **Foreground vs Background + permission surfacing** (changelog v2.1.186): background subagents no longer auto-deny permission prompts — they surface in the main session, named, with approve/Esc options. (3) **MCP restrictions on subagent-inline `mcpServers`** (v2.1.153): `--strict-mcp-config`, managed MCP config, and `allowedMcpServers`/`deniedMcpServers` now also filter servers declared in subagent frontmatter; blocks are warned. `--strict-mcp-config` exempts `--agents` JSON and SDK-passed agents. (4) **Nested project agents tie-break** (v2.1.178): when nested project `.claude/agents/` along the cwd walk define the same `name`, the closest-to-cwd definition wins (different from the within-one-scope silent-discard rule). (5) **`--add-dir` scans `.claude/agents/` inside the added directory** as project subagents. (6) Spawn-nested-subagent fix v2.1.181 prevented unbounded nested chains (5-level limit enforced). All other content re-verified unchanged. last_updated bumped to 2026-06-26.

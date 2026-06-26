@@ -44,7 +44,7 @@ You are an expert planning specialist focused on creating comprehensive, actiona
 - Suggest optimal implementation order
 - Consider edge cases and error scenarios
 
-## Planning Process
+## When invoked:
 
 ### 1. Requirements Analysis
 - Understand the feature request completely

@@ -3,7 +3,7 @@
 > Referenced during Phase 2, criterion E (Anti-patterns) for agent file reviews.
 > Each pattern has a severity: Critical / Major / Minor.
 
-last_updated: 2026-06-10
+last_updated: 2026-06-26
 
 ---
 
@@ -143,3 +143,4 @@ System prompt lacks guidance for failure modes or unusual inputs.
   - Added `last_updated: 2026-04-17` header.
 - 2026-05-30: Refresh against code.claude.com/docs/en/sub-agents + Skills authoring best-practices (2026-05-30). Reinforced the **"Behavioral Instructions in Description"** anti-pattern with the official third-person rule ("Always write in third person") — second-person/imperative descriptions are now explicitly called out, with the fix clarifying the third-person-description / second-person-body split. No new anti-patterns added; existing catalog re-verified current.
 - 2026-06-10: Freshness re-run against code.claude.com/docs/en/sub-agents (retrieved 2026-06-10). No new anti-patterns; catalog re-verified current. Note for assessors: `fable` model alias and `auto`/`dontAsk` permission modes are now official — not anti-patterns (see agent-quality-criteria.md / agent-official-best-practices.md).
+- 2026-06-26: Freshness re-run against code.claude.com/docs/en/sub-agents (retrieved 2026-06-26). No new anti-patterns; catalog re-verified current. **Assessor notes (de-flag previously-uncertain patterns)**: (1) **`background: true`** is NOT a permission-auto-deny risk since changelog v2.1.186 — background subagent permission prompts now surface in the main session. (2) **Nested subagent spawning** is now officially allowed up to depth 5 (changelog v2.1.172) — an agent that lists `Agent` in `tools` to delegate further is not an anti-pattern unless the depth budget is clearly being abused. (3) Old anti-pattern "Subagents cannot spawn other subagents" wording is now outdated guidance from third-party sources — do not penalize agents that rely on official depth-5 nesting.

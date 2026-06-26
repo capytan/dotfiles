@@ -1,6 +1,6 @@
 # Quality Criteria
 
-last_updated: 2026-06-24
+last_updated: 2026-06-26
 
 > Referenced during Phase 2 (Quality Assessment).
 > Updated based on Phase 0 research findings.
@@ -180,3 +180,4 @@ Deduct when Low/None exceeds 30% of total sections.
 - 2026-05-30: No material change to scoring criteria. 2026-05-30 research confirmed official line-count thresholds (under 200) and the ~150–200 instruction budget are unchanged. New community insight (CLAUDE.md churn invalidates prompt cache — community:mid) noted in community-practices but not strong enough to alter Token Efficiency scoring; recorded as awareness only. last_updated bumped to 2026-05-30.
 - 2026-06-10: No scoring changes. Attribution fix: the ~150–200 instruction budget is primarily sourced to HumanLayer's "Writing a good CLAUDE.md" (`[community:high]`, re-verified 2026-06-10); abhishekray07 retained for the 80-line adherence cliff. Official under-200-line target re-verified against code.claude.com/docs/en/memory (retrieved 2026-06-10). last_updated bumped to 2026-06-10.
 - 2026-06-24: Freshness re-run (14 days stale). No scoring changes. The official under-200-line authoring target is unchanged; the only 2026-06 development is that Claude Code's in-product "too long" *warning* now scales with the model context window (changelog v2.1.169) — this affects when the tool nags, not the authoring target, so the line-count rubric stays as-is. All thresholds and sub-criteria re-verified current. last_updated bumped to 2026-06-24.
+- 2026-06-26: Freshness re-run (2 days stale). No scoring changes. Late-June 2026 changelog activity (v2.1.181–v2.1.193) added recovery tools (`/rewind`, network-drive fixes, `autoMode.classifyAllShell`) and auto-mode guardrails (destructive git command blocking) but did NOT alter any CLAUDE.md authoring guidance — line-count thresholds, inferable-content list, hook-convertible-rules deduction, and the 7-category weighting are all still current. last_updated bumped to 2026-06-26.

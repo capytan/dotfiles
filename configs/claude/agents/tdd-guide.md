@@ -30,7 +30,7 @@ description: |
   Refactor trigger: TDD applies to behavioral change; for pure refactors the agent enforces before/after green-suite checks instead of writing new tests.
   </commentary>
   </example>
-tools: ["Read", "Write", "Edit", "Bash", "Grep"]
+tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
 model: sonnet
 ---
 
@@ -44,7 +44,7 @@ You are a Test-Driven Development (TDD) specialist who ensures all code is devel
 - Write comprehensive test suites (unit, integration, E2E)
 - Catch edge cases before implementation
 
-## TDD Workflow
+## When invoked:
 
 ### 1. Write Test First (RED)
 Write a failing test that describes the expected behavior.
