@@ -10,7 +10,7 @@
 > - `[custom]` = Derived from this repo's own practice
 > - `[custom:derived-from-skill-reviewer]` = Extracted from skill-reviewer agent
 
-last_updated: 2026-06-10
+last_updated: 2026-06-26
 
 ---
 
@@ -40,7 +40,7 @@ Plus: Supplementary Checks (advisory), Grading Scale
 
 **when_to_use** `[official]` (new field, 2026): optional; appended to `description` in listing. Combined (`description` + `when_to_use`) truncated at **1,536 chars** in the listing — front-load key triggers.
 
-**Other**: no README.md / CHANGELOG.md in skill dir `[community:high]` (wastes tokens). Optional fields validated if present: `allowed-tools`, `disallowed-tools` (new 2026), `arguments` (new 2026; named positional args for `$name`), `paths`, `context`, `agent`, `effort`, `hooks`, `shell`, `model`, `argument-hint`, `disable-model-invocation`, `user-invocable` — all official as of 2026-06; do NOT flag these as unknown fields.
+**Other**: no README.md / CHANGELOG.md in skill dir `[community:high]` (wastes tokens). Optional fields validated if present: `allowed-tools`, `disallowed-tools` (new 2026), `arguments` (new 2026; named positional args for `$name`), `paths`, `context`, `agent`, `effort`, `hooks`, `shell`, `model`, `argument-hint`, `disable-model-invocation`, `user-invocable` — all official as of 2026-06; do NOT flag these as unknown fields. **Key-case (added 2026-06-26):** kebab-case, snake_case, and camelCase variants of each key are all accepted (changelog v2.1.186, 2026-06-22) — do NOT deduct for `whenToUse` vs `when_to_use` vs `when-to-use`. **Malformed YAML (added 2026-06-26):** invalid frontmatter still loads the skill body with **empty metadata**, so `/skill-name` works manually but auto-triggering is impossible — if the agent reviewer can't see a description, flag a possible YAML parse issue and suggest `--debug` to confirm.
 
 - **15 pts**: All valid, description covers four components, name-folder match, no README.md
 - **12 pts**: Valid but description missing one component
@@ -158,6 +158,8 @@ Per section: **High** = changes decisions, **Medium** = clarifies ambiguity, **L
 
 **"Old patterns" archival** `[official]`: deprecated info should move into a collapsed `<details>` section titled "Old patterns" rather than being deleted or flagged with dates.
 
+**Eval artifacts (`evals/evals.json`)** `[official]` (added 2026-06-26): presence of `evals/`, `evals/evals.json`, `grading.json`, or `benchmark.json` in the skill directory is a positive signal — produced by the official `skill-creator` plugin (`anthropics/claude-plugins-official`) and indicates evaluation-driven authoring. Advisory bonus only; absence is not penalized (most skills are not yet eval-instrumented).
+
 ---
 
 ## Grading Scale
@@ -179,3 +181,4 @@ Per section: **High** = changes decisions, **Medium** = clarifies ambiguity, **L
 - 2026-05-30: Minor refresh. Criterion A: added new 2026 frontmatter fields `arguments` / `disallowed-tools` to the validated-optional-fields list. Criterion D: added file-reference clarification (Read-tool instructions, not `@` imports — only CLAUDE.md supports `@`) and noted Anthropic's tighter 1,500-2,000-word body target `[semi-official]`. No scoring-band or criteria-weight changes; all `[custom]` items preserved.
 - 2026-04-17: Upgraded tags from `[custom:derived-from-skill-reviewer]` to `[official]` / `[semi-official]` / `[community:high]` where Phase 0 research confirmed. Added `when_to_use` frontmatter field (new 2026). Clarified description caps: 1024-char hard validation + 1,536-char listing truncation (combined with `when_to_use`). Added "no README/CHANGELOG in skill dir" rule (community consensus). Strengthened structure criterion D with one-level-deep + 100-line TOC rules (now `[official]`). Added "pushy" description guidance, evaluation-driven development, and "Old patterns" archival pattern to supplementary checks.
 - 2026-06-10: Refresh against code.claude.com/docs/en/skills (retrieved 2026-06-10). Criterion A: expanded the recognized-optional-fields list (`hooks`, `shell`, `agent`, `model`, etc.) so assessors don't flag official 2026 fields as invalid. Supplementary checks: added measured "Use when..." + examples activation data (mellanon 200+ prompt benchmark, `[community:mid]`, advisory only). Core caps re-verified unchanged (1024 hard / 1,536 combined listing, 500-line SKILL.md). No scoring-band or weight changes; all `[custom]` items preserved.
+- 2026-06-26: Refresh against code.claude.com/docs/en/skills (retrieved 2026-06-26) and changelog v2.1.186 (2026-06-22). **Material advisory updates (no scoring weights changed)**: Criterion A — recognized-optional-fields list still current; **add note that frontmatter keys now accept kebab/snake/camelCase (changelog v2.1.186)** so assessors do not flag `whenToUse` / `disallowedTools` (camel) as invalid; **add note that malformed YAML still loads the skill body with empty metadata** — a skill that works via `/name` but never auto-triggers may have invalid YAML, check with `--debug`. Supplementary checks — add advisory positive signal: presence of `evals/evals.json` indicates evaluation-driven authoring (skill-creator plugin output). Core thresholds and band rubrics unchanged. last_updated bumped to 2026-06-26.

@@ -51,7 +51,7 @@ Check every `references/*.md` file's `last_updated` field. If any file is >1 day
 
 #### Step 1: Official Documentation
 
-1. **context7 MCP** — `resolve-library-id` for "claude code", then `query-docs` for CLAUDE.md, skills, and agents
+1. **context7 MCP** — `resolve-library-id` for "claude code", then `query-docs` for CLAUDE.md, skills, and agents. If context7 is unavailable, skip and rely on Steps 2-3
 2. **Anthropic website** — `WebSearch` for latest best practices on `code.claude.com` and `docs.anthropic.com`
 3. **Official skill docs** — `WebFetch` https://code.claude.com/docs/en/skills and https://code.claude.com/docs/en/sub-agents
 
@@ -89,10 +89,7 @@ If the user specifies a scope (e.g., "review my skills only"), honor that. Other
 find . -maxdepth 5 \( -name "CLAUDE.md" -o -name ".claude.local.md" \) 2>/dev/null | head -30
 ```
 
-Also check:
-- `~/.claude/CLAUDE.md` (global defaults)
-- `.claude/rules/*.md` (auto-loaded rules)
-- `.claude/settings.json` (consistency with hooks)
+Also check `~/.claude/CLAUDE.md` (global defaults), `.claude/rules/*.md` (auto-loaded rules), and `.claude/settings.json` (consistency with hooks).
 
 ### SKILL.md Files
 
@@ -100,7 +97,7 @@ Also check:
 find . -maxdepth 5 -name "SKILL.md" 2>/dev/null | head -30
 ```
 
-Also check: `~/.claude/skills/*/SKILL.md`
+Also check `~/.claude/skills/*/SKILL.md`.
 
 ### Agent Definition Files
 
@@ -108,7 +105,7 @@ Also check: `~/.claude/skills/*/SKILL.md`
 find . -maxdepth 3 -path "*agents/*.md" 2>/dev/null | head -30
 ```
 
-Also check: `~/.claude/agents/*.md`
+Also check `~/.claude/agents/*.md`.
 
 ### File Type Classification
 
@@ -135,10 +132,7 @@ Skip empty pools (mark as N/A in the report).
 For each non-empty pool, in a **single message with parallel Agent tool calls**:
 
 1. Read the assessor definition from this skill's `agents/` directory
-2. Compose the Agent tool prompt by combining:
-   - The full assessor file content (role, criteria paths, process, output format)
-   - The list of file paths to review (from Phase 1 Discovery)
-   - Relevant Discovery context (file classifications, related settings)
+2. Compose the Agent tool prompt by combining the full assessor file content (role, criteria paths, process, output format), the list of file paths to review, and relevant Discovery context (file classifications, related settings)
 3. Dispatch via Agent tool
 
 ### Assessors
@@ -151,17 +145,12 @@ For each non-empty pool, in a **single message with parallel Agent tool calls**:
 
 Each assessor reads its own criteria and anti-patterns files, scores every file, runs codebase cross-reference checks, and returns structured results.
 
-### Output Contract
+### Output Contract & Error Handling
 
-Each subagent returns structured markdown containing:
-- Per-file score table (Category | Score | Max | Findings)
-- Per-file issues (severity-tagged) and strengths
-- Pool Summary (file count, average score, issue counts by severity)
+Each subagent returns structured markdown: per-file score table (Category | Score | Max | Findings), per-file issues (severity-tagged) and strengths, Pool Summary (file count, average score, issue counts by severity).
 
-### Error Handling
-
-- If a subagent fails or times out: note the failure, continue with remaining subagents
-- If a file cannot be read: skip it, record the skip in the pool summary
+- Subagent failure or timeout → note the failure, continue with remaining subagents
+- File cannot be read → skip it, record the skip in the pool summary
 - All dispatched subagents must complete before proceeding to Phase 3
 
 ---
@@ -172,16 +161,12 @@ Each subagent returns structured markdown containing:
 
 ### Aggregating Subagent Results
 
-1. Collect structured output from all dispatched subagents
-2. For failed subagents, note the pool as "Assessment failed" in the report
-3. For skipped (empty) pools, note as "N/A — no files discovered"
-4. Compile per-file assessments into the report template below
-5. Read `references/cross-artifact-checks.md` and run all cross-artifact checks using the combined results
-6. Generate the Cross-Artifact Summary
+1. Collect structured output from all dispatched subagents (failed → "Assessment failed"; empty pool → "N/A — no files discovered")
+2. Compile per-file assessments using the template below
+3. Read `references/cross-artifact-checks.md` and run all cross-artifact checks using the combined results
+4. Generate the Cross-Artifact Summary
 
 ### Per-Type Report Template
-
-Use the same structure for each artifact type — adjust category columns to match:
 
 ```markdown
 ## Config Review Report
@@ -200,18 +185,13 @@ Use the same structure for each artifact type — adjust category columns to mat
 |----------|-------|----------|
 | ... | ... | ... |
 
-**Issues Found:**
-- [Critical] ...
-- [Major] ...
-- [Minor] ...
-
-**Strengths:**
-- ...
+**Issues Found:** [Critical/Major/Minor list]
+**Strengths:** ...
 ```
 
 ### Cross-Artifact Summary
 
-When reviewing multiple artifact types, always include (even when scope is limited):
+Always include when reviewing multiple artifact types (even when scope is limited):
 
 ```markdown
 ### Cross-Artifact Summary
@@ -222,11 +202,15 @@ When reviewing multiple artifact types, always include (even when scope is limit
 ```
 
 Run all checks defined in `references/cross-artifact-checks.md`:
-- References to non-existent skills/agents
-- Contradictions between CLAUDE.md and skill/agent descriptions
+
+- Reference existence (referenced skills/agents exist on disk)
+- Description consistency (CLAUDE.md ↔ skill/agent claims)
 - Circular references (skill→agent→skill)
-- Tool field vs actual usage mismatches
-- Stale references to deleted/renamed artifacts
+- Tool consistency (frontmatter `tools:` ↔ actual usage)
+- Stale references (deleted/renamed artifacts)
+- Subagent skill-preload validity `[official 2026-06]`
+- Duplicate agent names within a scope `[official 2026-06]`
+- Skill name vs bundled-skill collision `[official 2026-06]`
 
 ### Grading Scale
 
@@ -247,36 +231,11 @@ After presenting the report, get user approval before making changes.
 
 ### Proposal Format
 
-Present each fix as a diff, with per-section token impact quantified:
+Present each fix as a diff with per-section token impact quantified — full template and worked example in [references/phase4-fix-format.md](references/phase4-fix-format.md). Summary:
 
-```markdown
-### Fix 1: [file path] — [Section Name]
-
-**Reason:** [one-line why this fix is needed]
-**Severity:** [Critical / Major / Minor]
-**Lines:** [current] → [proposed] (−N lines, ~M tokens saved)
-
-\```diff
-- removed line
-+ added line
-\```
-```
-
-After all individual fixes, include a savings summary table:
-
-```markdown
-### Token Savings Summary
-
-| Section | Action | Lines Saved | ~Tokens Saved |
-|---------|--------|-------------|---------------|
-| ... | ... | ... | ... |
-| **Total** | | **−N** | **~M** |
-
-**Before:** X lines (~Y tokens) → **After:** X' lines (~Y' tokens)
-```
-
-To estimate tokens: count words in the section and multiply by ~1.3 (English)
-or ~2.0 (Japanese/mixed). This is a rough guide, not an exact count.
+- Each fix: file path + section name, one-line reason, severity, line count delta, ~tokens saved, diff block
+- After all fixes: savings summary table (Section / Action / Lines Saved / ~Tokens Saved / Total)
+- Estimate: word count × ~1.3 (English) or ~2.0 (Japanese/mixed) — rough guide, not exact
 
 ### Fix Principles
 
@@ -303,42 +262,15 @@ See [references/claude-md-modularization-guide.md](references/claude-md-modulari
 
 ## Reference Files
 
-This skill's evaluation criteria are defined in the following references.
-They are updated based on the latest best practices discovered in Phase 0.
+Evaluation criteria and templates. Updated during Phase 0 research.
 
-### CLAUDE.md References
+Each pool has 4-5 references; suffix indicates which phase opens it (`*-official-best-practices.md` / `*-community-practices.md` for **Phase 0**; `*-quality-criteria.md` / `*-anti-patterns.md` for **Phase 2**; `claude-md-modularization-guide.md` for **Phase 4 CLAUDE.md fixes**):
 
-| File | Content | When Referenced |
-|------|---------|----------------|
-| [references/claude-md-official-best-practices.md](references/claude-md-official-best-practices.md) | Official best practices | Phase 0 |
-| [references/claude-md-community-practices.md](references/claude-md-community-practices.md) | Community insights | Phase 0 |
-| [references/claude-md-quality-criteria.md](references/claude-md-quality-criteria.md) | Scoring rubric | Phase 2 |
-| [references/claude-md-anti-patterns.md](references/claude-md-anti-patterns.md) | Anti-pattern catalog | Phase 2 |
-| [references/claude-md-modularization-guide.md](references/claude-md-modularization-guide.md) | Modularization strategies | Phase 4 |
-
-### SKILL.md References
-
-| File | Content | When Referenced |
-|------|---------|----------------|
-| [references/skill-official-best-practices.md](references/skill-official-best-practices.md) | Official best practices | Phase 0 |
-| [references/skill-community-practices.md](references/skill-community-practices.md) | Community insights | Phase 0 |
-| [references/skill-quality-criteria.md](references/skill-quality-criteria.md) | Scoring rubric | Phase 2 |
-| [references/skill-anti-patterns.md](references/skill-anti-patterns.md) | Anti-pattern catalog | Phase 2 |
-
-### Agent References
-
-| File | Content | When Referenced |
-|------|---------|----------------|
-| [references/agent-official-best-practices.md](references/agent-official-best-practices.md) | Official best practices | Phase 0 |
-| [references/agent-community-practices.md](references/agent-community-practices.md) | Community insights | Phase 0 |
-| [references/agent-quality-criteria.md](references/agent-quality-criteria.md) | Scoring rubric | Phase 2 |
-| [references/agent-anti-patterns.md](references/agent-anti-patterns.md) | Anti-pattern catalog | Phase 2 |
-
-### Cross-Artifact
-
-| File | Content | When Referenced |
-|------|---------|----------------|
-| [references/cross-artifact-checks.md](references/cross-artifact-checks.md) | Cross-artifact validation checks | Phase 3 |
+- `references/claude-md-*.md` — CLAUDE.md pool (5 files)
+- `references/skill-*.md` — SKILL.md pool (4 files)
+- `references/agent-*.md` — Agent pool (4 files)
+- [references/cross-artifact-checks.md](references/cross-artifact-checks.md) — **Phase 3** validations
+- [references/phase4-fix-format.md](references/phase4-fix-format.md) — **Phase 4** fix-proposal template & worked example
 
 ---
 

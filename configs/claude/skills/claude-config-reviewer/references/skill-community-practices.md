@@ -9,7 +9,7 @@
 > - `[community:mid]` = GitHub 10-50 stars, verified in a tech blog
 > - `[community:low]` = Individual report, unverified but reasonable (reference only)
 
-last_updated: 2026-06-10
+last_updated: 2026-06-26
 
 ---
 
@@ -237,3 +237,4 @@ Consolidated from the sources above:
 
 - 2026-06-05: Freshness re-run (references were 6 days stale). Re-read official skills + sub-agents docs and a 2026-06 CLAUDE.md best-practices survey (Medium/orchestrator.dev/substack, community:mid). No material change: ~80-120 line practical limit / under-200 / 150-200 instruction budget, the "five things", custom-commands-merged-into-skills, agentskills.io open standard, and auto memory / MEMORY.md (200-line auto-load, routing rules stay in CLAUDE.md) all already captured. last_updated bumped to 2026-06-05.
 - 2026-06-10: Added three sections: **Measured Description Optimization** (mellanon gist, 200+ prompt benchmark: 20%→50% activation from optimized descriptions, 72%→90% from examples, "Use when..." phrasing) `[community:mid]`; **Curate Aggressively** (8-12 skills, monthly audit, delete untriggered-in-30-days — Firecrawl/Developers Digest) `[community:mid]`; **CLAUDE.md = always-on / skills = on-demand mental model** (levelup.gitconnected) `[community:mid]`. Ecosystem Adoption updated: obra/superpowers ~40.9k stars `[community:high]`, Vercel skills.sh directory `[community:mid]`. last_updated bumped to 2026-06-10.
+- 2026-06-26: Freshness re-run (16 days stale). No new community insights worth adopting. Re-verified existing items against late-June 2026 sources: SKILL.md <500-line consensus, 1,500-2,000 word target (Anthropic plugin-dev), description-as-trigger, pushy descriptions, JiT loading, "skills are for agents not humans" (no README/CHANGELOG), security review of community skills, 8-12 skill curation, monthly audit — all current. Notable ecosystem updates in this window are official/tooling (skill-creator promoted to official plugin at `anthropics/claude-plugins-official`; `/reload-skills` shipped; kebab/snake/camelCase frontmatter tolerance v2.1.186) — recorded in official-best-practices, not community. last_updated bumped to 2026-06-26.

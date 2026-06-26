@@ -3,7 +3,7 @@
 > Referenced during Phase 3 (Report) for Cross-Artifact Summary.
 > These checks detect issues spanning multiple configuration artifact types.
 
-last_updated: 2026-06-10
+last_updated: 2026-06-26
 
 ---
 
@@ -51,6 +51,18 @@ last_updated: 2026-06-10
 [Agents dirs are scanned recursively; identity comes only from `name`]
 - "if two files within one scope declare the same name, Claude Code keeps one and discards the other without warning" (https://code.claude.com/docs/en/sub-agents, retrieved 2026-06-10)
 - Detection: Collect `name:` values across all `.md` files under `.claude/agents/` (recursive) and `~/.claude/agents/` (recursive) per scope; flag duplicates within the same scope
+- **Tie-break exception (added 2026-06-26, changelog v2.1.178):** for nested project `.claude/agents/` directories along the cwd walk to the repo root, the closest-to-cwd definition wins deterministically — not silent discard. Downgrade severity to Minor for this specific case.
+
+### 8. Skill Name Collides with Bundled Skill `[official]` (2026-06)
+[A project/personal/plugin skill silently overrides a bundled skill with the same name]
+- "A skill at any of these levels also overrides a bundled skill with the same name. For example, a `code-review` skill in your project's `.claude/skills/` replaces the bundled `/code-review`." (https://code.claude.com/docs/en/skills, retrieved 2026-06-26)
+- Bundled skill names to check against: `code-review`, `batch`, `debug`, `loop`, `claude-api`, `run`, `verify`, `run-skill-generator`, `init`, `review`, `security-review`
+- Detection: Glob each `<scope>/skills/<name>/SKILL.md`; warn if `<name>` matches any bundled name. Plugin skills are namespaced (`plugin:name`) and cannot collide.
+
+### 9. Agent `background: true` No Longer a Permission Risk `[official]` (2026-06)
+[Since changelog v2.1.186, background subagent permission prompts surface in main session]
+- Do not flag `background: true` agents for "will silently auto-deny on permission prompts" — that behavior was fixed.
+- Still flag a `background: true` agent that has no `tools` allowlist + relies on Bash for irreversible operations (high-blast-radius pattern, separate concern).
 
 ---
 
@@ -64,7 +76,8 @@ last_updated: 2026-06-10
 | Tool Consistency | Major |
 | Stale References | Major |
 | Subagent Skill-Preload Validity | Major |
-| Duplicate Agent Names Within a Scope | Major (silent discard) |
+| Duplicate Agent Names Within a Scope | Major (silent discard); Minor for nested cwd-walk tie-break |
+| Skill Name Collides with Bundled Skill | Minor (advisory — silent override) |
 
 ---
 
@@ -72,3 +85,4 @@ last_updated: 2026-06-10
 
 - 2026-03-30: Initial version
 - 2026-06-10: Added `last_updated` header (was missing). Added two new checks from code.claude.com/docs/en/sub-agents (retrieved 2026-06-10): Subagent Skill-Preload Validity (skills with `disable-model-invocation: true` are silently skipped at preload) and Duplicate Agent Names Within a Scope (recursive scan; one file silently discarded). Both classified Major.
+- 2026-06-26: Added two new checks and one rule refinement. **Check 8 (new)**: Skill Name Collides with Bundled Skill — project/personal/plugin skills silently override bundled ones (`code-review`, `batch`, `debug`, `loop`, `claude-api`, `run`, `verify`, `run-skill-generator`, plus Skill-tool-callable built-ins `init`, `review`, `security-review`); classified Minor (advisory only — sometimes intentional). **Check 9 (new)**: Agent `background: true` is no longer a permission-auto-deny risk since changelog v2.1.186 — guidance for reviewers, not a check. **Check 7 refinement (changelog v2.1.178)**: nested project `.claude/agents/` along the cwd walk now have a deterministic closest-wins tie-break — downgrade severity to Minor for that specific case (within-one-scope silent-discard stays Major). last_updated bumped to 2026-06-26.
