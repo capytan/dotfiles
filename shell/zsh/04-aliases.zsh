@@ -58,6 +58,18 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 fi
 
 # =============================================================================
+# Claude Code - past model shortcuts
+# `/model` picker only allows one custom entry, so wrap older models as aliases.
+# The `[1m]` suffix (1M context) contains glob metacharacters, so quote it.
+# =============================================================================
+alias cc-opus46='claude --model claude-opus-4-6'
+alias cc-opus46-1m='claude --model "claude-opus-4-6[1m]"'
+alias cc-opus47='claude --model claude-opus-4-7'
+alias cc-opus47-1m='claude --model "claude-opus-4-7[1m]"'
+alias cc-opus48='claude --model claude-opus-4-8'
+alias cc-opus48-1m='claude --model "claude-opus-4-8[1m]"'
+
+# =============================================================================
 # Modern CLI tools (installed via Brewfile)
 # Skip in Claude Code sessions to avoid confusing Claude with aliased output
 # =============================================================================
