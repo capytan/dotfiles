@@ -89,16 +89,23 @@ if [ ! -d "$CLAUDE_DIR" ]; then
     mkdir -p "$CLAUDE_DIR"
 fi
 
-# 3. ~/.claude/ 直下の壊れた symlink を掃除 (再実行時に消えた target への
-#    dangling link を除去する。冎等的に安全)
-if [ -d "$CLAUDE_DIR" ]; then
-    while IFS= read -r dangling; do
-        [ -z "$dangling" ] && continue
-        target=$(readlink "$dangling" 2>/dev/null || echo '?')
-        echo -e "${YELLOW}壊れた symlink を削除しています: $dangling -> $target${NC}"
-        unlink "$dangling"
-    done < <(find "$CLAUDE_DIR" -maxdepth 1 -type l ! -exec test -e {} \; -print 2>/dev/null)
-fi
+# 3. ~/.claude/ 直下の壊れた symlink のうち dotfiles を指していたものを掃除
+#    (再実行時に消えた target への dangling link を除去する。冎等的に安全)
+#    dotfiles 外を指す dangling は他の setup script が管理している可能性があるので
+#    残して警告のみ (setup-claude.sh の管理外の symlink を silent 削除しない)
+while IFS= read -r dangling; do
+    target=$(readlink "$dangling" 2>/dev/null || echo '')
+    case "$target" in
+        "$DOTFILES_CLAUDE"/*|"$DOTFILES_CLAUDE")
+            echo -e "${YELLOW}壊れた symlink を削除しています: $dangling -> $target${NC}"
+            # set -e 下で race による unlink 失敗が setup 全体を中断しないよう || true
+            unlink "$dangling" 2>/dev/null || true
+            ;;
+        *)
+            echo -e "${YELLOW}警告: 壊れた symlink (dotfiles 外) を残しています: $dangling -> $target${NC}"
+            ;;
+    esac
+done < <(find "$CLAUDE_DIR" -maxdepth 1 -type l ! -exec test -e {} \; -print 2>/dev/null)
 
 # 4. シンボリックリンクを作成
 create_symlink "$SKILLS_LINK" "$DOTFILES_SKILLS" "skills"
