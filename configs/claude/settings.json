@@ -145,9 +145,6 @@
       "Bash(tflint *)",
       "// File copy",
       "Bash(cp *)",
-      "// Process management",
-      "Bash(killall *)",
-      "Bash(pkill *)",
       "// Text processing",
       "Bash(tr *)",
       "Bash(cut *)",
@@ -262,6 +259,8 @@
       "Bash(chmod *)",
       "// Process termination",
       "Bash(kill *)",
+      "Bash(pkill *)",
+      "Bash(killall *)",
       "// Destructive file operations",
       "Bash(rm *)",
       "Bash(rmdir *)",
@@ -366,9 +365,7 @@
   },
   "model": "claude-opus-4-7[1M]",
   "enableAllProjectMcpServers": false,
-  "enabledMcpjsonServers": [
-    "context7"
-  ],
+  "enabledMcpjsonServers": [],
   "hooks": {
     "PreToolUse": [
       {
