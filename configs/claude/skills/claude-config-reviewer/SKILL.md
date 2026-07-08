@@ -2,7 +2,7 @@
 name: claude-config-reviewer
 description: |
   Reviews individual Claude Code config files (CLAUDE.md, SKILL.md, agent definitions) against researched best practices, producing per-file quality reports with 100-point scoring.
-  Use when the user asks to review or improve the quality of specific config files. For diagnosing runtime symptoms (rules ignored, hooks misfire, MCP fails, skills don't trigger), use [[auditing-claude-config]] instead.
+  Use when the user asks to review or improve the quality of specific config files. For diagnosing runtime symptoms (rules ignored, hooks misfire, MCP fails, skills don't trigger), use the `auditing-claude-config` skill instead.
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch, WebFetch
 ---
 
