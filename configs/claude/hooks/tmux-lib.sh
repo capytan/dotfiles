@@ -2,11 +2,12 @@
 # Claude Code tmux status hook 共通ライブラリ
 #
 # Public API:
-#   _tmux_hook_init <stdin_json>                  # hook 冒頭で必ず1度呼ぶ (guard + session 初期化)
+#   _tmux_hook_init <stdin_json>                       # hook 冒頭で必ず1度呼ぶ (guard + session 初期化)
 #   tmux_get_clean_name <name>
 #   tmux_current_clean_name
 #   tmux_force_set_status <emoji> <hook> [<base>]
 #   tmux_set_status_if_priority_allows <emoji> <hook>
+#   tmux_set_status_or_demote_alert <emoji> <hook>     # ⚠️/❌ の場合は降格、それ以外は priority チェック
 #   tmux_demote_status <from> <to> <hook>
 #   tmux_subagent_inc <session_id>
 #   tmux_subagent_dec <session_id>
@@ -16,7 +17,8 @@
 #   _tmux_log <hook> <action> <from> <to> [<extra_kv>]
 #
 # 環境変数:
-#   CLAUDE_TMUX_LOG=0   — ログ無効化（既定: 有効）
+#   CLAUDE_TMUX_LOG=0        — ログ無効化（既定: 有効）
+#   CLAUDE_TMUX_LOG_SKIP=1   — priority_too_low の skip ログを有効化（既定: 無効。debug 用）
 #
 # 規則: tmux hook では `set -euo pipefail` を使わない（emoji マッチ・guard 早期 return と相性が悪い）
 
@@ -27,11 +29,15 @@ CLAUDE_TMUX_LOG_MAX_BYTES=1048576
 tmux_guard() { [ -n "$TMUX" ]; }
 
 tmux_get_clean_name() {
-    local name="$1"
-    name="${name#✅ }"; name="${name#⏳ }"
-    name="${name#🤖 }"; name="${name#❌ }"
-    name="${name#⚠️ }"
-    name="${name#⚠ }"
+    local name="$1" prev=""
+    # 稀な競合で emoji が二重積みされたケースに備え、変化がなくなるまで剥がす
+    while [ "$name" != "$prev" ]; do
+        prev="$name"
+        name="${name#✅ }"; name="${name#⏳ }"
+        name="${name#🤖 }"; name="${name#❌ }"
+        name="${name#⚠️ }"
+        name="${name#⚠ }"
+    done
     echo "$name"
 }
 
@@ -53,13 +59,14 @@ _tmux_emoji_of() {
 }
 
 _tmux_priority() {
+    # _tmux_emoji_of が常に VS16 込みの "⚠️" に正規化するので、ここで "⚠" (VS15) 単独は不要
     case "$1" in
-        "⚠️"|"⚠") echo 50 ;;
-        "❌")      echo 40 ;;
-        "✅")      echo 30 ;;
-        "🤖")      echo 20 ;;
-        "⏳")      echo 10 ;;
-        *)         echo 0 ;;
+        "⚠️") echo 50 ;;
+        "❌") echo 40 ;;
+        "✅") echo 30 ;;
+        "🤖") echo 20 ;;
+        "⏳") echo 10 ;;
+        *)    echo 0 ;;
     esac
 }
 
@@ -135,13 +142,37 @@ tmux_set_status_if_priority_allows() {
     base=$(tmux_get_clean_name "$current_full")
     new_full="$emoji $base"
     if [ "$new_pri" -lt "$current_pri" ]; then
-        _tmux_log "$hook" "skip" "$current_full" "$current_full" "reason=priority_too_low new_pri=$new_pri current_pri=$current_pri"
+        # PostToolUse など高頻度 hook が延々と skip されるとログを埋め尽くすので既定で抑止
+        [ "${CLAUDE_TMUX_LOG_SKIP:-0}" = "1" ] && \
+            _tmux_log "$hook" "skip" "$current_full" "$current_full" "reason=priority_too_low new_pri=$new_pri current_pri=$current_pri"
         return 0
     fi
     if [ "$new_full" != "$current_full" ]; then
         _tmux_rename "$new_full"
     fi
     _tmux_log "$hook" "update" "$current_full" "$new_full" "priority=$new_pri"
+}
+
+# alert 状態 (⚠️ / ❌) のときは無条件で降格、そうでなければ通常の priority チェック。
+# permission_prompt には対応する「解除」イベントがないので、次の PostToolUse で降格させる
+tmux_set_status_or_demote_alert() {
+    local emoji="$1" hook="$2"
+    local current_full current_emoji base new_full
+    current_full=$(tmux display-message -p '#W' 2>/dev/null)
+    current_emoji=$(_tmux_emoji_of "$current_full")
+    case "$current_emoji" in
+        "⚠️"|"❌")
+            base=$(tmux_get_clean_name "$current_full")
+            new_full="$emoji $base"
+            if [ "$new_full" != "$current_full" ]; then
+                _tmux_rename "$new_full"
+            fi
+            _tmux_log "$hook" "demote_alert" "$current_full" "$new_full"
+            ;;
+        *)
+            tmux_set_status_if_priority_allows "$emoji" "$hook"
+            ;;
+    esac
 }
 
 tmux_demote_status() {
