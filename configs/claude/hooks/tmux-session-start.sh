@@ -12,3 +12,5 @@ find "${CLAUDE_TMUX_CACHE_DIR}" -type f -name 'subagent-count.*' -mtime +7 -dele
 find "${CLAUDE_TMUX_CACHE_DIR}" -type d -name 'subagent-count.*.lock.d' -mtime +7 -empty -delete 2>/dev/null
 # CLAUDE_TMUX_SESSION_ID が空でも "default" fallback があるのでガードせず reset
 tmux_subagent_reset "$CLAUDE_TMUX_SESSION_ID"
+# hot path から外した log rotation をこの低頻度 hook でまとめて行う
+_tmux_log_rotate_if_needed

@@ -93,18 +93,22 @@ _tmux_hook_init() {
     _tmux_init_session "$1"
 }
 
+# ログローテートは _tmux_log の hot path から外して SessionStart 側に寄せる
+# (並行 hook 間の read-check-mv race で backup が消える問題を回避)
+_tmux_log_rotate_if_needed() {
+    [ -f "$CLAUDE_TMUX_LOG_FILE" ] || return 0
+    local size
+    size=$(wc -c < "$CLAUDE_TMUX_LOG_FILE" 2>/dev/null)
+    [ -z "$size" ] && size=0
+    if [ "$size" -gt "$CLAUDE_TMUX_LOG_MAX_BYTES" ]; then
+        mv -f "$CLAUDE_TMUX_LOG_FILE" "${CLAUDE_TMUX_LOG_FILE}.1" 2>/dev/null
+    fi
+}
+
 _tmux_log() {
     [ "${CLAUDE_TMUX_LOG:-1}" = "0" ] && return 0
     local hook="$1" action="$2" from="$3" to="$4" extra="${5:-}"
     mkdir -p "$(dirname "$CLAUDE_TMUX_LOG_FILE")" 2>/dev/null
-    if [ -f "$CLAUDE_TMUX_LOG_FILE" ]; then
-        local size
-        size=$(wc -c < "$CLAUDE_TMUX_LOG_FILE" 2>/dev/null)
-        [ -z "$size" ] && size=0
-        if [ "$size" -gt "$CLAUDE_TMUX_LOG_MAX_BYTES" ]; then
-            mv -f "$CLAUDE_TMUX_LOG_FILE" "${CLAUDE_TMUX_LOG_FILE}.1" 2>/dev/null
-        fi
-    fi
     local ts pane_combined pane pane_id sid
     ts=$(date '+%Y-%m-%dT%H:%M:%S%z')
     pane_combined=$(tmux display-message -p '#{session_name}:#{window_index}.#{pane_index}|#{pane_id}' 2>/dev/null)
