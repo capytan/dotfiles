@@ -38,7 +38,9 @@ tmux_get_clean_name() {
         name="${name#⚠️ }"
         name="${name#⚠ }"
     done
-    echo "$name"
+    # bash builtin echo は -e/-n/-E 等を option 扱いするため、
+    # `-e` 等で始まる window 名を空文字にしてしまう。printf で回避
+    printf '%s\n' "$name"
 }
 
 tmux_current_clean_name() {
@@ -154,20 +156,29 @@ tmux_set_status_if_priority_allows() {
 }
 
 # alert 状態 (⚠️ / ❌) のときは無条件で降格、そうでなければ通常の priority チェック。
-# permission_prompt には対応する「解除」イベントがないので、次の PostToolUse で降格させる
+# permission_prompt には対応する「解除」イベントがないので、次の PostToolUse で降格させる。
+# ただし subagent が動作中 (counter > 0) の場合は 🤖 に戻して subagent 状態を維持する
 tmux_set_status_or_demote_alert() {
     local emoji="$1" hook="$2"
-    local current_full current_emoji base new_full
+    local current_full current_emoji base new_full target_emoji count
     current_full=$(tmux display-message -p '#W' 2>/dev/null)
     current_emoji=$(_tmux_emoji_of "$current_full")
     case "$current_emoji" in
         "⚠️"|"❌")
             base=$(tmux_get_clean_name "$current_full")
-            new_full="$emoji $base"
+            target_emoji="$emoji"
+            # subagent が生きている間に alert を挟まれると 🤖 が上書きされる。
+            # counter > 0 なら 🤖 に戻して subagent lifetime を可視化し続ける
+            count=$(tmux_subagent_count "$CLAUDE_TMUX_SESSION_ID")
+            case "$count" in ''|*[!0-9]*) count=0 ;; esac
+            if [ "$count" -gt 0 ]; then
+                target_emoji="🤖"
+            fi
+            new_full="$target_emoji $base"
             if [ "$new_full" != "$current_full" ]; then
                 _tmux_rename "$new_full"
             fi
-            _tmux_log "$hook" "demote_alert" "$current_full" "$new_full"
+            _tmux_log "$hook" "demote_alert" "$current_full" "$new_full" "subagent_count=$count"
             ;;
         *)
             tmux_set_status_if_priority_allows "$emoji" "$hook"
@@ -202,23 +213,35 @@ _tmux_counter_file() {
 }
 
 # mkdir mutex (atomic, portable; macOS lacks flock)
+# - ロック取得に成功したときだけ末尾で rmdir する (他プロセスのロックを剥がさない)
+# - 500ms 経っても取れなかった場合は stale lockdir とみなして強制取得
+# - cur の numeric 検証は `-` も不許可 (負値の混入を防ぎ arithmetic 例外を回避)
+# - counter file は改行付きで書く (`read -r` が exit 1 で `|| cur=0` に落ちるのを防ぐ)
 _tmux_counter_op() {
     local file="$1" delta="$2"
     mkdir -p "$(dirname "$file")" 2>/dev/null
     local lockdir="${file}.lock.d"
-    local tries=50
-    while ! mkdir "$lockdir" 2>/dev/null; do
+    local acquired=0 tries=50
+    while [ "$tries" -gt 0 ]; do
+        if mkdir "$lockdir" 2>/dev/null; then
+            acquired=1
+            break
+        fi
         tries=$((tries - 1))
-        [ "$tries" -le 0 ] && break
         sleep 0.01
     done
+    if [ "$acquired" = "0" ]; then
+        # stale lock 回復: SIGKILL 等で残った lockdir を強制解放して取り直す
+        rmdir "$lockdir" 2>/dev/null
+        mkdir "$lockdir" 2>/dev/null && acquired=1
+    fi
     local cur=0
-    [ -f "$file" ] && cur=$(cat "$file" 2>/dev/null)
-    case "$cur" in ''|*[!0-9-]*) cur=0 ;; esac
+    [ -f "$file" ] && IFS= read -r cur < "$file" 2>/dev/null
+    case "$cur" in ''|*[!0-9]*) cur=0 ;; esac
     local new=$((cur + delta))
     [ "$new" -lt 0 ] && new=0
-    printf '%s' "$new" > "$file"
-    rmdir "$lockdir" 2>/dev/null
+    printf '%s\n' "$new" > "$file"
+    [ "$acquired" = "1" ] && rmdir "$lockdir" 2>/dev/null
     printf '%s' "$new"
 }
 
@@ -226,20 +249,18 @@ tmux_subagent_inc() { _tmux_counter_op "$(_tmux_counter_file "$1")" 1; }
 tmux_subagent_dec() { _tmux_counter_op "$(_tmux_counter_file "$1")" -1; }
 
 tmux_subagent_count() {
-    local file
+    local file cur=0
     file=$(_tmux_counter_file "$1")
-    if [ -f "$file" ]; then
-        cat "$file" 2>/dev/null
-    else
-        echo 0
-    fi
+    [ -f "$file" ] && IFS= read -r cur < "$file" 2>/dev/null
+    case "$cur" in ''|*[!0-9]*) cur=0 ;; esac
+    printf '%s\n' "$cur"
 }
 
 tmux_subagent_reset() {
     local file
     file=$(_tmux_counter_file "$1")
     mkdir -p "$(dirname "$file")" 2>/dev/null
-    echo 0 > "$file"
+    printf '%s\n' 0 > "$file"
 }
 
 tmux_subagent_clear() {
