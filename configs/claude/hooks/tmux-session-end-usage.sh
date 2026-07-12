@@ -4,50 +4,62 @@
 #
 # 出力先: ~/.cache/claude-usage.txt
 # 出力例: "128K tok"
+# 集計対象は「ローカル日付の今日」。JSONL の timestamp は UTC(Z) なので
+# Python 側でタイムゾーン変換を挟んでから比較する。
 
 CACHE_FILE="${HOME}/.cache/claude-usage.txt"
 
-# キャッシュディレクトリを作成
 mkdir -p "$(dirname "$CACHE_FILE")"
 
-# --- 方法1: ccusage CLI を使用 ---
+# --- 方法1: ccusage CLI (daily --json) を使用 ---
+# 現行 ccusage の出力は {daily: [{period, totalTokens, ...}], totals: {...}}
+# period はローカル日付なので `date +%Y-%m-%d` と直接比較できる。
 aggregate_with_ccusage() {
-    if ! command -v npx &>/dev/null; then
-        return 1
-    fi
+    command -v npx >/dev/null 2>&1 || return 1
+    command -v jq  >/dev/null 2>&1 || return 1
 
-    # ccusage の today 集計 (JSON 出力)
     local output
-    output=$(npx --yes ccusage@latest --output-format json 2>/dev/null) || return 1
+    output=$(npx --yes ccusage@latest daily --json 2>/dev/null) || return 1
+    [ -z "$output" ] && return 1
 
-    # 今日のトークン合計を jq で取得
     local today
     today=$(date +%Y-%m-%d)
+
     local tokens
-    tokens=$(echo "$output" | jq -r \
+    tokens=$(printf '%s' "$output" | jq -r \
         --arg today "$today" \
-        '[.[] | select(.date == $today)] | map(.total_tokens) | add // 0' \
+        '[.daily[]? | select(.period == $today) | .totalTokens] | add // 0' \
         2>/dev/null) || return 1
 
-    echo "$tokens"
+    [[ "$tokens" =~ ^[0-9]+$ ]] || return 1
+    printf '%s' "$tokens"
 }
 
 # --- 方法2: Python3 で JSONL を直接パース（フォールバック） ---
+# ~/.claude/projects/**/*.jsonl を走査し、record.message.usage を合算する。
+# timestamp は ISO 8601 UTC (`...Z`) なのでローカル日付に変換して比較する。
 aggregate_with_python() {
-    if ! command -v python3 &>/dev/null; then
-        return 1
-    fi
+    command -v python3 >/dev/null 2>&1 || return 1
 
     python3 - <<'PYEOF'
 import json
 import os
 import glob
-from datetime import date
+from datetime import datetime, timezone
 
-today = date.today().isoformat()
+today_local = datetime.now().date()
 total_tokens = 0
 
-# ~/.claude/projects/**/*.jsonl を走査
+def parse_ts(ts):
+    if not ts:
+        return None
+    try:
+        if ts.endswith("Z"):
+            return datetime.fromisoformat(ts[:-1]).replace(tzinfo=timezone.utc)
+        return datetime.fromisoformat(ts)
+    except ValueError:
+        return None
+
 pattern = os.path.expanduser("~/.claude/projects/**/*.jsonl")
 for filepath in glob.glob(pattern, recursive=True):
     try:
@@ -58,19 +70,25 @@ for filepath in glob.glob(pattern, recursive=True):
                     continue
                 try:
                     record = json.loads(line)
-                    # タイムスタンプが今日かチェック
-                    ts = record.get("timestamp", "")
-                    if not ts.startswith(today):
-                        continue
-                    # usage フィールドからトークン数を取得
-                    usage = record.get("usage", {})
-                    if isinstance(usage, dict):
-                        total_tokens += usage.get("input_tokens", 0)
-                        total_tokens += usage.get("output_tokens", 0)
-                        total_tokens += usage.get("cache_read_input_tokens", 0)
-                        total_tokens += usage.get("cache_creation_input_tokens", 0)
                 except (json.JSONDecodeError, TypeError):
                     continue
+                ts = parse_ts(record.get("timestamp", ""))
+                if ts is None:
+                    continue
+                if ts.astimezone().date() != today_local:
+                    continue
+                # 実データは message.usage 配下にネストされている
+                message = record.get("message") or {}
+                usage = message.get("usage") if isinstance(message, dict) else None
+                if not isinstance(usage, dict):
+                    # 旧レイアウト保険: トップレベル usage も見る
+                    usage = record.get("usage")
+                if not isinstance(usage, dict):
+                    continue
+                total_tokens += usage.get("input_tokens", 0) or 0
+                total_tokens += usage.get("output_tokens", 0) or 0
+                total_tokens += usage.get("cache_read_input_tokens", 0) or 0
+                total_tokens += usage.get("cache_creation_input_tokens", 0) or 0
     except (IOError, OSError):
         continue
 
@@ -79,38 +97,35 @@ PYEOF
 }
 
 # --- トークン数をヒューマンリーダブルに変換 ---
+# 0 は空文字を返して、reader 側 (claude-usage-status.sh) の [ -n ... ] ガードで
+# status bar から usage セグメントを隠す
 format_tokens() {
-    local tokens=$1
-    if [ -z "$tokens" ] || [ "$tokens" -eq 0 ] 2>/dev/null; then
-        echo "0 tok"
-        return
-    fi
-
-    if [ "$tokens" -ge 1000000 ]; then
-        echo "$tokens" | awk '{printf "%.1fM tok", $1/1000000}'
-    elif [ "$tokens" -ge 1000 ]; then
-        echo "$tokens" | awk '{printf "%dK tok", int($1/1000)}'
-    else
-        echo "${tokens} tok"
-    fi
+    awk -v t="${1:-0}" 'BEGIN {
+        n = t + 0
+        if (n <= 0)          { exit }
+        else if (n >= 1000000) printf "%.1fM tok", n/1000000
+        else if (n >= 1000)    printf "%dK tok", int(n/1000)
+        else                   printf "%d tok", n
+    }'
 }
 
 # --- メイン処理 ---
 TOTAL_TOKENS=""
 
-# ccusage を試みる
 TOTAL_TOKENS=$(aggregate_with_ccusage 2>/dev/null)
 
-# フォールバック: Python3 で JSONL パース
-if [ -z "$TOTAL_TOKENS" ] || ! [[ "$TOTAL_TOKENS" =~ ^[0-9]+$ ]]; then
+if ! [[ "$TOTAL_TOKENS" =~ ^[0-9]+$ ]]; then
     TOTAL_TOKENS=$(aggregate_with_python 2>/dev/null)
 fi
 
-# 数値でなければ 0 にする
 if ! [[ "$TOTAL_TOKENS" =~ ^[0-9]+$ ]]; then
     TOTAL_TOKENS=0
 fi
 
-# フォーマットしてキャッシュに保存
 FORMATTED=$(format_tokens "$TOTAL_TOKENS")
-echo "$FORMATTED" > "$CACHE_FILE"
+
+# atomic replace: 一時ファイルに書いてから mv。
+# reader (1秒毎に読む claude-usage-status.sh) が truncate 中の空ファイルを
+# 掴む race を防ぐ。
+TMP_FILE="${CACHE_FILE}.tmp.$$"
+printf '%s\n' "$FORMATTED" > "$TMP_FILE" && mv -f "$TMP_FILE" "$CACHE_FILE"
