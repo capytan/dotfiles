@@ -10,6 +10,7 @@
 
 - Use plan mode (Shift+Tab) for tasks with 3+ steps or architectural decisions; re-plan if something goes sideways
 - Custom agents/skills live in `~/.claude/agents/` and `~/.claude/skills/` — glob before creating new ones (dotfiles source: `~/dotfiles/configs/claude/{agents,skills,hooks}/`, all symlinked into `~/.claude/`). Path-scoped rules live in the repo-local `~/dotfiles/.claude/rules/` (not symlinked into `~/.claude/`)
+- gh-managed skills (installed via `gh skill install --agent claude-code --scope user`) carry a `metadata:` frontmatter block (`github-repo`/`github-ref`/`github-tree-sha`) — do NOT hand-edit, `gh skill update` will silently overwrite. Refresh: `gh skill update --all`; list: `gh skill list --agent claude-code --scope user`
 - Don't use `git -C <path>` when cwd already matches — use plain `git <subcommand>` so existing permission rules match and Ask prompts don't fire. `-C` only when the target path genuinely differs from cwd (submodule, sibling repo, etc.)
 
 ## Hooks
