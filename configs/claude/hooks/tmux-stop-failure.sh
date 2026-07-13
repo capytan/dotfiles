@@ -2,4 +2,4 @@
 source "$(dirname "$0")/tmux-lib.sh"
 _tmux_hook_init "$(cat)"
 tmux_force_set_status "⚠️" "StopFailure"
-printf '\a'
+tmux_bell
