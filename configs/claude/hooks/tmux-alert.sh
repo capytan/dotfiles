@@ -5,4 +5,4 @@ _tmux_hook_init "$(cat)"
 MATCHER="${1:-unknown}"
 tmux_set_status_if_priority_allows "⚠️" "Notification:$MATCHER"
 # permission_prompt / idle_prompt / elicitation_dialog はいずれもユーザー入力待ち — bell で促す
-printf '\a'
+tmux_bell

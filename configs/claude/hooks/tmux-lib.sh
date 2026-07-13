@@ -28,6 +28,9 @@ CLAUDE_TMUX_LOG_MAX_BYTES=1048576
 
 tmux_guard() { [ -n "$TMUX" ]; }
 
+# ユーザー入力待ち等を端末ベルで促す (alert / stop-failure / notify で共用)
+tmux_bell() { printf '\a'; }
+
 tmux_get_clean_name() {
     local name="$1" prev=""
     # 稀な競合で emoji が二重積みされたケースに備え、変化がなくなるまで剥がす
@@ -93,37 +96,49 @@ _tmux_hook_init() {
     _tmux_init_session "$1"
 }
 
-# ログローテートは _tmux_log の hot path から外して SessionStart 側に寄せる
-# (並行 hook 間の read-check-mv race で backup が消える問題を回避)
+# ログローテートは _tmux_log の hot path から外し、低頻度 hook (SessionStart / Stop)
+# から呼ぶ。mkdir mutex で1プロセスに限定し、並行 hook が同時に mv して backup を
+# 潰す race を防ぐ。長寿命セッションでも Stop 毎に呼ばれるので無制限成長しない
 _tmux_log_rotate_if_needed() {
     [ -f "$CLAUDE_TMUX_LOG_FILE" ] || return 0
     local size
-    size=$(wc -c < "$CLAUDE_TMUX_LOG_FILE" 2>/dev/null)
-    [ -z "$size" ] && size=0
-    if [ "$size" -gt "$CLAUDE_TMUX_LOG_MAX_BYTES" ]; then
-        mv -f "$CLAUDE_TMUX_LOG_FILE" "${CLAUDE_TMUX_LOG_FILE}.1" 2>/dev/null
-    fi
+    size=$(wc -c < "$CLAUDE_TMUX_LOG_FILE" 2>/dev/null | tr -d '[:space:]')
+    case "$size" in ''|*[!0-9]*) return 0 ;; esac
+    [ "$size" -le "$CLAUDE_TMUX_LOG_MAX_BYTES" ] && return 0
+    local lockdir="${CLAUDE_TMUX_LOG_FILE}.rotate.d"
+    mkdir "$lockdir" 2>/dev/null || return 0   # 別プロセスがローテ中なら skip
+    # ロック取得を待つ間に別プロセスがローテ済みかもしれないので再確認
+    size=$(wc -c < "$CLAUDE_TMUX_LOG_FILE" 2>/dev/null | tr -d '[:space:]')
+    case "$size" in
+        ''|*[!0-9]*) : ;;
+        *) [ "$size" -gt "$CLAUDE_TMUX_LOG_MAX_BYTES" ] && \
+               mv -f "$CLAUDE_TMUX_LOG_FILE" "${CLAUDE_TMUX_LOG_FILE}.1" 2>/dev/null ;;
+    esac
+    rmdir "$lockdir" 2>/dev/null
 }
 
 _tmux_log() {
     [ "${CLAUDE_TMUX_LOG:-1}" = "0" ] && return 0
     local hook="$1" action="$2" from="$3" to="$4" extra="${5:-}"
-    mkdir -p "$(dirname "$CLAUDE_TMUX_LOG_FILE")" 2>/dev/null
+    mkdir -p "${CLAUDE_TMUX_LOG_FILE%/*}" 2>/dev/null
     local ts pane_combined pane pane_id sid
     ts=$(date '+%Y-%m-%dT%H:%M:%S%z')
     pane_combined=$(tmux display-message -p '#{session_name}:#{window_index}.#{pane_index}|#{pane_id}' 2>/dev/null)
     pane="${pane_combined%|*}"; [ -z "$pane" ] && pane="?"
     pane_id="${pane_combined#*|}"; [ -z "$pane_id" ] && pane_id="?"
     sid="${CLAUDE_TMUX_SESSION_ID:-?}"
-    [ -z "$sid" ] && sid="?"
     printf "%s pid=%s session=%s pane=%s pane_id=%s hook=%s action=%s from='%s' to='%s'%s\n" \
         "$ts" "$$" "$sid" "$pane" "$pane_id" "$hook" "$action" "$from" "$to" \
         "${extra:+ $extra}" >> "$CLAUDE_TMUX_LOG_FILE" 2>/dev/null
 }
 
+# rename-window は引数を tmux format として評価するため、'#' を '##' にエスケープして
+# リテラル化する。window/ディレクトリ名中の #(cmd) 実行や #{...} 展開を防ぐ
+_tmux_escape_name() { printf '%s' "${1//#/##}"; }
+
 # tmux RPC: automatic-rename off と rename-window をセミコロン1コマンドにまとめる
 _tmux_rename() {
-    tmux set-window-option automatic-rename off \; rename-window "$1" >/dev/null 2>&1
+    tmux set-window-option automatic-rename off \; rename-window "$(_tmux_escape_name "$1")" >/dev/null 2>&1
 }
 
 tmux_force_set_status() {
@@ -174,7 +189,6 @@ tmux_set_status_or_demote_alert() {
             # subagent が生きている間に alert を挟まれると 🤖 が上書きされる。
             # counter > 0 なら 🤖 に戻して subagent lifetime を可視化し続ける
             count=$(tmux_subagent_count "$CLAUDE_TMUX_SESSION_ID")
-            case "$count" in ''|*[!0-9]*) count=0 ;; esac
             if [ "$count" -gt 0 ]; then
                 target_emoji="🤖"
             fi
@@ -216,14 +230,32 @@ _tmux_counter_file() {
     echo "${CLAUDE_TMUX_CACHE_DIR}/subagent-count.${sid}"
 }
 
+# ディレクトリの経過秒 (BSD `stat -f` / GNU `stat -c` 両対応)。取得不能なら 0
+_tmux_dir_age_seconds() {
+    local mtime now
+    mtime=$(stat -f %m "$1" 2>/dev/null || stat -c %Y "$1" 2>/dev/null)
+    case "$mtime" in ''|*[!0-9]*) echo 0; return ;; esac
+    now=$(date +%s)
+    echo $((now - mtime))
+}
+
+# counter file を読んで非負整数に正規化して返す (未作成・空・非数値・負値は 0)
+_tmux_read_counter() {
+    local cur=0
+    [ -f "$1" ] && IFS= read -r cur < "$1" 2>/dev/null
+    case "$cur" in ''|*[!0-9]*) cur=0 ;; esac
+    printf '%s' "$cur"
+}
+
 # mkdir mutex (atomic, portable; macOS lacks flock)
 # - ロック取得に成功したときだけ末尾で rmdir する (他プロセスのロックを剥がさない)
-# - 500ms 経っても取れなかった場合は stale lockdir とみなして強制取得
-# - cur の numeric 検証は `-` も不許可 (負値の混入を防ぎ arithmetic 例外を回避)
-# - counter file は改行付きで書く (`read -r` が exit 1 で `|| cur=0` に落ちるのを防ぐ)
+# - 500ms 取れず かつ lockdir が 5s 以上古い場合のみ stale とみなして強制取得
+#   (生存中の critical section のロックを誤って奪わない)
+# - counter は temp+mv でアトミックに書き、無ロックの reader (_tmux_read_counter)
+#   が truncate 中の空ファイルを読んで 0 に誤読するのを防ぐ
 _tmux_counter_op() {
     local file="$1" delta="$2"
-    mkdir -p "$(dirname "$file")" 2>/dev/null
+    mkdir -p "${file%/*}" 2>/dev/null
     local lockdir="${file}.lock.d"
     local acquired=0 tries=50
     while [ "$tries" -gt 0 ]; do
@@ -234,17 +266,16 @@ _tmux_counter_op() {
         tries=$((tries - 1))
         sleep 0.01
     done
-    if [ "$acquired" = "0" ]; then
-        # stale lock 回復: SIGKILL 等で残った lockdir を強制解放して取り直す
+    if [ "$acquired" = "0" ] && [ "$(_tmux_dir_age_seconds "$lockdir")" -ge 5 ]; then
         rmdir "$lockdir" 2>/dev/null
         mkdir "$lockdir" 2>/dev/null && acquired=1
     fi
-    local cur=0
-    [ -f "$file" ] && IFS= read -r cur < "$file" 2>/dev/null
-    case "$cur" in ''|*[!0-9]*) cur=0 ;; esac
-    local new=$((cur + delta))
+    local cur new tmp
+    cur=$(_tmux_read_counter "$file")
+    new=$((cur + delta))
     [ "$new" -lt 0 ] && new=0
-    printf '%s\n' "$new" > "$file"
+    tmp="${file}.$$"
+    printf '%s\n' "$new" > "$tmp" && mv -f "$tmp" "$file"
     [ "$acquired" = "1" ] && rmdir "$lockdir" 2>/dev/null
     printf '%s' "$new"
 }
@@ -253,11 +284,7 @@ tmux_subagent_inc() { _tmux_counter_op "$(_tmux_counter_file "$1")" 1; }
 tmux_subagent_dec() { _tmux_counter_op "$(_tmux_counter_file "$1")" -1; }
 
 tmux_subagent_count() {
-    local file cur=0
-    file=$(_tmux_counter_file "$1")
-    [ -f "$file" ] && IFS= read -r cur < "$file" 2>/dev/null
-    case "$cur" in ''|*[!0-9]*) cur=0 ;; esac
-    printf '%s\n' "$cur"
+    _tmux_read_counter "$(_tmux_counter_file "$1")"
 }
 
 tmux_subagent_reset() {
