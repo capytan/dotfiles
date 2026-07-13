@@ -7,6 +7,8 @@
 # 集計対象は「ローカル日付の今日」。JSONL の timestamp は UTC(Z) なので
 # Python 側でタイムゾーン変換を挟んでから比較する。
 
+set -euo pipefail
+
 CACHE_FILE="${HOME}/.cache/claude-usage.txt"
 
 mkdir -p "$(dirname "$CACHE_FILE")"
@@ -25,12 +27,18 @@ aggregate_with_ccusage() {
     local today
     today=$(date +%Y-%m-%d)
 
+    # today エントリの有無を明示的に判定する。エントリが無い場合 (スキーマドリフトや
+    # ccusage の空応答を含む) は "0" を成功扱いせず MISSING を返し、python フォール
+    # バックに委ねる。today が在って 0 トークンなら正しく "0" を返す
     local tokens
     tokens=$(printf '%s' "$output" | jq -r \
         --arg today "$today" \
-        '[.daily[]? | select(.period == $today) | .totalTokens] | add // 0' \
+        '[.daily[]? | select(.period == $today)] as $t
+         | if ($t | length) == 0 then "MISSING"
+           else ([$t[] | .totalTokens] | add // 0) end' \
         2>/dev/null) || return 1
 
+    [ "$tokens" = "MISSING" ] && return 1
     [[ "$tokens" =~ ^[0-9]+$ ]] || return 1
     printf '%s' "$tokens"
 }
@@ -112,10 +120,12 @@ format_tokens() {
 # --- メイン処理 ---
 TOTAL_TOKENS=""
 
-TOTAL_TOKENS=$(aggregate_with_ccusage 2>/dev/null)
+# aggregate_* は失敗を return 1 で表すフォールバック設計。set -e 下では代入文の
+# 非ゼロ終了で即死するため `|| true` で受け、後続の正規表現判定で分岐させる
+TOTAL_TOKENS=$(aggregate_with_ccusage 2>/dev/null) || true
 
 if ! [[ "$TOTAL_TOKENS" =~ ^[0-9]+$ ]]; then
-    TOTAL_TOKENS=$(aggregate_with_python 2>/dev/null)
+    TOTAL_TOKENS=$(aggregate_with_python 2>/dev/null) || true
 fi
 
 if ! [[ "$TOTAL_TOKENS" =~ ^[0-9]+$ ]]; then
