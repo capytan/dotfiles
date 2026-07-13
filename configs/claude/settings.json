@@ -363,7 +363,6 @@
     ],
     "defaultMode": "auto"
   },
-  "model": "claude-opus-4-7[1M]",
   "enableAllProjectMcpServers": false,
   "enabledMcpjsonServers": [],
   "hooks": {
@@ -550,10 +549,6 @@
     "voltagent-domains@voltagent-subagents": false,
     "voltagent-lang@voltagent-subagents": false,
     "skill-creator@claude-plugins-official": true,
-    "decomposition@kuu-marketplace": true,
-    "deslop@kuu-marketplace": false,
-    "dig@kuu-marketplace": true,
-    "fix-ci@kuu-marketplace": false,
     "code-simplifier@claude-plugins-official": true,
     "claude-md-management@claude-plugins-official": false,
     "superpowers@claude-plugins-official": true,
@@ -692,12 +687,12 @@
   "alwaysThinkingEnabled": true,
   "effortLevel": "high",
   "autoMemoryEnabled": true,
+  "skipWorkflowUsageWarning": true,
   "showTurnDuration": true,
   "teammateMode": "auto",
   "skipAutoPermissionPrompt": true,
   "additionalDirectories": [
     "~/ghq",
     "~/dev"
-  ],
-  "skipWorkflowUsageWarning": true
+  ]
 }
