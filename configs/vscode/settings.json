@@ -159,7 +159,7 @@
     "editor.defaultFormatter": "redhat.vscode-yaml"
   },
   "claudeCode.preferredLocation": "panel",
-  "extensions.autoUpdate": false,
+  "extensions.autoUpdate": "off",
   "editor.unicodeHighlight.nonBasicASCII": false,
   "git.autofetch": true,
   "git.pruneOnFetch": true,
