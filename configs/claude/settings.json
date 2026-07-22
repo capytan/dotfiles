@@ -300,6 +300,7 @@
       "Edit(~/.aws/**)",
       "Edit(~/.kube/**)",
       "Edit(~/.docker/config.json)",
+      "Edit(~/.netrc)",
       "Edit(**/*.tfvars)",
       "Bash(tee *)",
       "Bash(tar *)",
