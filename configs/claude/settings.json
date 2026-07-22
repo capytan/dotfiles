@@ -509,15 +509,10 @@
     "terraform@claude-plugins-official": false,
     "hookify@claude-plugins-official": true,
     "codex@openai-codex": true,
-    "claude-code-setup@claude-plugins-official": true
+    "claude-code-setup@claude-plugins-official": true,
+    "aws-core@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
-    "agent-plugins-for-aws": {
-      "source": {
-        "source": "github",
-        "repo": "awslabs/agent-plugins"
-      }
-    },
     "openai-codex": {
       "source": {
         "source": "github",
