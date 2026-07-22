@@ -6,7 +6,7 @@ paths:
 # Claude Code Config Rules
 
 - Hooks must use shared functions from `configs/claude/hooks/tmux-lib.sh`
-- Keep permissions comments in settings.json (`// Git operations` etc.)
+- Don't put `//` comments in the `permissions` arrays — Claude Code v2.1.216+ warns on unknown deny/ask rules (`"// ..." matches no known tool`). File rules must use `Edit()`/`Read()`, not `Write()`/`Glob()` (file permission checks only consult those two forms; `Write()`/`Glob()` are silently ignored)
 - Update `setup-claude.sh` when adding new symlink targets
 - Use `set -euo pipefail` in hook scripts (except tmux hooks — guard pattern `tmux_guard || exit 0` and emoji matching conflict with `-e`/`-u` — and `pretooluse-validate-command.sh` — validators must fail open; with `-e` a jq parse failure exits 2, which PreToolUse treats as "block all commands")
 

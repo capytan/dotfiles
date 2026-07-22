@@ -36,6 +36,18 @@ deny() {
   exit 0
 }
 
+# ask 出力ヘルパ: deny と同じ契約で permissionDecision を "ask" にする (ユーザーに確認プロンプトを出す)
+ask() {
+  jq -n --arg reason "$1" '{
+    hookSpecificOutput: {
+      hookEventName: "PreToolUse",
+      permissionDecision: "ask",
+      permissionDecisionReason: $reason
+    }
+  }'
+  exit 0
+}
+
 # 設計原則:
 # - segment 境界 ([^|;&`]*) を挟むことで、globaloption や `cd && sed -i` のような連結を吸収しつつ
 #   `git status && git push origin main` のような cross-segment 混同を防ぐ
@@ -84,6 +96,43 @@ fi
 # - read-only な awk (awk '{print}' file 等) は許可
 if echo "$COMMAND" | grep -qE '\b(g|n)?awk\b[[:space:]][^|;&`]*(-i[[:space:]]*inplace\b|--include([[:space:]]+|=)inplace\b)'; then
   deny "gawk -i inplace の代わりに Edit ツールを使用してください。read-only な awk は許可されています。"
+fi
+
+# 秘密ファイル系の path 検知は settings.json の Read()/Edit() ルールと対称に 2 段階で扱う:
+#   鍵・証明書 (実体が必ず秘匿) は deny、機微ファイル (中身次第) は ask。
+#   Read()/Edit() permission は Bash 経由の cat/head 等に効かないため、ここで具体パスを拾う。
+#
+# 設計方針 (rules 1-7 とは異なる):
+# - パターンはコマンド全体に match させる ([^|;&`]* segment 境界を張らない)。
+#   `cat foo && cat .env` のような後続 segment の path も拾いたいため。text-only な
+#   コマンド (git commit の message、log 検索、branch 名等) は事前 bypass で除外する
+# - APFS が既定で case-insensitive なので grep -Ei にする (uppercase 拡張子も検出)
+# - 鍵名 `id_(rsa|ed25519|dsa|ecdsa)` を word boundary で拾う。他のツール由来
+#   (`id_xmss` 等) の追加は同じ alternation に足す
+# - `.env(rc)?\b` で dotenv と direnv (.envrc) の両方を拾う
+# - `\.(ssh|aws|kube)([/[:space:]]|$)` で末尾なし (ls ~/.ssh) も含めて拾う
+# - `.example`/`.template`/`.sample`/`.dist`/`.j2`/`.tpl`/`.pub` はテンプレート・
+#   公開鍵として除外する (誤検知回避)
+# - 具体パスのみ対象 (*key* 等の広い substring は false positive 過多のため validator では拾わない)
+
+# rules 8/9 事前 bypass: text-only コマンド (message/log/branch 内の literal は path ではない)
+_skip_path_rules=0
+if echo "$COMMAND" | grep -qE '^[[:space:]]*(git[[:space:]]+(commit|log|branch|tag|checkout|switch|blame|shortlog|show|diff|remote|stash|rev-parse|cherry-pick)|echo|printf|history)\b'; then
+  _skip_path_rules=1
+fi
+# rules 8/9 事前 bypass: テンプレート / 公開鍵の suffix
+if [ "$_skip_path_rules" = "0" ] && echo "$COMMAND" | grep -qEi '\.(example|template|sample|dist|j2|tpl|pub)\b'; then
+  _skip_path_rules=1
+fi
+
+# 8. 秘密鍵・証明書ファイルへのアクセスをブロック (deny を ask より先に評価)
+if [ "$_skip_path_rules" = "0" ] && echo "$COMMAND" | grep -qEi '(\bid_(rsa|ed25519|dsa|ecdsa)\b|\.(pem|pfx|p12|jks)\b)'; then
+  deny "秘密鍵・証明書ファイル (id_rsa / id_ed25519 / id_dsa / id_ecdsa / *.pem / *.pfx / *.p12 / *.jks) へのアクセスは禁止です。この種のコマンドは実行できません。どうしても必要な場合はユーザーがプロンプトで ! プレフィックスを付けて自分で実行してください。"
+fi
+
+# 9. 機微ファイルへのアクセスを確認 (ask)
+if [ "$_skip_path_rules" = "0" ] && echo "$COMMAND" | grep -qEi '(\.env(rc)?\b|\.(ssh|aws|kube)([/[:space:]]|$)|\b(secrets|credentials)/|\.netrc\b|\.docker/config\.json\b|\.tfvars\b)'; then
+  ask "機微ファイル (.env / .envrc / ~/.ssh / ~/.aws / ~/.kube 配下 / secrets・credentials ディレクトリ / .netrc / .docker/config.json / *.tfvars) にアクセスする可能性があります。内容を確認の上で承認してください。"
 fi
 
 exit 0
