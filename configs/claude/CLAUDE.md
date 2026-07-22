@@ -15,7 +15,7 @@
 
 ## Hooks
 
-- PreToolUse validators block dangerous patterns (force-push/`+refspec`, `reset --hard`, `git clean -f`, `git branch -D`, `rm -rf`, `sed -i`, `gawk -i inplace`). Deny output uses the `hookSpecificOutput.permissionDecision` schema; validators fail open. Source: `~/dotfiles/configs/claude/hooks/pretooluse-validate-command.sh`
-- settings.json の `Read()`/`Write()` deny・ask は Read/Write ツールにのみ適用され、Bash 経由の `cat`/`head`/`tail`/`echo`/`printf` は素通り。秘密ファイルへの Bash アクセスは validator でも塞いでいないので、コマンド組み立て時にエージェント側で回避する
+- PreToolUse validators block dangerous patterns (force-push/`+refspec`, `reset --hard`, `git clean -f`, `git branch -D`, `rm -rf`, `sed -i`, `gawk -i inplace`) and gate secret-file paths: 鍵・証明書 (`id_rsa`/`id_ed25519`/`id_dsa`/`*.pem`/`*.pfx`/`*.p12`/`*.jks`) は deny、機微ファイル (`.env`/`~/.ssh`・`~/.aws`・`~/.kube` 配下/`secrets`・`credentials` ディレクトリ/`.netrc`/`.docker/config.json`/`*.tfvars`) は ask。Deny/ask output uses the `hookSpecificOutput.permissionDecision` schema; validators fail open. Source: `~/dotfiles/configs/claude/hooks/pretooluse-validate-command.sh`
+- settings.json の `Read()`/`Edit()` deny・ask は Read/Edit ツールにのみ適用され、Bash 経由の `cat`/`head`/`tail`/`echo`/`printf` は素通り。具体パスの秘密ファイルは上記 validator が deny/ask で塞ぐが、`**/*key*`・`**/*token*` 等の広い名前パターンは false positive 過多で validator に入れていないので、この種の名前のファイルを Bash で触るときはエージェント側で回避する
 - tmux window-name emoji state: ⏳ working / 🤖 subagent / ⚠️ permission/error / ❌ tool failure / ✅ stop. **1 tmux window = 1 Claude Code pane** (panes in the same window fight over the name)
 - tmux ops: log `tail -F ~/.cache/claude-tmux-status.log`, disable `export CLAUDE_TMUX_LOG=0`. Engineering details (priority table, force-update events, ✅→⏳ reset) live in `~/dotfiles/.claude/rules/claude-config.md` (path-scoped to `configs/claude/**`)
