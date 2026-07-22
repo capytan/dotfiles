@@ -19,3 +19,15 @@
 - settings.json の `Read()`/`Edit()` deny・ask はファイル操作ツール (Read / Edit / Write) にのみ適用され、Bash 経由の `cat`/`head`/`tail`/`echo`/`printf` は素通り。具体パスの秘密ファイルは上記 validator が deny/ask で塞ぐが、`**/*key*`・`**/*token*` 等の広い名前パターンは false positive 過多で validator に入れていないので、この種の名前のファイルを Bash で触るときはエージェント側で回避する
 - tmux window-name emoji state: ⏳ working / 🤖 subagent / ⚠️ permission/error / ❌ tool failure / ✅ stop. **1 tmux window = 1 Claude Code pane** (panes in the same window fight over the name)
 - tmux ops: log `tail -F ~/.cache/claude-tmux-status.log`, disable `export CLAUDE_TMUX_LOG=0`. Engineering details (priority table, force-update events, ✅→⏳ reset) live in `~/dotfiles/.claude/rules/claude-config.md` (path-scoped to `configs/claude/**`)
+
+## AWS
+
+Source: [aws/agent-toolkit-for-aws rules/aws-agent-rules.md](https://github.com/aws/agent-toolkit-for-aws/blob/main/rules/aws-agent-rules.md). Applies when the `aws-core` plugin is loaded.
+
+- AWS 操作は AWS MCP Server（`aws-mcp`）優先。sandbox 実行・観測・監査ログが付く。使えない場合のみ AWS CLI に落とす
+- タスク開始前に関連 AWS skill があるか確認。`retrieve_skill` でロードし、一般知識より skill のガイダンスを優先
+- API パラメタ・権限・上限・エラーコードが不確かなときは推測せず、ドキュメントで検証。確認できないなら不確実性を明示
+- インフラ作成は IaC（AWS CDK / CloudFormation）優先。直接 CLI での作成は避ける
+- AWS Well-Architected Framework に沿う
+- AWS リソース名・説明に em dash は使わず hyphen を使う
+- Secret Safety: 秘密情報（credentials / API key / token / password）を扱うタスクは、まず `aws-secrets-manager` skill をロード。`secretsmanager get-secret-value` / `batch-get-secret-value` の直接呼び出しと、Secrets Manager Agent daemon への直アクセスは禁止。値を context に載せず実行時に解決するため `{{resolve:secretsmanager:secret-id:SecretString:json-key}}` + `asm-exec` を使う
