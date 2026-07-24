@@ -12,7 +12,7 @@ Three layers — do not mix:
 ## Key Rules
 
 - **Local files are sacred**: Never commit `shell/zsh/local.zsh`, `configs/tmux/tmux-start.local.sh`, `.claude/settings.local.json`
-- **Verify symlinks**: `ls -la ~ | grep "\-> .*dotfiles"` — check before marking work complete
+- **Verify symlinks**: `find ~ ~/.config ~/.claude -maxdepth 1 -type l ! -exec test -e {} \; -print` — prints only *broken* links, so empty output means healthy. Check before marking work complete. (`ls -la ~ | grep dotfiles` is not a substitute: it never tests whether targets exist, and it misses `~/.config` and `~/.claude` entirely.)
 
 ## Commands
 

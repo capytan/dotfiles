@@ -35,8 +35,8 @@ If PR:
 - `gh pr view <number>` + `gh pr diff <number>`
 
 If local changes:
-- AskUserQuestion: "Review target: (1) staged (2) unstaged (3) both"
-- Run appropriate `git diff` command
+- The review target must be chosen in the **main session before launching this agent** — `AskUserQuestion` is removed from every subagent's tool pool. Ask there: "Review target: (1) staged (2) unstaged (3) both", then pass the answer into this agent's prompt.
+- Run the `git diff` command matching the target you were given
 
 Return: summary of what changed and why, full diff, changed file list
 
