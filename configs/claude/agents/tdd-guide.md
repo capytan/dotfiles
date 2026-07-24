@@ -75,7 +75,7 @@ Always cover: null/empty/invalid input, boundary values, error paths, and race c
 
 ## Language-Specific Test Commands
 
-Before picking a runner, read the nearest manifest (see the Language column below) and its scripts/sections — prefer the project's canonical command (e.g., `npm test`) over generic binaries (`vitest`). If no manifest is found, ask the user; do not default to one language.
+Before picking a runner, read the nearest manifest (see the Language column below) and its scripts/sections — prefer the project's canonical command (e.g., `npm test`) over generic binaries (`vitest`). If no manifest is found, state the assumption you would need to make and surface a clarifying question in your output for the main session to relay (you cannot prompt the user directly); do not default to one language.
 
 | Language | Manifest | Test | Coverage |
 |----------|----------|------|----------|

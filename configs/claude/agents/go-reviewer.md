@@ -40,7 +40,8 @@ When invoked:
 1. Run `git diff --staged -- '*.go'` and `git diff -- '*.go'` to see staged and unstaged Go file changes; if both are empty, fall back to `git show --patch HEAD -- '*.go'`
 2. Run `go vet ./...` and `staticcheck ./...` if available
 3. Focus on modified `.go` files
-4. Begin review immediately
+4. If any CRITICAL security issue is found, stop and hand off to `security-reviewer` before continuing
+5. Begin review immediately
 
 ## Review Priorities
 
@@ -53,7 +54,7 @@ When invoked:
 - **Hardcoded secrets**: API keys, passwords in source
 - **Insecure TLS**: `InsecureSkipVerify: true`
 
-When a CRITICAL security issue is found, recommend escalation to the **security-reviewer** agent for a deep audit.
+When a CRITICAL security issue is found, stop and hand off to the **security-reviewer** agent for a deep audit before continuing the review.
 
 ### CRITICAL -- Error Handling
 - **Ignored errors**: Using `_` to discard errors

@@ -17,9 +17,9 @@ Seven reviewers, each using a **distinct methodology and information source**, a
 - **High threshold**: Only findings scoring 80+ survive
 - **Scoped execution**: User selects review scope to keep analysis tractable
 
-## Phase 1: Scope & Context (Parallel Haiku)
+## Phase 1: Scope & Context
 
-Launch 2 Haiku agents in parallel:
+Run 1a as a Haiku subagent, then do 1b yourself in the main session (it needs `AskUserQuestion`, which subagents do not have):
 
 ### 1a. Project Discovery (Haiku)
 
@@ -28,7 +28,9 @@ Launch 2 Haiku agents in parallel:
 - Identify source file patterns (exclude: node_modules, vendor, build artifacts, .git, binary files)
 - Return: project summary, CLAUDE.md content, source file list with line counts
 
-### 1b. Scope Selection (Haiku)
+### 1b. Scope Selection (main session — NOT a subagent)
+
+`AskUserQuestion` is removed from every subagent's tool pool, so a subagent cannot run this step. After 1a returns, ask this yourself in the main loop, then pass the chosen scope and model into Phase 2.
 
 Present the user with scope and model options via AskUserQuestion (2 questions in one call):
 
