@@ -1,7 +1,7 @@
 ---
 name: phase4-fix-format
 description: Phase 4 fix-proposal template and token-savings table examples for the claude-config-reviewer skill
-last_updated: 2026-06-26
+last_updated: 2026-07-25
 ---
 
 # Phase 4 Fix Format

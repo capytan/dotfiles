@@ -3,7 +3,7 @@
 > Referenced during Phase 3 (Report) for Cross-Artifact Summary.
 > These checks detect issues spanning multiple configuration artifact types.
 
-last_updated: 2026-06-26
+last_updated: 2026-07-25
 
 ---
 
@@ -64,6 +64,22 @@ last_updated: 2026-06-26
 - Do not flag `background: true` agents for "will silently auto-deny on permission prompts" — that behavior was fixed.
 - Still flag a `background: true` agent that has no `tools` allowlist + relies on Bash for irreversible operations (high-blast-radius pattern, separate concern).
 
+### 10. Unresolvable Agent `tools` List `[official]` (2026-07)
+[A `tools` list where nothing resolves means the agent cannot launch at all]
+- As of changelog v2.1.208, when no entry in `tools` resolves to a real tool, Claude Code refuses to launch the subagent and the Agent tool returns an error naming the unresolved entries. Before v2.1.208 it launched with no tools and returned empty/confusing output.
+- Detection: parse `tools:` from every agent frontmatter, diff each entry against the tool names actually available to subagents; flag the agent Critical if *every* entry is unresolvable, Major if some are.
+- Note the subagent-unavailable set (`Agent` without nested spawning, `AskUserQuestion`, `EndConversation`, `EnterPlanMode`, `ExitPlanMode` unless `permissionMode: plan`) — these resolve as names but are filtered out, so an agent listing *only* these is effectively in the zero-tools case.
+
+### 11. Non-Preloadable Bundled Skills in `skills:` `[official]` (2026-07)
+[Extends Check 6 to the user-invoke-only bundled skills]
+- As of v2.1.215, `/verify` and `/code-review` run only when the user invokes them, so they cannot be preloaded into a subagent via `skills:` and Claude cannot auto-run them.
+- Detection: flag any agent whose `skills:` names `verify` or `code-review`, and any skill/agent body instructing Claude to run `/verify` or `/code-review` on its own.
+
+### 12. Stale `/agents` Wizard Guidance `[official]` (2026-07)
+[As of v2.1.198 `/agents` no longer opens the interactive creation wizard]
+- `/agents` now prints a reminder to ask Claude or edit `.claude/agents/` directly. Directories, frontmatter fields, and file locations are unchanged.
+- Detection: grep CLAUDE.md, SKILL.md, and agent bodies for instructions to "run `/agents`" to create or edit a subagent. Classify Minor (stale documentation, not a functional break).
+
 ---
 
 ## Severity Classification
@@ -78,6 +94,9 @@ last_updated: 2026-06-26
 | Subagent Skill-Preload Validity | Major |
 | Duplicate Agent Names Within a Scope | Major (silent discard); Minor for nested cwd-walk tie-break |
 | Skill Name Collides with Bundled Skill | Minor (advisory — silent override) |
+| Unresolvable Agent `tools` List | Critical if all entries unresolvable (agent cannot launch); Major if some |
+| Non-Preloadable Bundled Skills in `skills:` | Major |
+| Stale `/agents` Wizard Guidance | Minor |
 
 ---
 
@@ -85,4 +104,5 @@ last_updated: 2026-06-26
 
 - 2026-03-30: Initial version
 - 2026-06-10: Added `last_updated` header (was missing). Added two new checks from code.claude.com/docs/en/sub-agents (retrieved 2026-06-10): Subagent Skill-Preload Validity (skills with `disable-model-invocation: true` are silently skipped at preload) and Duplicate Agent Names Within a Scope (recursive scan; one file silently discarded). Both classified Major.
+- 2026-07-25: Added three checks from code.claude.com/docs/en/{skills,sub-agents} (retrieved 2026-07-25) and changelog v2.1.196–v2.1.218. **Check 10 (new)**: Unresolvable Agent `tools` List — as of v2.1.208 an all-unresolvable `tools` list makes Claude Code refuse to launch the subagent (previously it launched tool-less), so this is Critical, not cosmetic; the subagent-filtered tool set (`Agent`, `AskUserQuestion`, `EndConversation`, `EnterPlanMode`, `ExitPlanMode`) counts toward the zero-tools case. **Check 11 (new)**: Non-Preloadable Bundled Skills in `skills:` — v2.1.215 made `/verify` and `/code-review` user-invoke-only, extending Check 6's preload exclusion beyond `disable-model-invocation: true`; classified Major. **Check 12 (new)**: Stale `/agents` Wizard Guidance — v2.1.198 removed the interactive creation wizard, so config text telling users to run `/agents` to create a subagent is stale; Minor. Checks 1–9 re-verified current. last_updated bumped to 2026-07-25.
 - 2026-06-26: Added two new checks and one rule refinement. **Check 8 (new)**: Skill Name Collides with Bundled Skill — project/personal/plugin skills silently override bundled ones (`code-review`, `batch`, `debug`, `loop`, `claude-api`, `run`, `verify`, `run-skill-generator`, plus Skill-tool-callable built-ins `init`, `review`, `security-review`); classified Minor (advisory only — sometimes intentional). **Check 9 (new)**: Agent `background: true` is no longer a permission-auto-deny risk since changelog v2.1.186 — guidance for reviewers, not a check. **Check 7 refinement (changelog v2.1.178)**: nested project `.claude/agents/` along the cwd walk now have a deterministic closest-wins tie-break — downgrade severity to Minor for that specific case (within-one-scope silent-discard stays Major). last_updated bumped to 2026-06-26.
