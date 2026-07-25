@@ -3,7 +3,7 @@
 > Referenced during Phase 2, criterion E (Anti-patterns) for agent file reviews.
 > Each pattern has a severity: Critical / Major / Minor.
 
-last_updated: 2026-06-26
+last_updated: 2026-07-25
 
 ---
 
@@ -25,9 +25,29 @@ System prompt under 100 characters provides no meaningful guidance for autonomou
 
 **Fix:** Write a full system prompt with role definition, responsibilities, process steps, and output format. See agent-quality-criteria.md category C for minimum expectations.
 
+### No Resolvable Entry in `tools` `[official]` (added 2026-07-25)
+
+As of changelog v2.1.208, when nothing in the `tools` list resolves to a real tool, Claude Code **refuses to launch the subagent** and the Agent tool returns an error naming the unresolved entries. Before v2.1.208 it launched tool-less and returned confusing output.
+
+**Detection patterns:**
+- Every `tools:` entry is misspelled or invented
+- Every `tools:` entry is in the always-filtered set (`AskUserQuestion`, `EndConversation`, `EnterPlanMode`, `ExitPlanMode` unless `permissionMode: plan`) — these resolve as names but are stripped at launch, leaving an empty pool
+
+**Fix:** Correct the tool names, or drop `tools:` entirely to inherit all tools. Score under agent-quality-criteria.md criterion A (0 pts) — do not also zero criterion E.
+
 ---
 
 ## Major — Strongly Recommended to Fix
+
+### `isolation: worktree` Body That Redirects Git Back to the Main Checkout `[official]` (added 2026-07-25)
+
+An `isolation: worktree` agent gets its own worktree. As of v2.1.216 the working-directory check covers the whole containing repository and, for Bash, the command text itself is inspected — a body instructing `git -C <main>`, `--git-dir`, `GIT_DIR`/`GIT_WORK_TREE`, or a `cd` out of the worktree now **fails outright**, as does a command too complex to check.
+
+**Detection patterns:**
+- `isolation: worktree` in frontmatter plus body text containing `git -C`, `--git-dir`, `GIT_DIR=`, `GIT_WORK_TREE=`, or `cd <repo root> && git …`
+
+**Fix:** Operate on the worktree with plain `git <subcommand>`; if the agent genuinely needs the main checkout, drop `isolation: worktree`.
+
 
 ### Wrong Voice in System Prompt `[custom:derived-from-agent-reviewer]`
 
@@ -112,6 +132,15 @@ All `<example>` blocks use the same phrasing pattern for the user message, reduc
 
 **Fix:** Vary user message phrasing across examples. Mix direct requests, indirect references, and different vocabulary.
 
+### Stale `/agents` Wizard Guidance `[official]` (added 2026-07-25)
+
+Agent or doc text telling the user to "run `/agents`" to create a subagent. The interactive creation wizard was removed in v2.1.198; `/agents` now only prints a reminder to ask Claude or edit `.claude/agents/` directly. Directories, frontmatter, and file format are unchanged.
+
+**Detection patterns:**
+- Body text matching `/agents` near "create", "new agent", or "wizard"
+
+**Fix:** Point the reader at `.claude/agents/` (or `~/.claude/agents/`) directly.
+
 ### Missing Proactive Trigger Example `[custom:derived-from-agent-reviewer]`
 
 No example demonstrates the agent firing without an explicit user request (auto-trigger after related work).
@@ -144,3 +173,4 @@ System prompt lacks guidance for failure modes or unusual inputs.
 - 2026-05-30: Refresh against code.claude.com/docs/en/sub-agents + Skills authoring best-practices (2026-05-30). Reinforced the **"Behavioral Instructions in Description"** anti-pattern with the official third-person rule ("Always write in third person") — second-person/imperative descriptions are now explicitly called out, with the fix clarifying the third-person-description / second-person-body split. No new anti-patterns added; existing catalog re-verified current.
 - 2026-06-10: Freshness re-run against code.claude.com/docs/en/sub-agents (retrieved 2026-06-10). No new anti-patterns; catalog re-verified current. Note for assessors: `fable` model alias and `auto`/`dontAsk` permission modes are now official — not anti-patterns (see agent-quality-criteria.md / agent-official-best-practices.md).
 - 2026-06-26: Freshness re-run against code.claude.com/docs/en/sub-agents (retrieved 2026-06-26). No new anti-patterns; catalog re-verified current. **Assessor notes (de-flag previously-uncertain patterns)**: (1) **`background: true`** is NOT a permission-auto-deny risk since changelog v2.1.186 — background subagent permission prompts now surface in the main session. (2) **Nested subagent spawning** is now officially allowed up to depth 5 (changelog v2.1.172) — an agent that lists `Agent` in `tools` to delegate further is not an anti-pattern unless the depth budget is clearly being abused. (3) Old anti-pattern "Subagents cannot spawn other subagents" wording is now outdated guidance from third-party sources — do not penalize agents that rely on official depth-5 nesting.
+- 2026-07-25: Freshness re-run against sub-agents docs (retrieved 2026-07-25) + changelog v2.1.196-v2.1.218. **One new Critical anti-pattern**: a `tools` list in which no entry resolves to a real tool - as of v2.1.208 Claude Code refuses to launch the subagent and returns an error naming the unresolved entries (before v2.1.208 it launched tool-less and returned confusing output). Remember the always-filtered set (`Agent` without nested spawning, `AskUserQuestion`, `EndConversation`, `EnterPlanMode`, `ExitPlanMode` unless `permissionMode: plan`) counts toward this. **One new Major**: an `isolation: worktree` agent whose body instructs a git redirect back into the main checkout (`git -C`, `--git-dir`, `GIT_DIR`/`GIT_WORK_TREE`, or a `cd` first) now fails outright (v2.1.216); a command too complex to check also fails. **One new Minor**: agent text telling users to run `/agents` to create a subagent is stale - the interactive wizard was removed in v2.1.198. **One de-escalation**: do not flag the absence of a per-subagent thinking setting; subagents inherit the main conversation's extended-thinking config as of v2.1.198 and no such field exists. last_updated bumped to 2026-07-25.

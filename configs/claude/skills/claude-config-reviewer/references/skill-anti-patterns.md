@@ -3,7 +3,7 @@
 > Referenced during Phase 2, criterion G (Anti-patterns) for SKILL.md reviews.
 > Each pattern has a severity: Critical / Major / Minor.
 
-last_updated: 2026-06-26
+last_updated: 2026-07-25
 
 ---
 
@@ -20,9 +20,9 @@ Description uses "I can help you..." or "You can use this..." instead of third p
 `[official]` quote: "The description is injected into the system prompt, and inconsistent point-of-view can cause discovery problems." — platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices
 **Fix:** Rewrite in third person ("Processes Excel files and generates reports").
 
-### Description Over 1024 Characters `[official]`
-Exceeds the hard validation cap; content beyond 1024 chars is silently truncated.
-**Fix:** Trim to under 1024 chars. Front-load key triggers; move overflow into `when_to_use`. The listing cap is 1,536 chars combined (`description` + `when_to_use`).
+### Description Over 1,536 Characters Combined `[official]`
+The combined `description` + `when_to_use` text is truncated at 1,536 chars in the skill listing, so triggers past that point never reach Claude. (Revised 2026-07-25: the previously-recorded 1024-char hard field cap is no longer stated in official docs — do not flag on the 1024 figure alone.)
+**Fix:** Keep `description` + `when_to_use` under 1,536 chars combined and front-load key triggers.
 
 ### Missing `disable-model-invocation` on Side-Effect Skills `[community:high]`
 Skills that deploy, commit, push, delete, or send messages without `disable-model-invocation: true` — Claude may trigger them unprompted.
@@ -94,9 +94,17 @@ Using `bigquery_schema` instead of `BigQuery:bigquery_schema`.
 Scripts that just call `open(path)` and let Claude handle failures.
 **Fix:** Handle known error conditions explicitly (FileNotFoundError, PermissionError) with fallbacks and useful log output.
 
+### Backgrounded `context: fork` Skill Needing an Excluded Tool `[official]` (added 2026-07-25)
+A `context: fork` skill that leaves `background` at its `true` default while its body depends on a tool outside the narrower background-subagent tool set. The forked skill runs as a regular agent type, so the fork exemption does not cover it (v2.1.218).
+**Fix:** Set `background: false` so the fork waits in the invoking turn and keeps the full tool set. Flag Major only when the body's core workflow provably needs an excluded tool — see cross-artifact-checks.md Check 9 for the single severity threshold.
+
 ---
 
 ## Minor -- Recommended to Improve
+
+### Instructing Claude to Run `/verify` or `/code-review` `[official]` (added 2026-07-25)
+As of v2.1.215 the **bundled** `/verify` and `/code-review` run only when the user invokes them, so an instruction to run them, or an agent `skills:` entry preloading them, silently never fires.
+**Fix:** Inline the steps, or have the user invoke the command. Carve-out: if a local or enabled-plugin skill of the same name overrides the bundled one, it is model-invocable again — check before flagging (cross-artifact-checks.md Checks 8 and 11).
 
 ### Inconsistent Terminology `[official]`
 Same concept referred to by different names ("endpoint"/"URL"/"route" for one thing).
@@ -142,3 +150,4 @@ Quote: "Don't railroad Claude in skills — give goals and constraints, not pres
 - 2026-04-17: Major expansion against 2026-04 official docs. Added Critical tier (3 items: first/second-person description, >1024-char description, missing `disable-model-invocation` on side-effect skills). Promoted Windows-style paths, option listing without default, and oversized SKILL.md from `[custom:...]` to `[official]` with source quotes. Added 7 new patterns: nested references, reference file >100 lines without TOC, README/CHANGELOG in skill dir, time-sensitive content in body, voodoo constants, unqualified MCP tool refs, punting to Claude in scripts. Added minor patterns: overfitting descriptions, vague names, missing Gotchas, railroaded prescriptive steps. Added a counter-note about not over-using ALL-CAPS MUST/NEVER (skill-creator guidance).
 - 2026-06-10: Freshness re-run against code.claude.com/docs/en/skills (retrieved 2026-06-10). No new anti-patterns; severities re-verified. Note: 2026 frontmatter fields (`when_to_use`, `arguments`, `disallowed-tools`, `effort`, `paths`, `shell`, `hooks`) are official — do not flag as unknown.
 - 2026-06-26: Freshness re-run against code.claude.com/docs/en/skills (retrieved 2026-06-26). No new anti-patterns; catalog re-verified. Assessor notes (negative findings worth flagging): (1) **Frontmatter keys** are case-tolerant (kebab/snake/camelCase all accepted as of changelog v2.1.186) — do NOT flag camelCase variants. (2) **Malformed YAML** still loads the skill body with empty metadata, so a "missing description" can be a YAML parse failure rather than an author omission — recommend running with `--debug` to disambiguate. (3) **Naming collision with bundled skills**: if a project/personal/plugin skill shares a name with a bundled skill (e.g. `code-review`, `debug`, `loop`), it silently replaces the bundled one — surface as advisory NOTE so authors realize they're overriding `/code-review`.
+- 2026-07-25: Freshness re-run against code.claude.com/docs/en/skills (retrieved 2026-07-25) + changelog v2.1.196-v2.1.218. **One new Major anti-pattern**: a `context: fork` skill that leaves `background` at its `true` default while its body depends on a tool outside the **narrower background-subagent tool set** - the forked skill runs as a regular agent type, so the fork exemption does not cover it; the fix is `background: false` (v2.1.218). **One new Minor**: instructing Claude to run `/verify` or `/code-review` itself, or preloading them into a subagent - as of v2.1.215 only the user can invoke them, so the instruction silently never fires. **One de-escalation**: a `name` that differs from the skill's directory is **not** a defect in a personal or project skill - `name` sets only the display label there and the command comes from the directory name; keep the flag only for plugin skills, where `name` forms the command's last segment. **One tolerance note**: boolean frontmatter values `yes`/`no`/`on`/`off`/`1`/`0` in any case are valid as of v2.1.218 - do not flag them as malformed. last_updated bumped to 2026-07-25.
