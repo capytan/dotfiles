@@ -11,7 +11,7 @@
 > - `[community:mid]` = GitHub 10-50 stars, verified in a tech blog
 > - `[custom]` = Derived from this repo's own practice
 
-last_updated: 2026-06-26
+last_updated: 2026-07-25
 sources:
   - https://code.claude.com/docs/en/skills
   - https://code.claude.com/docs/en/changelog
@@ -117,7 +117,7 @@ my-skill/
 | Field | Required | Description |
 |-------|----------|-------------|
 | `name` | No | Display name. Lowercase letters, numbers, hyphens only (max 64 chars). If omitted, uses directory name. Cannot contain XML tags. Cannot contain reserved words: `anthropic`, `claude`. |
-| `description` | Recommended | What the skill does and when to use it. Max 1024 characters (hard cap — content is truncated). If omitted, uses the first paragraph of markdown. |
+| `description` | Recommended | What the skill does and when to use it. Truncated at 1,536 chars combined with `when_to_use` in the skill listing. If omitted, uses the first paragraph of markdown. |
 | `when_to_use` | No | Additional trigger phrases/example requests. Appended to `description` in the skill listing. **NEW 2026.** |
 | `argument-hint` | No | Hint shown during autocomplete (e.g., `[issue-number]`). |
 | `arguments` | No | Named positional arguments for `$name` substitution. Space-separated string or YAML list; names map to positions in order. **NEW 2026.** |
@@ -135,17 +135,15 @@ my-skill/
 
 ### Description: Length Limits & Truncation `[official]`
 
-Two separate limits apply — do not confuse them:
+One operative limit applies as of 2026-07-25:
 
-1. **Hard validation cap: 1024 characters** for the `description` field itself.
-   > "Must be non-empty, Maximum 1024 characters, Cannot contain XML tags"
-   > — https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices (retrieved 2026-04-17)
+1. ~~**Hard validation cap: 1024 characters** for the `description` field itself.~~ **Retracted 2026-07-25** — current docs no longer state a field-level cap. Do not deduct on the 1024 figure alone. (Historic quote, 2026-04-17: "Must be non-empty, Maximum 1024 characters, Cannot contain XML tags".)
 
-2. **Skill-listing truncation cap: 1,536 characters** for combined `description` + `when_to_use`, applied when the skill appears in the system-prompt listing.
+2. **Skill-listing truncation cap: 1,536 characters** for combined `description` + `when_to_use`, applied when the skill appears in the system-prompt listing. **This is the operative limit.**
    > "Front-load the key use case: the combined description and when_to_use text is truncated at 1,536 characters in the skill listing to reduce context usage."
    > — https://code.claude.com/docs/en/skills (retrieved 2026-04-17)
 
-> **Note on historical guidance**: The previous documented limit of "250 characters per entry" has been superseded. The 2026-04 docs specify 1,536 characters as the per-entry cap in listings (combined `description` + `when_to_use`), with the 1024-char field-level cap unchanged. The 1,536 per-entry cap is itself configurable via the `maxSkillDescriptionChars` setting. `[official]` (2026-05)
+> **Note on historical guidance**: Both the "250 characters per entry" limit and the 1024-char field-level cap have been superseded. Current docs specify only 1,536 characters as the per-entry cap in listings (combined `description` + `when_to_use`), itself configurable via the `maxSkillDescriptionChars` setting. `[official]` (2026-07-25)
 
 - Overall skill-listing budget scales at 1% of context window. When the budget overflows, descriptions for the **least-invoked** skills are dropped first, so skills you actually use keep their full text — names are always listed. `[official]` (updated 2026-05)
 - Raise the budget with the `skillListingBudgetFraction` setting (e.g. `0.02` = 2%) or the `SLASH_COMMAND_TOOL_CHAR_BUDGET` env var (fixed char count). Free budget for other skills by setting low-priority entries to `"name-only"` in `skillOverrides`.
@@ -166,7 +164,7 @@ Two separate limits apply — do not confuse them:
 Description-optimization constraints from skill-creator's `improve_description.py`:
 - Imperative phrasing ("Use this skill for..." over "This skill does...")
 - Focus on user intent, not implementation
-- Hard limit 1024 chars (truncated beyond)
+- Listing limit 1,536 chars combined with `when_to_use` (truncated beyond)
 - No overfitting: generalize to categories of intent, don't list specific queries
 
 ### Naming Conventions `[official]`
@@ -414,3 +412,4 @@ Per-model considerations: Haiku (does the skill give enough guidance?), Sonnet (
 - 2026-04-17: Major refresh against latest docs. Corrected description limits: hard cap is 1024 chars (field), truncation is 1,536 chars (combined `description` + `when_to_use` in listings) — previous 250-char figure was outdated. Added new frontmatter field `when_to_use`. Added `xhigh` effort level. Added skill content lifecycle section (session-wide persistence, compaction budgets: 5k tokens per skill, 25k combined). Added third-person rule, "pushy" description guidance, gerund naming, one-level-deep references rule, 100-line TOC rule, evaluation-driven development, degrees-of-freedom framing, workflows/feedback-loops, content guidelines, anti-patterns (official), per-model testing, explicit checklist. Added sources: platform.claude.com best-practices, skill-creator repo.
 - 2026-06-10: Refresh against code.claude.com/docs/en/skills (retrieved 2026-06-10). Added: bundled skills (`/run`, `/verify`, `/run-skill-generator` v2.1.145+, `disableBundledSkills`); compaction detail that the 25k budget fills from the most recently invoked skill so **oldest skills can be dropped entirely**; "keep the body concise — recurring token cost" quote; `context: fork` correction — CLAUDE.md is loaded **except** when the agent is Explore or Plan; `model` field is turn-scoped (not saved to settings); `Skill(name)` / `Skill(name *)` permission-rule syntax. Core scoring facts re-verified unchanged: 1,536-char combined cap (`maxSkillDescriptionChars` configurable), 1% listing budget (`skillListingBudgetFraction` / `SLASH_COMMAND_TOOL_CHAR_BUDGET`, `/doctor` diagnostics), 500-line SKILL.md guidance, all 2026 frontmatter fields (`when_to_use`, `arguments`, `disallowed-tools`, `effort`, `paths`, `shell`, `hooks`), `skillOverrides` states, live change detection, `disable-model-invocation` removing description from context and blocking subagent preload.
 - 2026-06-26: Refresh against code.claude.com/docs/en/skills (retrieved 2026-06-26) and changelog v2.1.181–v2.1.193. **Material additions**: (1) **Project/personal/plugin skills override bundled skills with the same name** — e.g. a `code-review` skill in `.claude/skills/` replaces the bundled `/code-review`. (2) **Plugin-skill folders**: adding `.claude-plugin/plugin.json` to a skill folder turns it into a plugin (`<name>@skills-dir`) that can bundle agents, hooks, MCP servers; trust-gated for project skills. (3) **Live change detection scope clarified**: covers SKILL.md text only; plugin extras (hooks/, .mcp.json, agents/, output-styles/) need `/reload-plugins`. (4) **Malformed YAML behavior**: invalid frontmatter still loads the skill body with empty metadata; use `--debug` to see parse errors (changelog v2.1.186, 2026-06-22). (5) **Frontmatter key-case tolerance**: kebab/snake/camelCase keys all accepted (v2.1.186). (6) **`/reload-skills` command** to force-reload definitions without restarting. (7) **`skill-creator` is now an officially-distributed plugin** at `anthropics/claude-plugins-official` — produces `evals/evals.json`, `grading.json`, `benchmark.json`, plus HTML report viewer and blind A/B version comparison. (8) **Baseline comparison rule**: fresh session matters because authoring-session context masks gaps. Core scoring facts unchanged. last_updated bumped to 2026-06-26.
+- 2026-07-25: Refreshed against code.claude.com/docs/en/skills (retrieved 2026-07-25) + changelog v2.1.196-v2.1.218. **Material additions**: (1) **Command-name resolution table** - in a personal or project skill the frontmatter `name` sets only the display label and the command comes from the **directory name**; `name` forms the command's last segment only for plugin skills and plugin-root SKILL.md (fallback: the plugin directory name). Nested `.claude/skills/` that clash get a path-prefixed command (`/apps/web:deploy`). Before v2.1.216 a plugin skill's `name` replaced the whole command, dropping the plugin prefix. (2) **Description cap restated as 1,536 characters** for the combined `description` + `when_to_use` text in the skill listing; the previously-recorded 1024-char hard cap is no longer stated. (3) **Boolean tolerance** - `yes`/`no`/`on`/`off`/`1`/`0` in any case (v2.1.218). (4) **`background` frontmatter field** for `context: fork` skills (v2.1.218): default `true` runs the fork in the background with the **narrower background-subagent tool set**; `background: false` waits in the invoking turn and keeps the full tool set. (5) **Skill stacking** (v2.1.199): the first skill plus up to five more, trailing text passed as `$ARGUMENTS` to each; expansion stops at the first token that is not an inline user-invocable skill, including a forked skill such as `/code-review` (forked from v2.1.218) or `/loop`. (6) **`/verify` and `/code-review` are user-invoke-only** (v2.1.215) and therefore cannot be preloaded into subagents. (7) **`disable-model-invocation: true` also blocks scheduled-task firing** (v2.1.196). (8) Full substitution list re-verified: `$ARGUMENTS`, `$ARGUMENTS[N]`, `$N`, `$name`, `${CLAUDE_SESSION_ID}`, `${CLAUDE_EFFORT}` (ultracode reports as `xhigh`), `${CLAUDE_SKILL_DIR}`. (9) `paths` frontmatter scopes **automatic** activation only, using the path-specific-rules glob format. Frontmatter table otherwise re-verified in full. last_updated bumped to 2026-07-25.

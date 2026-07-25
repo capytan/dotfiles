@@ -1,6 +1,6 @@
 # Anti-Pattern Catalog
 
-last_updated: 2026-06-26
+last_updated: 2026-07-25
 
 > Referenced during Phase 2, criterion F (Anti-patterns).
 > Each pattern has a severity: Critical / Major / Minor.
@@ -213,3 +213,4 @@ Content that only applies to a specific task or session.
 - 2026-06-10: Freshness re-run against code.claude.com/docs/en/memory (retrieved 2026-06-10). No new anti-patterns; catalog re-verified current. last_updated bumped to 2026-06-10.
 - 2026-06-24: Freshness re-run (14 days stale). No new anti-patterns; catalog re-verified current against memory docs + 2026-06 community articles. 2026-06 tooling additions (`--safe-mode`, `/cd`, MEMORY.md compaction) are troubleshooting/session features, not authoring anti-patterns. last_updated bumped to 2026-06-24.
 - 2026-06-26: Freshness re-run (2 days stale). No new anti-patterns; catalog re-verified against memory docs (retrieved 2026-06-26). One related detail surfaced in the official docs that does not change the catalog but worth noting for assessors: **`@path` imports inside fenced code blocks or backtick-wrapped spans are NOT parsed**, so previously-flagged "accidental imports in code examples" are not actually a problem if the path is properly fenced. Existing Major/Minor/Critical patterns all current. last_updated bumped to 2026-06-26.
+- 2026-07-25: Freshness re-run (29 days stale) against code.claude.com/docs/en/memory (retrieved 2026-07-25). No new authoring anti-patterns; the Critical/Major/Minor catalog is re-verified current. **Two assessor notes added from this window**: (1) the `/doctor` trim checkup (v2.1.206) now codifies the Over-Specified pattern in official tooling - it cuts directory layouts, dependency lists, and architecture overviews and keeps pitfalls, rationale, and non-default conventions, so those three content types are officially inferable content, not merely community opinion. (2) Path-scoped `.claude/rules/` gotchas that read as authoring bugs but are platform behavior: an over-budget brace pattern (1,000 expanded patterns / 4 MiB per rule) is used **unexpanded** so its literal braces match nothing (v2.1.217), and an unparseable `[` bracket expression makes that one pattern match nothing while the rule's other patterns keep working (v2.1.207). Flag these as rule-authoring defects, not CLAUDE.md anti-patterns. last_updated bumped to 2026-07-25.

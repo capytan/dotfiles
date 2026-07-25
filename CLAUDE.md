@@ -12,7 +12,7 @@ Three layers — do not mix:
 ## Key Rules
 
 - **Local files are sacred**: Never commit `shell/zsh/local.zsh`, `configs/tmux/tmux-start.local.sh`, `.claude/settings.local.json`
-- **Verify symlinks**: `ls -la ~ | grep "\-> .*dotfiles"` — check before marking work complete
+- **Verify symlinks**: `find -L ~ -maxdepth 1 -type l; find -L ~/.config ~/.claude -type l` — `-L` follows targets, so anything printed is *broken*. `~/.config` must be searched at full depth (`install.sh` links `.config/{git,tmux,alacritty,ghostty,mise,zed}/**`, not just its top level). Check before marking work complete; four dangling links from old repo layouts (`~/.mcp.json`, `~/.fzf.zsh`, `~/.zshrc.pre-oh-my-zsh`, `~/.config/alacritty.toml`) are known noise — anything else is a regression.
 
 ## Commands
 

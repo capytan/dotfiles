@@ -13,7 +13,7 @@
 >
 > **Note:** Phase 0 research (2026-04-17) cross-checked against code.claude.com/docs/en/sub-agents.
 
-last_updated: 2026-06-26
+last_updated: 2026-07-25
 
 ---
 
@@ -61,9 +61,13 @@ Validate the YAML frontmatter between `---` markers for required fields and valu
 - Absent → PASS (inherits all)
 - Present as comma-separated string or YAML array of recognized tool names → PASS
 - Unrecognized tool name → -1 pt each
+- **All entries unresolvable → the agent does not launch (revised 2026-07-25)** `[official]`: as of changelog v2.1.208, when *nothing* in the `tools` list resolves to a real tool, Claude Code **refuses to launch the subagent** and the Agent tool returns an error naming the unresolved entries (before v2.1.208 it launched with zero tools and returned confusing output). Score this as a **Critical** finding and 0 pts for the category — the agent is non-functional, not merely misconfigured.
+- **`Skill` in `tools` is the wrong lever for preloading** `[official]`: to inject skill content at startup use the `skills` field; listing `Skill` only grants the tool.
+
+**Background-by-default tool narrowing (added 2026-07-25)** `[official]`: as of v2.1.198 subagents run in the **background by default**, and background subagents get a **smaller built-in tool set** than foreground ones (forks are exempt). Consequence: an agent whose body depends on a tool outside that set may fail intermittently depending on how Claude launches it. When an agent's instructions require such a tool, expect `background: false`-equivalent handling or an explicit `tools` declaration → advisory NOTE if absent, Major if the body's core workflow provably depends on an excluded tool.
 
 **Other optional fields (validate if present) `[official]` (2026-06):**
-- `permissionMode`: value in `default | acceptEdits | auto | dontAsk | bypassPermissions | plan` → PASS; unrecognized → -2 pts (`auto` and `dontAsk` are official modes — do NOT flag as invalid)
+- `permissionMode`: value in `default | acceptEdits | auto | dontAsk | bypassPermissions | plan | manual` → PASS; unrecognized → -2 pts (`auto` and `dontAsk` are official modes — do NOT flag as invalid; `manual` is an alias for `default` as of v2.1.200)
 - `memory`: value in `user | project | local` → PASS
 - Recognized 2026 fields — do NOT flag as unknown: `disallowedTools`, `maxTurns`, `skills`, `mcpServers`, `hooks`, `memory`, `background`, `effort`, `isolation` (`worktree`), `color`, `initialPrompt`
 - Plugin-distributed agents: `hooks`, `mcpServers`, `permissionMode` are **ignored** for plugin subagents → advisory NOTE if present in a plugin agent file
@@ -71,7 +75,7 @@ Validate the YAML frontmatter between `---` markers for required fields and valu
 **15 pts**: All present required fields valid, optional fields valid if present
 **10 pts**: Minor warnings (generic name, unusual optional values)
 **5 pts**: One required field missing or malformed
-**0 pts**: Multiple required fields missing
+**0 pts**: Multiple required fields missing, **or no entry in `tools` resolves** (Critical — the agent refuses to launch, see the `tools` rules above). Score the zero-tools case here only; do NOT also zero criterion E for the same defect.
 
 ### B. Description & Triggering Quality (20 points)
 
@@ -216,12 +220,15 @@ Verify the agent file is consistent with its environment.
 **Checks:**
 - Agent name in frontmatter matches the filename (minus `.md`) → advisory NOTE only (the official docs state "The filename does not have to match" — identity comes solely from the `name` field; do NOT deduct for a mismatch, but flag it as a maintainability note since a mismatch can confuse human readers) `[official]`
 - Tools listed in `tools` array are real, recognized tool names → required (-2 pts per unknown)
-- Tools listed that are unavailable to subagents (`Agent`, `AskUserQuestion`, `EnterPlanMode`, `ExitPlanMode` unless `permissionMode: plan`, `ScheduleWakeup`, `WaitForMcpServers`) → advisory NOTE (no-op, not a hard error) `[official]`
+- Tools listed that are unavailable to subagents (`AskUserQuestion`, `EndConversation`, `EnterPlanMode`, `ExitPlanMode` unless `permissionMode: plan`, `ScheduleWakeup`, `WaitForMcpServers`; `Agent` only when the agent is at the depth-5 nesting cap) → advisory NOTE when *some* entries are filtered `[official]`. When they are the **only** entries, the effective tool list is empty and criterion A scores it 0 pts as Critical (v2.1.208 refuses to launch) — do not also deduct here
+- Body prose instructing a step that requires a tool absent from the agent's effective pool (declared `tools:` minus the filtered set above) → -3 pts `[custom]`: e.g. a subagent body told to ask the user via `AskUserQuestion`. The step silently never fires
 - System prompt references to files/paths are valid (spot-check with Glob) → -2 pts per broken ref
 - No contradictions between description and system prompt responsibilities → -3 pts if conflicting
 - Model tier is appropriate for the agent's complexity → advisory NOTE
 - `name` is unique within its scope (agents dirs are scanned recursively, including subfolders) → -3 pts if duplicated: "if two files within one scope declare the same name, Claude Code keeps one and discards the other without warning" `[official]` (https://code.claude.com/docs/en/sub-agents, retrieved 2026-06-10)
-- `skills` field entries exist and none set `disable-model-invocation: true` (such skills cannot be preloaded; they are skipped with only a debug-log warning) → -2 pts per invalid entry `[official]` (2026-06)
+- `skills` field entries exist and none set `disable-model-invocation: true` (such skills cannot be preloaded; they are skipped with only a debug-log warning) → -2 pts per invalid entry `[official]` (2026-06). **Extended 2026-07-25**: this also covers the bundled `/verify` and `/code-review` skills — as of v2.1.215 only the user can run them, so they cannot be preloaded either `[official]`
+- **Stale `/agents` references (added 2026-07-25)** → advisory NOTE `[official]`: as of v2.1.198 `/agents` no longer opens the interactive creation wizard; it prints a reminder to ask Claude or edit `.claude/agents/` directly. An agent file or doc telling the user to "run `/agents` to create one" is stale guidance. Directories, frontmatter, and file format are unchanged
+- **Duplicate names are now surfaced by `/doctor` (added 2026-07-25)** `[official]`: as of v2.1.205 the `/doctor` setup checkup reports same-directory `name` collisions and proposes renaming or removing all but one. Keep the -3 pt deduction, and cite `/doctor` as the remediation check
 
 **10 pts**: Fully consistent
 **7 pts**: Minor mismatches (name casing, advisory notes)
@@ -259,6 +266,7 @@ Verify the agent file is consistent with its environment.
   - **A. Frontmatter**: `fable` added to valid model aliases (do not deduct). Added optional-field validation: `permissionMode` values now include official `auto` and `dontAsk`; listed all recognized 2026 fields (`disallowedTools`, `maxTurns`, `skills`, `mcpServers`, `hooks`, `memory`, `background`, `effort`, `isolation`, `color`, `initialPrompt`) so assessors don't flag them as unknown; advisory NOTE for `hooks`/`mcpServers`/`permissionMode` in plugin agents (ignored fields).
   - **G. Cross-Reference**: Added duplicate-`name`-within-scope check (-3 pts; one file silently discarded) and `skills`-preload validity check (-2 pts per missing or `disable-model-invocation: true` entry). Scoring weights and bands unchanged.
 - 2026-06-26: Refreshed against code.claude.com/docs/en/sub-agents (retrieved 2026-06-26) and changelog v2.1.172–v2.1.193. No scoring-weight changes. **Advisory updates only**:
+- 2026-07-25: Refreshed against code.claude.com/docs/en/sub-agents (retrieved 2026-07-25) and changelog v2.1.196–v2.1.218. **One material scoring change**: **A. Frontmatter** — a `tools` list in which *no* entry resolves to a real tool now makes the subagent **refuse to launch** (v2.1.208); this is escalated from a -1 pt-per-entry warning to a **Critical finding, 0 pts for the category**, because the agent is non-functional. Partial misspellings keep the -1 pt treatment. **Advisory additions**: `permissionMode` accepts `manual` as a `default` alias (v2.1.200); subagents run in the **background by default** as of v2.1.198 and background subagents receive a **narrower built-in tool set** (forks exempt) — flag Major only when an agent's core workflow provably needs an excluded tool; `skills` preload exclusion now also covers bundled `/verify` and `/code-review` (v2.1.215); `/agents` no longer opens a creation wizard (v2.1.198) so agent files pointing users at it carry stale guidance; `/doctor` now reports same-directory duplicate `name`s and proposes a fix (v2.1.205); subagents inherit the main conversation's extended-thinking setting (v2.1.198) — there is no per-subagent thinking field, so do not flag its absence; `isolation: worktree` agents now fail Bash commands that redirect git back into the main checkout via `git -C`/`--git-dir`/`GIT_DIR`/`cd` (v2.1.216) — an agent body instructing such a redirect is a Major correctness issue. last_updated bumped to 2026-07-25.
   - **A. Frontmatter**: `background: true` is no longer a hazard (was: risk of silent permission auto-deny). Since changelog v2.1.186, background subagent permission prompts surface in the main session — do NOT flag `background: true` as a reliability risk on its own.
   - **G. Cross-Reference**: For nested project agents along the cwd walk that share a `name`, **the closest-to-cwd file wins** (deterministic since v2.1.178). Previously assessors might warn about this collision; now it should be downgraded to advisory NOTE only (the deeper file deterministically takes effect), reserving the -3 pt deduction for the within-one-scope silent-discard case.
   - **Tool restriction (D)**: Listing `Agent` in `tools` is still required for an agent that needs to spawn nested subagents (now allowed up to depth 5, changelog v2.1.172). No deduction change.
