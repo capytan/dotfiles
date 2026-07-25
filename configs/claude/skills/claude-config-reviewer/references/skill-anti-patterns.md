@@ -20,9 +20,9 @@ Description uses "I can help you..." or "You can use this..." instead of third p
 `[official]` quote: "The description is injected into the system prompt, and inconsistent point-of-view can cause discovery problems." — platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices
 **Fix:** Rewrite in third person ("Processes Excel files and generates reports").
 
-### Description Over 1024 Characters `[official]`
-Exceeds the hard validation cap; content beyond 1024 chars is silently truncated.
-**Fix:** Trim to under 1024 chars. Front-load key triggers; move overflow into `when_to_use`. The listing cap is 1,536 chars combined (`description` + `when_to_use`).
+### Description Over 1,536 Characters Combined `[official]`
+The combined `description` + `when_to_use` text is truncated at 1,536 chars in the skill listing, so triggers past that point never reach Claude. (Revised 2026-07-25: the previously-recorded 1024-char hard field cap is no longer stated in official docs — do not flag on the 1024 figure alone.)
+**Fix:** Keep `description` + `when_to_use` under 1,536 chars combined and front-load key triggers.
 
 ### Missing `disable-model-invocation` on Side-Effect Skills `[community:high]`
 Skills that deploy, commit, push, delete, or send messages without `disable-model-invocation: true` — Claude may trigger them unprompted.
@@ -94,9 +94,17 @@ Using `bigquery_schema` instead of `BigQuery:bigquery_schema`.
 Scripts that just call `open(path)` and let Claude handle failures.
 **Fix:** Handle known error conditions explicitly (FileNotFoundError, PermissionError) with fallbacks and useful log output.
 
+### Backgrounded `context: fork` Skill Needing an Excluded Tool `[official]` (added 2026-07-25)
+A `context: fork` skill that leaves `background` at its `true` default while its body depends on a tool outside the narrower background-subagent tool set. The forked skill runs as a regular agent type, so the fork exemption does not cover it (v2.1.218).
+**Fix:** Set `background: false` so the fork waits in the invoking turn and keeps the full tool set. Flag Major only when the body's core workflow provably needs an excluded tool — see cross-artifact-checks.md Check 9 for the single severity threshold.
+
 ---
 
 ## Minor -- Recommended to Improve
+
+### Instructing Claude to Run `/verify` or `/code-review` `[official]` (added 2026-07-25)
+As of v2.1.215 the **bundled** `/verify` and `/code-review` run only when the user invokes them, so an instruction to run them, or an agent `skills:` entry preloading them, silently never fires.
+**Fix:** Inline the steps, or have the user invoke the command. Carve-out: if a local or enabled-plugin skill of the same name overrides the bundled one, it is model-invocable again — check before flagging (cross-artifact-checks.md Checks 8 and 11).
 
 ### Inconsistent Terminology `[official]`
 Same concept referred to by different names ("endpoint"/"URL"/"route" for one thing).

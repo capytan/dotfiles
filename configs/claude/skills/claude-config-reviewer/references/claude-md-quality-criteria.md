@@ -87,16 +87,18 @@ Scoring consequence: this puts official weight behind trimming directory layouts
 
 `[official]` Can Claude quickly grasp the codebase structure?
 
+Award only for structure that is **not** derivable by reading the tree — see the `/doctor` trim baseline under criterion A.
+
 **15 pts**: Clear structure
-- Directory layout explained
 - Key module relationships documented
+- Why a boundary exists / which entry point matters
 - Entry points identifiable
 
 **10 pts**: Basic structure overview
 
-**5 pts**: Directory listing only (no explanation)
+**5 pts**: Some non-inferable context, but thin
 
-**0 pts**: No structure info
+**0 pts**: No structure info, **or** a plain directory listing / dependency enumeration only (inferable content — already penalized under A; award 0 here rather than double-crediting it)
 
 ### D. Non-Obvious Patterns (15 points)
 
@@ -184,5 +186,5 @@ Deduct when Low/None exceeds 30% of total sections.
 - 2026-05-30: No material change to scoring criteria. 2026-05-30 research confirmed official line-count thresholds (under 200) and the ~150–200 instruction budget are unchanged. New community insight (CLAUDE.md churn invalidates prompt cache — community:mid) noted in community-practices but not strong enough to alter Token Efficiency scoring; recorded as awareness only. last_updated bumped to 2026-05-30.
 - 2026-06-10: No scoring changes. Attribution fix: the ~150–200 instruction budget is primarily sourced to HumanLayer's "Writing a good CLAUDE.md" (`[community:high]`, re-verified 2026-06-10); abhishekray07 retained for the 80-line adherence cliff. Official under-200-line target re-verified against code.claude.com/docs/en/memory (retrieved 2026-06-10). last_updated bumped to 2026-06-10.
 - 2026-06-24: Freshness re-run (14 days stale). No scoring changes. The official under-200-line authoring target is unchanged; the only 2026-06 development is that Claude Code's in-product "too long" *warning* now scales with the model context window (changelog v2.1.169) — this affects when the tool nags, not the authoring target, so the line-count rubric stays as-is. All thresholds and sub-criteria re-verified current. last_updated bumped to 2026-06-24.
-- 2026-07-25: Refresh against code.claude.com/docs/en/memory (retrieved 2026-07-25) and changelog v2.1.196–v2.1.218. **No weight changes; one adjudication rule added.** Criterion A gains a `/doctor` trim baseline (v2.1.206): official guidance now explicitly cuts directory layouts, dependency lists, and architecture overviews while keeping pitfalls, rationale, and non-default conventions — added an explicit rule resolving the A↔C tension so a plain directory listing is not simultaneously rewarded under C and penalized under A. **`.claude/rules/` facts for assessors (no scoring change)**: path-scoped rules now match through **symlinked paths** into the project (v2.1.198) — relevant to symlink-based dotfiles repos, where rules previously appeared not to fire; a rule's whole `paths` list shares a budget of **1,000 expanded brace patterns / 4 MiB**, and an over-budget pattern is used unexpanded so its literal braces match nothing (v2.1.217); an unparseable `[` bracket expression makes that one pattern match nothing while the rule's other patterns keep working (v2.1.207); project rules are skipped when `project` is excluded from `--setting-sources` (v2.1.211). **MEMORY.md**: the 200-line/25KB check now strips YAML frontmatter and block-level HTML comments before measuring (v2.1.211), and Claude Code stamps a `modified` ISO-8601 frontmatter field on memory files that already have frontmatter (v2.1.214). last_updated bumped to 2026-07-25.
 - 2026-06-26: Freshness re-run (2 days stale). No scoring changes. Late-June 2026 changelog activity (v2.1.181–v2.1.193) added recovery tools (`/rewind`, network-drive fixes, `autoMode.classifyAllShell`) and auto-mode guardrails (destructive git command blocking) but did NOT alter any CLAUDE.md authoring guidance — line-count thresholds, inferable-content list, hook-convertible-rules deduction, and the 7-category weighting are all still current. last_updated bumped to 2026-06-26.
+- 2026-07-25: Refresh against code.claude.com/docs/en/memory (retrieved 2026-07-25) and changelog v2.1.196–v2.1.218. **No weight changes; one adjudication rule added.** Criterion A gains a `/doctor` trim baseline (v2.1.206): official guidance now explicitly cuts directory layouts, dependency lists, and architecture overviews while keeping pitfalls, rationale, and non-default conventions — added an explicit rule resolving the A↔C tension so a plain directory listing is not simultaneously rewarded under C and penalized under A. **`.claude/rules/` facts for assessors (no scoring change)**: path-scoped rules now match through **symlinked paths** into the project (v2.1.198) — relevant to symlink-based dotfiles repos, where rules previously appeared not to fire; a rule's whole `paths` list shares a budget of **1,000 expanded brace patterns / 4 MiB**, and an over-budget pattern is used unexpanded so its literal braces match nothing (v2.1.217); an unparseable `[` bracket expression makes that one pattern match nothing while the rule's other patterns keep working (v2.1.207); project rules are skipped when `project` is excluded from `--setting-sources` (v2.1.211). **MEMORY.md**: the 200-line/25KB check now strips YAML frontmatter and block-level HTML comments before measuring (v2.1.211), and Claude Code stamps a `modified` ISO-8601 frontmatter field on memory files that already have frontmatter (v2.1.214). last_updated bumped to 2026-07-25.

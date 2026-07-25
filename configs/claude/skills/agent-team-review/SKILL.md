@@ -15,9 +15,9 @@ Five reviewers, each using a **distinct methodology and information source**, an
 - **Graduated models**: Haiku for prep/scoring, Opus for review
 - **High threshold**: Only issues scoring 80+ survive
 
-## Phase 1: Preparation (Parallel Haiku)
+## Phase 1: Preparation
 
-Launch 2 Haiku agents in parallel:
+For a local-changes review, first ask the user the review target yourself in the main session — `AskUserQuestion` is removed from every subagent's tool pool, so no Phase 1 agent can ask it. Then launch 1a and 1b as Haiku subagents in parallel, passing the chosen target into 1b's prompt.
 
 ### 1a. Eligibility & Context (Haiku)
 
@@ -35,13 +35,12 @@ If PR:
 - `gh pr view <number>` + `gh pr diff <number>`
 
 If local changes:
-- The review target must be chosen in the **main session before launching this agent** — `AskUserQuestion` is removed from every subagent's tool pool. Ask there: "Review target: (1) staged (2) unstaged (3) both", then pass the answer into this agent's prompt.
-- Run the `git diff` command matching the target you were given
+- Run the `git diff` command matching the review target passed into your prompt — staged, unstaged, or both
 
 Return: summary of what changed and why, full diff, changed file list
 
 **Stop conditions**: PR ineligible, diff empty.
-**Warning**: Confirm with user if diff > 3000 lines.
+**Warning**: if the diff exceeds 3000 lines, 1b reports the line count and the **main session** confirms with the user before dispatching Phase 2.
 
 ## Phase 2: Parallel Review (5 Opus Agents)
 

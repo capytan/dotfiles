@@ -25,9 +25,29 @@ System prompt under 100 characters provides no meaningful guidance for autonomou
 
 **Fix:** Write a full system prompt with role definition, responsibilities, process steps, and output format. See agent-quality-criteria.md category C for minimum expectations.
 
+### No Resolvable Entry in `tools` `[official]` (added 2026-07-25)
+
+As of changelog v2.1.208, when nothing in the `tools` list resolves to a real tool, Claude Code **refuses to launch the subagent** and the Agent tool returns an error naming the unresolved entries. Before v2.1.208 it launched tool-less and returned confusing output.
+
+**Detection patterns:**
+- Every `tools:` entry is misspelled or invented
+- Every `tools:` entry is in the always-filtered set (`AskUserQuestion`, `EndConversation`, `EnterPlanMode`, `ExitPlanMode` unless `permissionMode: plan`) — these resolve as names but are stripped at launch, leaving an empty pool
+
+**Fix:** Correct the tool names, or drop `tools:` entirely to inherit all tools. Score under agent-quality-criteria.md criterion A (0 pts) — do not also zero criterion E.
+
 ---
 
 ## Major — Strongly Recommended to Fix
+
+### `isolation: worktree` Body That Redirects Git Back to the Main Checkout `[official]` (added 2026-07-25)
+
+An `isolation: worktree` agent gets its own worktree. As of v2.1.216 the working-directory check covers the whole containing repository and, for Bash, the command text itself is inspected — a body instructing `git -C <main>`, `--git-dir`, `GIT_DIR`/`GIT_WORK_TREE`, or a `cd` out of the worktree now **fails outright**, as does a command too complex to check.
+
+**Detection patterns:**
+- `isolation: worktree` in frontmatter plus body text containing `git -C`, `--git-dir`, `GIT_DIR=`, `GIT_WORK_TREE=`, or `cd <repo root> && git …`
+
+**Fix:** Operate on the worktree with plain `git <subcommand>`; if the agent genuinely needs the main checkout, drop `isolation: worktree`.
+
 
 ### Wrong Voice in System Prompt `[custom:derived-from-agent-reviewer]`
 
@@ -111,6 +131,15 @@ All `<example>` blocks use the same phrasing pattern for the user message, reduc
 - Synonyms or rephrasings are not represented
 
 **Fix:** Vary user message phrasing across examples. Mix direct requests, indirect references, and different vocabulary.
+
+### Stale `/agents` Wizard Guidance `[official]` (added 2026-07-25)
+
+Agent or doc text telling the user to "run `/agents`" to create a subagent. The interactive creation wizard was removed in v2.1.198; `/agents` now only prints a reminder to ask Claude or edit `.claude/agents/` directly. Directories, frontmatter, and file format are unchanged.
+
+**Detection patterns:**
+- Body text matching `/agents` near "create", "new agent", or "wizard"
+
+**Fix:** Point the reader at `.claude/agents/` (or `~/.claude/agents/`) directly.
 
 ### Missing Proactive Trigger Example `[custom:derived-from-agent-reviewer]`
 

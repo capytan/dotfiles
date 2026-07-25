@@ -210,6 +210,9 @@ Run all checks defined in `references/cross-artifact-checks.md`:
 - Stale references (deleted/renamed artifacts)
 - Subagent skill-preload validity `[official 2026-06]`
 - Duplicate agent names within a scope `[official 2026-06]`
+- Unresolvable agent `tools` list — **Critical** if no entry resolves `[official 2026-07]`
+- Non-preloadable bundled skills in `skills:` `[official 2026-07]`
+- Stale `/agents` wizard guidance `[official 2026-07]`
 - Skill name vs bundled-skill collision `[official 2026-06]`
 
 ### Grading Scale

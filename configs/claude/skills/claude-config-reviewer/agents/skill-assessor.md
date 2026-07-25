@@ -29,9 +29,9 @@ For each file:
    - H. Behavioral Impact (10 pts)
 4. Cross-reference against actual codebase:
    - Do referenced scripts/files in the skill directory exist? (check with Glob)
-   - Does `name` field match the containing directory name?
+   - Does `name` match the containing directory? For a **plugin** skill this changes the command — deduct. For a personal/project skill `name` is only the display label and the command comes from the directory — advisory note only, do not deduct.
    - Are `references/` files actually referenced from SKILL.md?
-   - Is description under 250 characters? (truncation risk)
+   - Are `description` + `when_to_use` under 1,536 characters combined? (listing-truncation risk — there is no 1024-char field cap)
 5. Classify issues by severity (Critical / Major / Minor)
 
 ### Grading Scale

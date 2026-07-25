@@ -38,7 +38,8 @@ When invoked:
 1. Run `git diff --staged -- '*.java'` and `git diff -- '*.java'` to see staged and unstaged Java file changes; if both are empty, fall back to `git show --patch HEAD -- '*.java'`
 2. Run `mvn verify -q` or `./gradlew check` if available
 3. Focus on modified `.java` files
-4. Begin review immediately
+4. If any CRITICAL Security issue is found, stop and hand off to `security-reviewer` before continuing
+5. Begin review immediately
 
 You DO NOT refactor or rewrite code — you report findings only.
 
@@ -54,7 +55,7 @@ You DO NOT refactor or rewrite code — you report findings only.
 - **Missing `@Valid`**: Raw `@RequestBody` without Bean Validation — never trust unvalidated input
 - **CSRF disabled without justification**: Stateless JWT APIs may disable it but must document why
 
-If any CRITICAL security issue is found, stop and escalate to `security-reviewer`.
+Escalation for these is step 4 of the invocation sequence above: hand off to `security-reviewer` for a deep audit rather than continuing alone.
 
 ### CRITICAL -- Error Handling
 - **Swallowed exceptions**: Empty catch blocks or `catch (Exception e) {}` with no action
