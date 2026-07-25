@@ -117,7 +117,7 @@ my-skill/
 | Field | Required | Description |
 |-------|----------|-------------|
 | `name` | No | Display name. Lowercase letters, numbers, hyphens only (max 64 chars). If omitted, uses directory name. Cannot contain XML tags. Cannot contain reserved words: `anthropic`, `claude`. |
-| `description` | Recommended | What the skill does and when to use it. Max 1024 characters (hard cap — content is truncated). If omitted, uses the first paragraph of markdown. |
+| `description` | Recommended | What the skill does and when to use it. Truncated at 1,536 chars combined with `when_to_use` in the skill listing. If omitted, uses the first paragraph of markdown. |
 | `when_to_use` | No | Additional trigger phrases/example requests. Appended to `description` in the skill listing. **NEW 2026.** |
 | `argument-hint` | No | Hint shown during autocomplete (e.g., `[issue-number]`). |
 | `arguments` | No | Named positional arguments for `$name` substitution. Space-separated string or YAML list; names map to positions in order. **NEW 2026.** |
@@ -135,17 +135,15 @@ my-skill/
 
 ### Description: Length Limits & Truncation `[official]`
 
-Two separate limits apply — do not confuse them:
+One operative limit applies as of 2026-07-25:
 
-1. **Hard validation cap: 1024 characters** for the `description` field itself.
-   > "Must be non-empty, Maximum 1024 characters, Cannot contain XML tags"
-   > — https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices (retrieved 2026-04-17)
+1. ~~**Hard validation cap: 1024 characters** for the `description` field itself.~~ **Retracted 2026-07-25** — current docs no longer state a field-level cap. Do not deduct on the 1024 figure alone. (Historic quote, 2026-04-17: "Must be non-empty, Maximum 1024 characters, Cannot contain XML tags".)
 
-2. **Skill-listing truncation cap: 1,536 characters** for combined `description` + `when_to_use`, applied when the skill appears in the system-prompt listing.
+2. **Skill-listing truncation cap: 1,536 characters** for combined `description` + `when_to_use`, applied when the skill appears in the system-prompt listing. **This is the operative limit.**
    > "Front-load the key use case: the combined description and when_to_use text is truncated at 1,536 characters in the skill listing to reduce context usage."
    > — https://code.claude.com/docs/en/skills (retrieved 2026-04-17)
 
-> **Note on historical guidance**: The previous documented limit of "250 characters per entry" has been superseded. The 2026-04 docs specify 1,536 characters as the per-entry cap in listings (combined `description` + `when_to_use`), with the 1024-char field-level cap unchanged. The 1,536 per-entry cap is itself configurable via the `maxSkillDescriptionChars` setting. `[official]` (2026-05)
+> **Note on historical guidance**: Both the "250 characters per entry" limit and the 1024-char field-level cap have been superseded. Current docs specify only 1,536 characters as the per-entry cap in listings (combined `description` + `when_to_use`), itself configurable via the `maxSkillDescriptionChars` setting. `[official]` (2026-07-25)
 
 - Overall skill-listing budget scales at 1% of context window. When the budget overflows, descriptions for the **least-invoked** skills are dropped first, so skills you actually use keep their full text — names are always listed. `[official]` (updated 2026-05)
 - Raise the budget with the `skillListingBudgetFraction` setting (e.g. `0.02` = 2%) or the `SLASH_COMMAND_TOOL_CHAR_BUDGET` env var (fixed char count). Free budget for other skills by setting low-priority entries to `"name-only"` in `skillOverrides`.
@@ -166,7 +164,7 @@ Two separate limits apply — do not confuse them:
 Description-optimization constraints from skill-creator's `improve_description.py`:
 - Imperative phrasing ("Use this skill for..." over "This skill does...")
 - Focus on user intent, not implementation
-- Hard limit 1024 chars (truncated beyond)
+- Listing limit 1,536 chars combined with `when_to_use` (truncated beyond)
 - No overfitting: generalize to categories of intent, don't list specific queries
 
 ### Naming Conventions `[official]`

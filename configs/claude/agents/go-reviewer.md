@@ -54,7 +54,7 @@ When invoked:
 - **Hardcoded secrets**: API keys, passwords in source
 - **Insecure TLS**: `InsecureSkipVerify: true`
 
-When a CRITICAL security issue is found, stop and hand off to the **security-reviewer** agent for a deep audit before continuing the review.
+Escalation for these is step 4 of the invocation sequence above: finish classifying the current file, then hand off to **security-reviewer** for a deep audit rather than continuing alone.
 
 ### CRITICAL -- Error Handling
 - **Ignored errors**: Using `_` to discard errors

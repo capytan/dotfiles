@@ -19,7 +19,7 @@ Seven reviewers, each using a **distinct methodology and information source**, a
 
 ## Phase 1: Scope & Context
 
-Run 1a as a Haiku subagent, then do 1b yourself in the main session (it needs `AskUserQuestion`, which subagents do not have):
+Dispatch 1a as a Haiku subagent and issue 1b's `AskUserQuestion` yourself in the same message — subagents have no `AskUserQuestion`, and 1b's questions do not depend on 1a's output:
 
 ### 1a. Project Discovery (Haiku)
 
@@ -30,7 +30,7 @@ Run 1a as a Haiku subagent, then do 1b yourself in the main session (it needs `A
 
 ### 1b. Scope Selection (main session — NOT a subagent)
 
-`AskUserQuestion` is removed from every subagent's tool pool, so a subagent cannot run this step. After 1a returns, ask this yourself in the main loop, then pass the chosen scope and model into Phase 2.
+The two questions below are static, so issue this `AskUserQuestion` call in the *same* message that dispatches 1a — they run concurrently, and only the file-list resolution afterwards needs 1a's result. Pass the chosen scope and model into Phase 2.
 
 Present the user with scope and model options via AskUserQuestion (2 questions in one call):
 
