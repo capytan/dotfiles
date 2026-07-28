@@ -71,11 +71,27 @@ if echo "$COMMAND" | grep -qE '\bgit\b[^|;&`]*\bclean\b[^|;&`]*((^|[[:space:]])-
   deny "git clean -f は追跡されていないファイルを削除します。先に git clean -n でプレビューしてから、ユーザーに確認を求めてください。"
 fi
 
-# 4. git branch 強制削除をブロック
-# - flag 位置 anchor 必須 (branch 名 feature-D-42 の false positive 回避)
-# - long/short 双方向 mix ((--delete + -f), (-d + --force) 等) を網羅
+# 4. 破壊的な削除を確認 (ask)
+# - deny ではなく ask にするのは、ユーザー承認という逃げ道がないとエージェントが迂回コマンドを
+#   探すため (実例: branch -D の deny → git update-ref -d で抹消)。branch/ref は reflog から
+#   一定期間復元できるので、完全に不可逆な rm -rf 等 (rule 5) とは区別する
+# - 同じ理由で、迂回経路 (update-ref) も同じ ask に載せる。片方だけ deny にすると gate が形骸化する
+# - branch: flag 位置 anchor 必須 (branch 名 feature-D-42 の false positive 回避)
+#   long/short 双方向 mix ((--delete + -f), (-d + --force) 等) を網羅
 if echo "$COMMAND" | grep -qE '\bgit\b[^|;&`]*\bbranch\b[^|;&`]*((^|[[:space:]])-[a-zA-Z]*D[a-zA-Z]*\b|(^|[[:space:]])-[a-zA-Z]*d[a-zA-Z]*f[a-zA-Z]*\b|(^|[[:space:]])-[a-zA-Z]*f[a-zA-Z]*d[a-zA-Z]*\b|(^|[[:space:]])(-[a-zA-Z]*d\b|--delete\b)[^|;&`]*[[:space:]](-[a-zA-Z]*f[a-zA-Z]*|--force\b)|(^|[[:space:]])(-[a-zA-Z]*f\b|--force\b)[^|;&`]*[[:space:]](-[a-zA-Z]*d[a-zA-Z]*|--delete\b))'; then
-  deny "git branch の強制削除 (-D / -d -f / --delete --force) は取り消せません。安全な git branch -d を使用するか、削除前にユーザーに確認を求めてください。"
+  ask "git branch の強制削除 (-D / -d -f / --delete --force) は未マージのコミットを失う可能性があります (reflog からは一定期間復元可能)。対象ブランチがマージ済みか確認の上で承認してください。"
+fi
+
+# git update-ref -d は branch -D と同じ ref 抹消。squash merge されたブランチの掃除で
+# エージェントが branch -D の代わりに使いがちなので、同じゲートに載せる
+if echo "$COMMAND" | grep -qE '\bgit\b[^|;&`]*\bupdate-ref\b[^|;&`]*((^|[[:space:]])-[a-zA-Z]*d[a-zA-Z]*\b|--delete\b)'; then
+  ask "git update-ref -d は ref (branch / tag) を直接削除します。git branch -D と同等の破壊的操作です。対象 ref を確認の上で承認してください。"
+fi
+
+# worktree remove --force は未コミット変更を破壊する。reflog に残らない分 branch -D より
+# 危険なので、復元可能な branch -D にゲートを張るなら当然こちらにも張る
+if echo "$COMMAND" | grep -qE '\bgit\b[^|;&`]*\bworktree\b[^|;&`]*\bremove\b[^|;&`]*((^|[[:space:]])-[a-zA-Z]*f[a-zA-Z]*\b|--force\b)'; then
+  ask "git worktree remove --force は worktree 内の未コミット変更を破棄します。reflog では復元できません。対象 worktree に未保存の作業がないか確認の上で承認してください。"
 fi
 
 # 5. rm -rf をブロック (-rf, -fr, -R+f, --recursive + --force のあらゆる組み合わせ)
