@@ -19,6 +19,144 @@ COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty' 2>/dev/null)
 # 空コマンドは早期 allow
 [ -z "$COMMAND" ] && exit 0
 
+# 実行されないテキスト領域を検査対象から落とす (改行正規化より先に行う)。
+# rule は文字列の pattern match なので、PR 本文や commit message に引用しただけの
+# `rm -rf` まで拾う。実害ゼロの deny はゲートへの信頼を下げ迂回を誘発する。
+#
+# 除去してよいのは bash の意味論から「実行されない」と証明できる形だけ。迷う入力は
+# 必ず「除去しない = 検査する」側 (fail-closed) に倒す。逆に倒すと silent allow になる。
+# アルゴリズムと過去の bypass 実例は ~/dotfiles/.claude/rules/claude-config.md
+
+# double quote 内 / unquoted heredoc 本文で実行を起こせるのは `...` / $(...) / ${ ...; }
+# の 3 形式だけ。$var は展開されるだけでコマンドとして再パースされない。
+_is_inert_text() {
+  case "$1" in
+    *'`'* | *'$('* | *'${'*) return 1 ;;
+  esac
+  return 0
+}
+
+# 先頭の (^|[^<]) は herestring `<<<` を heredoc と誤認しないための除外
+_HEREDOC_START_RE='(^|[^<])<<-?[[:space:]]*([^[:space:]<;|&()]+)'
+
+# 本文を実行しないと分かっている消費者。blocklist だと列挙漏れがそのまま silent allow に
+# なる (`ssh host <<EOF` は本文をリモートシェルが実行するが `sh` に一致しない)。
+_HEREDOC_SAFE_CONSUMER_RE='^[[:space:]]*(cat|tee|git|gh)([[:space:]]|$)'
+
+# 本文を捨ててよいか。判定は先頭語だけを見る (行全体だと
+# `cat > shell/zsh/x.zsh <<'EOF'` のリダイレクト先パスを消費者と誤認する)。
+_heredoc_consumer_is_safe() {
+  local chunk rest seg
+  # `;` `&` で区切り、`<<` を含む chunk を選ぶ (heredoc はその command に属する)
+  rest=${1//&/;}
+  while :; do
+    chunk=${rest%%;*}
+    case "$chunk" in *'<<'*) break ;; esac
+    [ "$chunk" = "$rest" ] && return 1
+    rest=${rest#*;}
+  done
+  chunk=${chunk%"${chunk##*[![:space:]]}"}
+  # 行末が `|` / `\` だと pipeline の残りが次行にあり判断できない
+  case "$chunk" in
+    *'|' | *'\') return 1 ;;
+  esac
+  # pipeline の全 segment が安全であることを要求する (`cat <<'EOF' | sh` を弾く)
+  while :; do
+    seg=${chunk%%|*}
+    [[ "$seg" =~ $_HEREDOC_SAFE_CONSUMER_RE ]] || return 1
+    [ "$seg" = "$chunk" ] && break
+    chunk=${chunk#*|}
+  done
+  return 0
+}
+
+# heredoc 本文を除去する。宣言行は実コマンドなので残す。
+# 戻り値は「完全に除去済み」か「入力そのまま」の 2 状態だけ。
+_strip_heredoc_bodies() {
+  local line trimmed delim="" quoted=0 body="" out=""
+  while IFS= read -r line || [ -n "$line" ]; do
+    if [ -n "$delim" ]; then
+      # 終端判定は前後の空白を落として比較する (`<<-` のタブ字下げに対応)
+      trimmed="${line#"${line%%[![:space:]]*}"}"
+      trimmed="${trimmed%"${trimmed##*[![:space:]]}"}"
+      if [ "$trimmed" = "$delim" ]; then
+        # quoted はリテラル。unquoted は展開されるので実行経路が無いときだけ捨てる
+        [ "$quoted" = "1" ] || _is_inert_text "$body" || out+="$body"
+        delim=""
+        body=""
+      else
+        body+="$line"$'\n'
+      fi
+      continue
+    fi
+    out+="$line"$'\n'
+    if [[ "$line" =~ $_HEREDOC_START_RE ]]; then
+      # delim を先に確定させる (_heredoc_consumer_is_safe も [[ =~ ]] で BASH_REMATCH を潰す)
+      delim="${BASH_REMATCH[2]}"
+      _heredoc_consumer_is_safe "$line" || { delim=""; continue; }
+      # `<<\EOF` も bash では quoted で終端は `EOF`。`\` を剥がさないと終端が一致しない
+      case "$delim" in
+        *\'* | *\"* | *\\*) quoted=1 ;;
+        *) quoted=0 ;;
+      esac
+      delim="${delim//\'/}"
+      delim="${delim//\"/}"
+      delim="${delim//\\/}"
+      body=""
+    fi
+  done <<< "$1"
+  # fail-safe: 終端が見つからなければ heredoc の誤認 (`cat "a << b"` 等)。除去結果を
+  # 捨てて入力を返す。素通りさせると捨てた行に隠れた実コマンドが allow される。
+  [ -n "$delim" ] && { printf '%s' "$1"; return; }
+  printf '%s' "$out"
+}
+
+# guard: `<<` が無ければループごと飛ばす (見逃しても検査側に倒れるので穴は開かない)
+case "$COMMAND" in
+  *'<<'*) COMMAND=$(_strip_heredoc_bodies "$COMMAND") ;;
+esac
+
+# message / body 系フラグの引用符付き値を空にする。
+# unquoted な値は空白を含まない 1 語なので `rm -rf <path>` 型の pattern は成立せず、
+# 引用符付きだけを対象にすれば十分。`bash -c "..."` の -c は対象外なので、
+# インタプリタに渡す文字列は従来どおり検査される。
+_MSG_FLAG_VALUE_RE="((^|[[:space:]])(-m|-b|-t|--message|--body|--title|--notes|--description)([[:space:]]+|=))('[^']*'|\"[^\"]*\")"
+
+# 除去は値が属する segment の先頭語が git / gh のときだけ。フラグ名だけでは値が不活性か
+# 決まらない (`ssh h -t "cmd"` はリモートで実行、`curl -b "..."` は cookie)。
+_SEGMENT_LEADER_RE='^[[:space:]]*(git|gh)([[:space:]]|$)'
+# 改行もコマンド区切りなので segment 境界に含める
+_SEGMENT_SEP_CLASS=$'\n|;&`'
+
+# 値の中に区切り文字が入りうる (`--body "a && b"`) ので、先に値を見つけてから
+# 手前のテキストで segment の先頭語を判定する。
+_strip_flag_values() {
+  local rest=$1 out="" full head val pre ctx
+  while [[ "$rest" =~ $_MSG_FLAG_VALUE_RE ]]; do
+    full=${BASH_REMATCH[0]}
+    head=${BASH_REMATCH[1]}
+    val=${BASH_REMATCH[5]}
+    pre=${rest%%"$full"*}
+    rest=${rest#*"$full"}
+    ctx="$out$pre"
+    ctx=${ctx##*[$_SEGMENT_SEP_CLASS]}
+    if [[ "$ctx" =~ $_SEGMENT_LEADER_RE ]]; then
+      case "$val" in
+        \'*) out+="$pre$head''" ;;
+        *) if _is_inert_text "$val"; then out+="$pre$head\"\""; else out+="$pre$full"; fi ;;
+      esac
+    else
+      out+="$pre$full"
+    fi
+  done
+  printf '%s' "$out$rest"
+}
+
+# guard: 引用符付きの message 系フラグを含まないコマンドは丸ごと飛ばす
+if [[ "$COMMAND" =~ $_MSG_FLAG_VALUE_RE ]]; then
+  COMMAND=$(_strip_flag_values "$COMMAND")
+fi
+
 # 改行 (bash line continuation `\<nl>` 等) を空白に正規化。
 # grep -qE は行単位処理なので、正規化しないと `git \<nl>push --force` 型の
 # bypass が全 block で成立する
@@ -132,8 +270,10 @@ fi
 # - 具体パスのみ対象 (*key* 等の広い substring は false positive 過多のため validator では拾わない)
 
 # rules 8/9 事前 bypass: text-only コマンド (message/log/branch 内の literal は path ではない)
+# _is_inert_text を AND するのは、この bypass も「実行されないテキスト」を前提にしているため。
+# 無条件だと `echo "$(cat <秘密鍵>)"` が rules 8/9 を丸ごと飛ばして allow になる。
 _skip_path_rules=0
-if echo "$COMMAND" | grep -qE '^[[:space:]]*(git[[:space:]]+(commit|log|branch|tag|checkout|switch|blame|shortlog|show|diff|remote|stash|rev-parse|cherry-pick)|echo|printf|history)\b'; then
+if _is_inert_text "$COMMAND" && echo "$COMMAND" | grep -qE '^[[:space:]]*(git[[:space:]]+(commit|log|branch|tag|checkout|switch|blame|shortlog|show|diff|remote|stash|rev-parse|cherry-pick)|echo|printf|history)\b'; then
   _skip_path_rules=1
 fi
 # rules 8/9 事前 bypass: テンプレート / 公開鍵の suffix
