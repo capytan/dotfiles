@@ -1,0 +1,50 @@
+name: hooks
+
+on:
+  pull_request:
+    paths:
+      - "configs/claude/hooks/**"
+      - ".github/workflows/hooks-test.yml"
+  workflow_dispatch:
+
+# repo の既定は write。checkout してテストを走らせるだけなので絞る
+permissions:
+  contents: read
+
+jobs:
+  validate-command:
+    # fork PR はテストスクリプト自体を書き換えられる = runner 上で任意コードが動く。
+    # secrets も write token も渡らないが compute を開放する必要はないので同一 repo 限定。
+    # 外部からの貢献はローカルに取り込んでから走らせる
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.pull_request.head.repo.full_name == github.repository
+    name: PreToolUse validator (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # 本番は settings.json の `bash ~/.claude/hooks/...` 経由で PATH の bash が使われる
+          - os: ubuntu-latest
+            name: bash 5
+            hook_bash: bash
+          # macOS の /bin/bash は 3.2。bash 4/5 専用構文が混入していないことを確認する
+          - os: macos-latest
+            name: bash 3.2
+            hook_bash: /bin/bash
+    steps:
+      # tag は移動しうるので SHA 固定
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # jq が無いと validator は fail-open し、原因の分かりにくい全件失敗になる
+      - name: Check jq
+        run: jq --version
+
+      - name: Check bash version
+        run: ${{ matrix.hook_bash }} --version | head -1
+
+      - name: Run validator tests
+        env:
+          HOOK_BASH: ${{ matrix.hook_bash }}
+        run: bash configs/claude/hooks/test-pretooluse-validate-command.sh
