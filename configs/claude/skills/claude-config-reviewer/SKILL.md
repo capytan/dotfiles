@@ -65,9 +65,18 @@ Tag findings per credibility tier defined in each reference file's header (`[off
 
 #### Step 3: Diff & Update
 
-- Compare findings against existing reference files
+Read these six files — they are the inputs Phase 0 compares findings against:
+
+| Pool | Official | Community |
+|------|----------|-----------|
+| CLAUDE.md | `references/claude-md-official-best-practices.md` | `references/claude-md-community-practices.md` |
+| SKILL.md | `references/skill-official-best-practices.md` | `references/skill-community-practices.md` |
+| Agent | `references/agent-official-best-practices.md` | `references/agent-community-practices.md` |
+
+- Compare findings against those files
 - When official and community sources conflict, prioritize official but note the conflict
-- Update all affected `references/*.md` files; set `last_updated` to today
+- Propagate anything that changes scoring into the matching `*-quality-criteria.md` and `*-anti-patterns.md`, and into `references/cross-artifact-checks.md` when a Phase 3 check is affected
+- Set `last_updated` to today on **every** `references/*.md` file, including ones you did not otherwise change (the freshness policy checks all of them)
 
 ### Recording Rules
 

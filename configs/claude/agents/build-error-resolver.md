@@ -154,13 +154,20 @@ For each error:
 
 ## Quick Recovery
 
+Use each toolchain's own clean command. Do **not** reach for recursive force-delete — a PreToolUse validator denies it, and the denial is not something to route around with an equivalent command.
+
 ```bash
-# Clear caches (language-specific)
-# Node: rm -rf node_modules/.cache .next && npm install
-# Rust: cargo clean && cargo build
-# Go: go clean -cache && go build ./...
-# Python: find . -name __pycache__ -exec rm -rf {} + && pip install -e .
+# Toolchains with a real project-scoped clean command
+# Rust:    cargo clean && cargo build
+# Go:      go clean -cache && go build ./...
+# Gradle:  ./gradlew clean build
+# Maven:   mvn clean verify
+# Flutter: flutter clean && flutter pub get
 ```
+
+Node and Python have no equivalent. `npm cache clean --force` and `pip cache purge` wipe the **machine-wide download cache** — they leave the stale build artifacts (`.next/`, `node_modules/.cache/`, `__pycache__/`) exactly where they were, so the build stays broken while every other project on the machine re-downloads its dependencies. Do not reach for them. To reinstall dependencies, use the package manager the repo actually uses (`npm ci` only when `package-lock.json` exists, otherwise `npm install` / `yarn install` / `pnpm install`).
+
+If a cache directory genuinely has to be removed and no toolchain command covers it, name the exact path and ask the user to delete it rather than issuing the deletion yourself.
 
 ## Success Metrics
 

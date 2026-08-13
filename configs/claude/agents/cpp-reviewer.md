@@ -40,7 +40,7 @@ When invoked:
 1. Run `git diff --staged` and `git diff` with `-- '*.cpp' '*.hpp' '*.cc' '*.hh' '*.cxx' '*.h'` to see staged and unstaged C++ file changes; if both are empty, fall back to `git show --patch HEAD`
 2. Run `clang-tidy` and `cppcheck` if available
 3. Focus on modified C++ files
-4. If any CRITICAL Security issue is found, stop and hand off to `security-reviewer` before continuing
+4. If any CRITICAL Security issue is found, stop and emit a `SECURITY-ESCALATION` block at the top of your report — affected files, the finding, and its severity — so the main session can invoke `security-reviewer`. You cannot invoke another subagent yourself
 5. Begin review immediately
 
 ## Review Priorities

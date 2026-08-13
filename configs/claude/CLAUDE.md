@@ -15,7 +15,10 @@
 
 ## Hooks
 
-- PreToolUse validators block dangerous patterns (force-push/`+refspec`, `reset --hard`, `git clean -f`, `rm -rf`, `sed -i`, `gawk -i inplace`)、破壊的削除 (`git branch -D` 系/`git update-ref -d`/`git worktree remove --force`) は deny ではなく **ask**（deny だとユーザーに承認手段が無く、同じ効果の迂回コマンドを誘発する。実際 `branch -D` の deny を `update-ref -d` で抜けた事故がある。branch/ref は reflog から復元可能なので不可逆な `rm -rf` 等とは区別し、迂回経路ごと同じ確認に載せる）。and gate secret-file paths (case-insensitive): 鍵・証明書 (`id_rsa`/`id_ed25519`/`id_dsa`/`id_ecdsa`/`*.pem`/`*.pfx`/`*.p12`/`*.jks`) は deny、機微ファイル (`.env`/`.envrc`/`~/.ssh`・`~/.aws`・`~/.kube` 配下/`secrets`・`credentials` ディレクトリ/`.netrc`/`.docker/config.json`/`*.tfvars`) は ask。text-only なコマンド (`git commit`/`log`/`branch`/`tag`/`checkout`/`echo`/`printf` 等) と `.example`/`.template`/`.sample`/`.dist`/`.j2`/`.tpl`/`.pub` suffix は除外して message や public key を誤検知しない。加えて全 rule の判定前に**実行されないテキスト領域を除去**する: `git`/`gh` に渡す message 系フラグ (`-m`/`-b`/`-t`/`--message`/`--body`/`--title`/`--notes`/`--description`) の引用符付き値と、`cat`/`tee`/`git`/`gh` に渡す heredoc 本文（PR 本文やコミットメッセージで `rm -rf` 等を引用しただけで deny されるのを防ぐ。実害ゼロの deny はゲートへの信頼を下げ迂回を誘発する）。**除去されるのは bash の意味論から実行されないと証明できる形だけ**で、`` ` ``・`$(`・`${` を含む値や本文は展開経路があるので除去されず従来どおり検査される（`git commit -m "$(rm -rf /x)"` は deny のまま）。他コマンドのフラグ値 (`ssh -t "..."`/`curl -b "..."`) と、`cat`/`tee`/`git`/`gh` 以外に渡す heredoc (`bash <<EOF`/`ssh host <<EOF`/`cat <<EOF | sh`) も除去対象外。判定に迷う入力は必ず「除去しない = 検査する」側に倒れる。Deny/ask output uses the `hookSpecificOutput.permissionDecision` schema; validators fail open. Source: `~/dotfiles/configs/claude/hooks/pretooluse-validate-command.sh`、アルゴリズムと過去の bypass 実例は `~/dotfiles/.claude/rules/claude-config.md`
+- PreToolUse validator が Bash コマンドを検査する。**deny**: 破壊的操作 (force-push/`+refspec`, `reset --hard`, `git clean -f`, `rm -rf`, `sed -i`, `gawk -i inplace`) と鍵・証明書パス (`id_rsa`/`*.pem`/`*.p12` 等)。**ask**: 破壊的削除 (`git branch -D` 系/`git update-ref -d`/`git worktree remove --force`) と機微ファイル (`.env`/`~/.ssh`・`~/.aws`・`~/.kube` 配下/`.netrc`/`*.tfvars` 等)
+- 削除系を deny ではなく ask にしているのは意図的。deny だとユーザーに承認手段が無く、同じ効果の迂回コマンドを誘発する（実際 `branch -D` の deny を `update-ref -d` で抜けた事故がある）。branch/ref は reflog から復元可能なので不可逆な `rm -rf` 等とは区別し、迂回経路ごと同じ確認に載せる
+- 判定前に**実行されないテキスト領域**（`git`/`gh` の message 系フラグ値と `cat`/`tee`/`git`/`gh` に渡す heredoc 本文）が除去されるので、コミットメッセージや PR 本文で危険な文字列を引用しただけでは deny されない。ただし `` ` ``・`$(`・`${` を含む値は展開経路があるので除去されず検査される（`git commit -m "$(rm -rf /x)"` は deny のまま）。判定に迷う入力は必ず「検査する」側に倒れる
+- validator は fail open、出力は `hookSpecificOutput.permissionDecision` schema。実装は `configs/claude/hooks/pretooluse-validate-command.sh`。除去アルゴリズムの詳細・過去の bypass 実例・変更時の注意は `.claude/rules/claude-config.md`（dotfiles リポジトリ内でのみ自動ロードされる path-scoped rule）
 - hook が `deny` を返したら、**hook のメッセージが明示した代替手段のみ**を使う (`sed -i` → Edit ツール、鍵ファイル → ユーザーが `!` プレフィックスで実行)。拒否された効果そのものを別コマンドで達成しない (`git branch -D` → `git update-ref -d`、`rm -rf` → `find -delete` 等)。ユーザーが会話で承認しても迂回経路は使わず、状況を報告して指示を仰ぐ。ゲートが厳しすぎるなら迂回ではなく hook 自体を直す
 - settings.json の `Read()`/`Edit()` deny・ask はファイル操作ツール (Read / Edit / Write) にのみ適用され、Bash 経由の `cat`/`head`/`tail`/`echo`/`printf` は素通り。具体パスの秘密ファイルは上記 validator が deny/ask で塞ぐが、`**/*key*`・`**/*token*` 等の広い名前パターンは false positive 過多で validator に入れていないので、この種の名前のファイルを Bash で触るときはエージェント側で回避する
 - tmux window-name emoji state: ⏳ working / 🤖 subagent / ⚠️ permission/error / ❌ tool failure / ✅ stop. **1 tmux window = 1 Claude Code pane** (panes in the same window fight over the name)
@@ -23,12 +26,9 @@
 
 ## AWS
 
-Source: [aws/agent-toolkit-for-aws rules/aws-agent-rules.md](https://github.com/aws/agent-toolkit-for-aws/blob/main/rules/aws-agent-rules.md). Applies when the `aws-core` plugin is loaded.
+`aws-core` plugin が有効なとき適用。詳細ガイダンスは plugin の skill 群が on-demand で提供するので、ここには skill が読まれる前に効く必要のあるルールだけ置く。全文は [aws/agent-toolkit-for-aws rules/aws-agent-rules.md](https://github.com/aws/agent-toolkit-for-aws/blob/main/rules/aws-agent-rules.md)。
 
-- AWS 操作は AWS MCP Server（`aws-mcp`）優先。sandbox 実行・観測・監査ログが付く。使えない場合のみ AWS CLI に落とす
-- タスク開始前に関連 AWS skill があるか確認。`retrieve_skill` でロードし、一般知識より skill のガイダンスを優先
-- API パラメタ・権限・上限・エラーコードが不確かなときは推測せず、ドキュメントで検証。確認できないなら不確実性を明示
-- インフラ作成は IaC（AWS CDK / CloudFormation）優先。直接 CLI での作成は避ける
-- AWS Well-Architected Framework に沿う
-- AWS リソース名・説明に em dash は使わず hyphen を使う
-- Secret Safety: 秘密情報（credentials / API key / token / password）を扱うタスクは、まず `aws-secrets-manager` skill をロード。`secretsmanager get-secret-value` / `batch-get-secret-value` の直接呼び出しと、Secrets Manager Agent daemon への直アクセスは禁止。値を context に載せず実行時に解決するため `{{resolve:secretsmanager:secret-id:SecretString:json-key}}` + `asm-exec` を使う
+- タスク開始前に関連 AWS skill を探してロードし、一般知識より skill のガイダンスを優先する
+- AWS 操作は AWS MCP Server（`aws-mcp`）優先。使えない場合のみ AWS CLI に落とす。インフラ作成は IaC（CDK / CloudFormation）優先で、直接 CLI での作成は避ける
+- API パラメタ・権限・上限・エラーコードが不確かなときは推測せずドキュメントで検証。確認できないなら不確実性を明示する
+- **Secret Safety**: 秘密情報を扱うタスクはまず `aws-secrets-manager` skill をロード。`secretsmanager get-secret-value` / `batch-get-secret-value` の直接呼び出しと Secrets Manager Agent daemon への直アクセスは禁止。値を context に載せず実行時に解決するため `{{resolve:secretsmanager:secret-id:SecretString:json-key}}` + `asm-exec` を使う

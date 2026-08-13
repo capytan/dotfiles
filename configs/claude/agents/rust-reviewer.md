@@ -44,7 +44,7 @@ When invoked:
    - If history is shallow or only a single commit is available, fall back to `git show --patch HEAD -- '*.rs'` so you still inspect code-level changes.
 3. Focus on modified `.rs` files
 4. If the project has CI or merge requirements, note that review assumes a green CI and resolved merge conflicts where applicable; call out if the diff suggests otherwise.
-5. If any CRITICAL Safety/Security issue is found, stop and hand off to `security-reviewer` before continuing
+5. If any CRITICAL Safety/Security issue is found, stop and emit a `SECURITY-ESCALATION` block at the top of your report — affected files, the finding, and its severity — so the main session can invoke `security-reviewer`. You cannot invoke another subagent yourself
 6. Begin review
 
 ## Review Priorities

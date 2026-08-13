@@ -62,7 +62,7 @@ Check for:
 
 ### Step 2b: Security Review
 
-Apply the **Security (CRITICAL)** checklist below before continuing — if any CRITICAL security issue is found, stop and hand off to `security-reviewer`.
+Apply the **Security (CRITICAL)** checklist below before continuing — if any CRITICAL security issue is found, stop and emit a `SECURITY-ESCALATION` block at the top of your report — affected files, the finding, and its severity — so the main session can invoke `security-reviewer`. You cannot invoke another subagent yourself.
 
 ### Step 3: Read and Review
 
