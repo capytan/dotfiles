@@ -24,8 +24,10 @@ context: fork
 `$ARGUMENTS` を解析し、Bash で以下のように実行する:
 
 ```bash
-python "${CLAUDE_SKILL_DIR}/scripts/collect.py" [OPTIONS] > /tmp/prompt-review-data.json
+python3 "${CLAUDE_SKILL_DIR}/scripts/collect.py" [OPTIONS] > /tmp/prompt-review-data.json
 ```
+
+収集対象ツールのログ保存場所・形式で判断に迷ったら [references/data-sources.md](references/data-sources.md) を読む。
 
 | `$ARGUMENTS` | 意味 | オプション |
 |---|---|---|

@@ -13,7 +13,7 @@
 >
 > **Note:** Phase 0 research (2026-04-17) cross-checked against code.claude.com/docs/en/sub-agents.
 
-last_updated: 2026-07-25
+last_updated: 2026-08-12
 
 ---
 
@@ -48,7 +48,7 @@ Validate the YAML frontmatter between `---` markers for required fields and valu
 
 **model field (optional):**
 - Absent → PASS (defaults to `inherit`)
-- Present, value in `inherit | sonnet | opus | haiku | fable` or full model ID (e.g., `claude-opus-4-8`, `claude-sonnet-4-6`) → PASS — `fable` is an official alias as of 2026-06 (https://code.claude.com/docs/en/sub-agents, retrieved 2026-06-10); do NOT deduct for it
+- Present, value in `inherit | sonnet | opus | haiku | fable` or full model ID (e.g., `claude-opus-5`, `claude-opus-4-8`, `claude-sonnet-4-6`) → PASS — `fable` is an official alias as of 2026-06 (https://code.claude.com/docs/en/sub-agents, retrieved 2026-06-10); do NOT deduct for it
 - Unrecognized value → -2 pts
 
 **color field (optional):**
@@ -220,7 +220,7 @@ Verify the agent file is consistent with its environment.
 **Checks:**
 - Agent name in frontmatter matches the filename (minus `.md`) → advisory NOTE only (the official docs state "The filename does not have to match" — identity comes solely from the `name` field; do NOT deduct for a mismatch, but flag it as a maintainability note since a mismatch can confuse human readers) `[official]`
 - Tools listed in `tools` array are real, recognized tool names → required (-2 pts per unknown)
-- Tools listed that are unavailable to subagents (`AskUserQuestion`, `EndConversation`, `EnterPlanMode`, `ExitPlanMode` unless `permissionMode: plan`, `ScheduleWakeup`, `WaitForMcpServers`; `Agent` only when the agent is at the depth-5 nesting cap) → advisory NOTE when *some* entries are filtered `[official]`. When they are the **only** entries, the effective tool list is empty and criterion A scores it 0 pts as Critical (v2.1.208 refuses to launch) — do not also deduct here
+- Tools listed that are unavailable to subagents (`AskUserQuestion`, `EndConversation`, `EnterPlanMode`, `ExitPlanMode` unless `permissionMode: plan`, `ScheduleWakeup`, `WaitForMcpServers`; `Agent` only when the agent is at the nesting-depth cap (3 by default as of v2.1.219)) → advisory NOTE when *some* entries are filtered `[official]`. When they are the **only** entries, the effective tool list is empty and criterion A scores it 0 pts as Critical (v2.1.208 refuses to launch) — do not also deduct here
 - Body prose instructing a step that requires a tool absent from the agent's effective pool (declared `tools:` minus the filtered set above) → -3 pts `[custom]`: e.g. a subagent body told to ask the user via `AskUserQuestion`. The step silently never fires
 - System prompt references to files/paths are valid (spot-check with Glob) → -2 pts per broken ref
 - No contradictions between description and system prompt responsibilities → -3 pts if conflicting
@@ -269,5 +269,11 @@ Verify the agent file is consistent with its environment.
 - 2026-07-25: Refreshed against code.claude.com/docs/en/sub-agents (retrieved 2026-07-25) and changelog v2.1.196–v2.1.218. **One material scoring change**: **A. Frontmatter** — a `tools` list in which *no* entry resolves to a real tool now makes the subagent **refuse to launch** (v2.1.208); this is escalated from a -1 pt-per-entry warning to a **Critical finding, 0 pts for the category**, because the agent is non-functional. Partial misspellings keep the -1 pt treatment. **Advisory additions**: `permissionMode` accepts `manual` as a `default` alias (v2.1.200); subagents run in the **background by default** as of v2.1.198 and background subagents receive a **narrower built-in tool set** (forks exempt) — flag Major only when an agent's core workflow provably needs an excluded tool; `skills` preload exclusion now also covers bundled `/verify` and `/code-review` (v2.1.215); `/agents` no longer opens a creation wizard (v2.1.198) so agent files pointing users at it carry stale guidance; `/doctor` now reports same-directory duplicate `name`s and proposes a fix (v2.1.205); subagents inherit the main conversation's extended-thinking setting (v2.1.198) — there is no per-subagent thinking field, so do not flag its absence; `isolation: worktree` agents now fail Bash commands that redirect git back into the main checkout via `git -C`/`--git-dir`/`GIT_DIR`/`cd` (v2.1.216) — an agent body instructing such a redirect is a Major correctness issue. last_updated bumped to 2026-07-25.
   - **A. Frontmatter**: `background: true` is no longer a hazard (was: risk of silent permission auto-deny). Since changelog v2.1.186, background subagent permission prompts surface in the main session — do NOT flag `background: true` as a reliability risk on its own.
   - **G. Cross-Reference**: For nested project agents along the cwd walk that share a `name`, **the closest-to-cwd file wins** (deterministic since v2.1.178). Previously assessors might warn about this collision; now it should be downgraded to advisory NOTE only (the deeper file deterministically takes effect), reserving the -3 pt deduction for the within-one-scope silent-discard case.
-  - **Tool restriction (D)**: Listing `Agent` in `tools` is still required for an agent that needs to spawn nested subagents (now allowed up to depth 5, changelog v2.1.172). No deduction change.
-  - **General**: Agents whose only purpose is depth-5 orchestration should not be flagged for nesting alone — the limit is the platform's, not a smell.
+  - **Tool restriction (D)**: Listing `Agent` in `tools` is still required for an agent that needs to spawn nested subagents (depth 5 as of changelog v2.1.172 — **superseded 2026-08-12: the default budget is depth 3, v2.1.219**). No deduction change.
+  - **General**: Agents whose only purpose is nested orchestration should not be flagged for nesting alone — the limit is the platform's, not a smell.
+- 2026-08-12: Refreshed against code.claude.com/docs/en/sub-agents (retrieved 2026-08-12) and changelog v2.1.219-v2.1.228. **No scoring-weight changes.** **Advisory updates**:
+  - **General / D. Tool restriction**: the default nested-subagent budget is now **depth 3** (v2.1.219), not 5. Updated in criterion G's subagent-unavailable list and in the depth figures of the 2026-07-25 changelog note. Still not a file-level deduction - the limit is the platform's - but do not cite depth 5 as current.
+  - **A. Frontmatter (`model`)**: `claude-opus-5` is the current default Opus model ID (v2.1.219) and is a valid `model:` value. A value blocked by an org `availableModels` allowlist is **substituted silently** (family alias steps down within the family since v2.1.222; otherwise falls back to the inherited model), so an org-blocked value is never a launch failure - do not score it as one.
+  - **A. Frontmatter (`permissionMode`)**: `bypassPermissions` in an agent definition no longer overrides org policy (v2.1.223). An agent relying on `bypassPermissions` to escape managed policy is a Major correctness issue in the body's assumptions, not a frontmatter-validity issue.
+  - **Per-session spawn cap removed** (v2.1.224): do not flag long-running orchestrator agents for exhausting a 200-subagent budget.
+  last_updated bumped to 2026-08-12.

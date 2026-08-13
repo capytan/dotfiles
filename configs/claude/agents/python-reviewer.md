@@ -24,9 +24,9 @@ description: |
   <example>
   Context: A pull request adds webhook handling code to a Django project.
   user: "Review PR #128 — adds the billing webhook handler"
-  assistant: "I'll use the python-reviewer agent to review the Django webhook changes, escalating to security-reviewer if payment-signature handling looks weak."
+  assistant: "I'll use the python-reviewer agent to review the Django webhook changes; if payment-signature handling looks weak it emits a SECURITY-ESCALATION block and I'll invoke security-reviewer from here."
   <commentary>
-  PR-review trigger: review a PR diff (not local changes) with peer-agent handoff for security-critical paths.
+  PR-review trigger: review a PR diff (not local changes). The agent reports security escalations for the main session to route — it cannot invoke another subagent itself.
   </commentary>
   </example>
 tools: ["Read", "Grep", "Glob", "Bash"]
@@ -40,7 +40,7 @@ When invoked:
 1. Run `git diff --staged -- '*.py'` and `git diff -- '*.py'` to see staged and unstaged Python file changes; if both are empty, fall back to `git show --patch HEAD -- '*.py'`
 2. Run static analysis tools if available (ruff, mypy, pylint, black --check)
 3. Focus on modified `.py` files
-4. If any CRITICAL Security issue is found, stop and hand off to `security-reviewer` before continuing
+4. If any CRITICAL Security issue is found, stop and emit a `SECURITY-ESCALATION` block at the top of your report — affected files, the finding, and its severity — so the main session can invoke `security-reviewer`. You cannot invoke another subagent yourself
 5. Begin review immediately
 
 ## Review Priorities
