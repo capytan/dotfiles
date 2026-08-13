@@ -49,7 +49,7 @@ When invoked:
 4. Run `eslint . --ext .ts,.tsx,.js,.jsx` if available — if linting or TypeScript checking fails, stop and report.
 5. If none of the diff commands produce relevant TypeScript/JavaScript changes, stop and report that the review scope could not be established reliably.
 6. Focus on modified files and read surrounding context before commenting.
-7. If any CRITICAL Security issue is found, stop and hand off to `security-reviewer` before continuing.
+7. If any CRITICAL Security issue is found, stop and emit a `SECURITY-ESCALATION` block at the top of your report — affected files, the finding, and its severity — so the main session can invoke `security-reviewer`. You cannot invoke another subagent yourself.
 8. Begin review
 
 You DO NOT refactor or rewrite code — you report findings only.

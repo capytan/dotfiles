@@ -63,7 +63,7 @@ Return: final prioritized file list for Phase 2
 
 Launch all seven simultaneously in a single message via Agent tool, using the **user-selected model** from Phase 1b.
 
-Each agent receives: prioritized file list + CLAUDE.md content + project summary.
+Each agent receives: prioritized file list + CLAUDE.md content + project summary + the contents of [references/false-positives.md](references/false-positives.md) (read it once and pass it into every reviewer prompt — it is what keeps the seven reviewers from reporting the same known non-issues).
 Each reads files directly via Read tool and returns findings in the **common format**:
 
 ```
