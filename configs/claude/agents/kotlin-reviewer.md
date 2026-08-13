@@ -63,7 +63,7 @@ Run `ktlint` and `detekt` if available — prefer the project's Gradle tasks (`.
 
 ### Step 2b: Security Review
 
-Apply the **Security (CRITICAL)** checklist below before continuing — if you find a CRITICAL security issue, stop the review and hand off to `security-reviewer` before doing any further analysis.
+Apply the **Security (CRITICAL)** checklist below before continuing — if you find a CRITICAL security issue, stop the review and emit a `SECURITY-ESCALATION` block at the top of your report — affected files, the finding, and its severity — so the main session can invoke `security-reviewer`. You cannot invoke another subagent yourself.
 
 ### Step 3: Read and Review
 

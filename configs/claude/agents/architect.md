@@ -2,7 +2,7 @@
 name: architect
 color: blue
 description: |
-  Software architecture specialist for system design, scalability, and technical decision-making. Use PROACTIVELY when planning new features, refactoring large systems, or making architectural decisions.
+  Software architecture specialist for system design, scalability, and technical decision-making. Decides component boundaries and technology trade-offs, and documents them as ADRs. Use PROACTIVELY when planning new features or refactoring large systems and the question is *what to build and why*. For breaking already-decided work into ordered, phased delivery steps, use the `planner` agent instead.
 
   <example>
   Context: User needs to design a new system component.

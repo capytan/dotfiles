@@ -3,9 +3,15 @@
 > Referenced during Phase 3 (Report) for Cross-Artifact Summary.
 > These checks detect issues spanning multiple configuration artifact types.
 
-last_updated: 2026-07-25
+last_updated: 2026-08-12
 
 ---
+
+## Contents
+
+- Check Categories 1-14: Reference Existence, Description Consistency, Circular References, Tool Consistency, Stale References, Subagent Skill-Preload Validity, Duplicate Agent Names, Skill/Bundled-Skill Name Collision, Agent `background: true`, Unresolvable Agent `tools` List, Non-Preloadable Bundled Skills, Stale `/agents` Wizard Guidance, Body Step Requires an Unavailable Tool, Skill Portability (conditional)
+- Severity Classification (per-check severity table)
+- Changelog
 
 ## Check Categories
 
@@ -88,6 +94,13 @@ last_updated: 2026-07-25
 - Most common instance: a skill phase or agent body telling a subagent to ask the user via `AskUserQuestion`. Hoist the question into the main session and pass the answer into the subagent's prompt.
 - Detection: for each skill phase dispatched to a subagent and each agent body, list the tools its steps require and diff against that agent's effective pool. Classify Major.
 
+### 14. Skill Portability — Conditional `[official]` (2026-08)
+[Only applies to skills declared as intended for export; skipped otherwise]
+- **Precondition**: the skill's own text (SKILL.md, its README, or CLAUDE.md) states it is meant for claude.ai upload, the Skills API, or `package_skill.py` packaging. If no such declaration exists, **skip this check entirely** — do not run it speculatively.
+- On those export paths, any frontmatter key outside `name`, `description`, `license`, `compatibility`, `metadata`, `allowed-tools` is a **hard error**. Claude Code-only fields (`when_to_use`, `argument-hint`, `arguments`, `disable-model-invocation`, `user-invocable`, `disallowed-tools`, `model`, `effort`, `context`, `agent`, `background`, `hooks`, `paths`, `shell`) are the usual offenders.
+- For Claude Code-only skills those same fields are **correct** — never deduct.
+- Detection: grep the skill's text for an export declaration; if found, diff its frontmatter keys against the six-key allowlist. Classify Major.
+
 ---
 
 ## Severity Classification
@@ -106,6 +119,7 @@ last_updated: 2026-07-25
 | Non-Preloadable Bundled Skills in `skills:` | Major (this table is the single source for this rule's severity) |
 | Stale `/agents` Wizard Guidance | Minor (this table is the single source for this rule's severity) |
 | Body Step Requires a Tool the Subagent Cannot Have | Major |
+| Skill Portability (conditional) | Major when the skill declares an export target; not run otherwise |
 
 ---
 
@@ -115,3 +129,4 @@ last_updated: 2026-07-25
 - 2026-06-10: Added `last_updated` header (was missing). Added two new checks from code.claude.com/docs/en/sub-agents (retrieved 2026-06-10): Subagent Skill-Preload Validity (skills with `disable-model-invocation: true` are silently skipped at preload) and Duplicate Agent Names Within a Scope (recursive scan; one file silently discarded). Both classified Major.
 - 2026-06-26: Added two new checks and one rule refinement. **Check 8 (new)**: Skill Name Collides with Bundled Skill — project/personal/plugin skills silently override bundled ones (`code-review`, `batch`, `debug`, `loop`, `claude-api`, `run`, `verify`, `run-skill-generator`, plus Skill-tool-callable built-ins `init`, `review`, `security-review`); classified Minor (advisory only — sometimes intentional). **Check 9 (new)**: Agent `background: true` is no longer a permission-auto-deny risk since changelog v2.1.186 — guidance for reviewers, not a check. **Check 7 refinement (changelog v2.1.178)**: nested project `.claude/agents/` along the cwd walk now have a deterministic closest-wins tie-break — downgrade severity to Minor for that specific case (within-one-scope silent-discard stays Major). last_updated bumped to 2026-06-26.
 - 2026-07-25: Added three checks from code.claude.com/docs/en/{skills,sub-agents} (retrieved 2026-07-25) and changelog v2.1.196–v2.1.218. **Check 10 (new)**: Unresolvable Agent `tools` List — as of v2.1.208 an all-unresolvable `tools` list makes Claude Code refuse to launch the subagent (previously it launched tool-less), so this is Critical, not cosmetic; the subagent-filtered tool set (`Agent`, `AskUserQuestion`, `EndConversation`, `EnterPlanMode`, `ExitPlanMode`) counts toward the zero-tools case. **Check 11 (new)**: Non-Preloadable Bundled Skills in `skills:` — v2.1.215 made `/verify` and `/code-review` user-invoke-only, extending Check 6's preload exclusion beyond `disable-model-invocation: true`; classified Major. **Check 12 (new)**: Stale `/agents` Wizard Guidance — v2.1.198 removed the interactive creation wizard, so config text telling users to run `/agents` to create a subagent is stale; Minor. Checks 1–9 re-verified current. last_updated bumped to 2026-07-25.
+- 2026-08-12: Refreshed against code.claude.com/docs/en/skills and /sub-agents (both retrieved 2026-08-12) + changelog v2.1.219-v2.1.228. **All existing checks re-verified valid.** Wording updates: the nested-subagent budget referenced by delegation-chain checks is now **depth 3 by default** (v2.1.219, was 5); the 200-subagent-per-session spawn cap referenced nowhere here was removed (v2.1.224). **Check 14 (new, conditional) - Skill Portability**: if a skill is declared as intended for claude.ai upload, the Skills API, or `package_skill.py` packaging, any frontmatter key outside `name`, `description`, `license`, `compatibility`, `metadata`, `allowed-tools` is a hard error on that path (Major). For Claude Code-only skills this check does not apply and Claude Code-only fields must not be flagged. last_updated bumped to 2026-08-12.
