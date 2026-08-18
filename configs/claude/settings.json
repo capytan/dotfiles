@@ -419,6 +419,16 @@
         ]
       }
     ],
+    "TeammateIdle": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/tmux-teammate-idle-close.sh"
+          }
+        ]
+      }
+    ],
     "SessionStart": [
       {
         "hooks": [
