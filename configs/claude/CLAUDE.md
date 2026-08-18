@@ -23,6 +23,7 @@
 - settings.json の `Read()`/`Edit()` deny・ask はファイル操作ツール (Read / Edit / Write) にのみ適用され、Bash 経由の `cat`/`head`/`tail`/`echo`/`printf` は素通り。具体パスの秘密ファイルは上記 validator が deny/ask で塞ぐが、`**/*key*`・`**/*token*` 等の広い名前パターンは false positive 過多で validator に入れていないので、この種の名前のファイルを Bash で触るときはエージェント側で回避する
 - tmux window-name emoji state: ⏳ working / 🤖 subagent / ⚠️ permission/error / ❌ tool failure / ✅ stop. **1 tmux window = 1 Claude Code pane** (panes in the same window fight over the name)
 - tmux ops: log `tail -F ~/.cache/claude-tmux-status.log`, disable `export CLAUDE_TMUX_LOG=0`. Engineering details (priority table, force-update events, ✅→⏳ reset) live in `~/dotfiles/.claude/rules/claude-config.md` (path-scoped to `configs/claude/**`)
+- teammate（名前付き subagent）は tmux pane で起動する。pane 表示は維持し、作業を終えて idle になったら `tmux-teammate-idle-close.sh`（TeammateIdle hook）が閉じる。既定は idle 後 60 秒待ち CPU 使用率 5% 未満なら close（起こされた場合は close しない）。調整は `CLAUDE_TMUX_TEAMMATE_GRACE` / `CLAUDE_TMUX_TEAMMATE_IDLE_PCT`、無効化は `CLAUDE_TMUX_TEAMMATE_CLOSE=0`
 
 ## AWS
 
