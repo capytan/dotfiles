@@ -652,5 +652,6 @@
   "additionalDirectories": [
     "~/ghq",
     "~/dev"
-  ]
+  ],
+  "tui": "fullscreen"
 }
