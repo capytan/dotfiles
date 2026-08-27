@@ -46,23 +46,6 @@
       "Bash(git wt *)",
       "Bash(git ls-files *)",
       "Bash(git shortlog *)",
-      "Bash(git -C * status *)",
-      "Bash(git -C * log *)",
-      "Bash(git -C * diff *)",
-      "Bash(git -C * show *)",
-      "Bash(git -C * branch *)",
-      "Bash(git -C * ls-files *)",
-      "Bash(git -C * rev-parse *)",
-      "Bash(git -C * blame *)",
-      "Bash(git -C * shortlog *)",
-      "Bash(git -C * describe *)",
-      "Bash(git -C * fetch *)",
-      "Bash(git -C * pull *)",
-      "Bash(git -C * add *)",
-      "Bash(git -C * commit *)",
-      "Bash(git -C * stash *)",
-      "Bash(git -C * checkout *)",
-      "Bash(git -C * switch *)",
       "Bash(gh pr view *)",
       "Bash(gh pr diff *)",
       "Bash(gh pr list *)",
@@ -644,6 +627,7 @@
   },
   "alwaysThinkingEnabled": true,
   "effortLevel": "high",
+  "tui": "fullscreen",
   "autoMemoryEnabled": true,
   "skipWorkflowUsageWarning": true,
   "showTurnDuration": true,
@@ -652,6 +636,5 @@
   "additionalDirectories": [
     "~/ghq",
     "~/dev"
-  ],
-  "tui": "fullscreen"
+  ]
 }
