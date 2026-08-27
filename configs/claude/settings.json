@@ -630,6 +630,7 @@
   "tui": "fullscreen",
   "autoMemoryEnabled": true,
   "skipWorkflowUsageWarning": true,
+  "showClearContextOnPlanAccept": true,
   "showTurnDuration": true,
   "teammateMode": "auto",
   "skipAutoPermissionPrompt": true,
