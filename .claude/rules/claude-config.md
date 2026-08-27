@@ -7,6 +7,7 @@ paths:
 
 - Hooks must use shared functions from `configs/claude/hooks/tmux-lib.sh`
 - Don't put `//` comments in the `permissions` arrays — Claude Code v2.1.216+ warns on unknown deny/ask rules (`"// ..." matches no known tool`). File rules must use `Edit()`/`Read()`, not `Write()`/`Glob()` (file permission checks only consult those two forms; `Write()`/`Glob()` are silently ignored)
+- Don't add `Bash(git -C * <subcmd> *)`-style **allow** rules — the wildcard before the subcommand also matches injected options (`-c core.fsmonitor=...`, `--exec-path`), so arbitrary commands get approved without a prompt, and Claude Code warns about it at every startup. Cross-repo `git -C` is handled by the auto-mode classifier + PreToolUse validator instead (removed in this repo once; don't reintroduce). Wildcards in `ask` rules are fine — worst case is an extra prompt
 - Update `setup-claude.sh` when adding new symlink targets
 - Use `set -euo pipefail` in hook scripts (except tmux hooks — guard pattern `tmux_guard || exit 0` and emoji matching conflict with `-e`/`-u` — and `pretooluse-validate-command.sh` — validators must fail open; with `-e` a jq parse failure exits 2, which PreToolUse treats as "block all commands")
 
