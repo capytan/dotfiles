@@ -71,14 +71,12 @@ link_file "$DOTFILES_DIR/configs/git/config" "$HOME/.config/git/config"
 link_file "$DOTFILES_DIR/configs/git/ignore" "$HOME/.config/git/ignore"
 
 # =============================================================================
-# 5. tmux configuration
+# 5. herdr configuration
 # =============================================================================
-info "Setting up tmux configuration..."
-link_file "$DOTFILES_DIR/configs/tmux/tmux.conf"      "$HOME/.config/tmux/tmux.conf"
-link_file "$DOTFILES_DIR/configs/tmux/keybindings.txt" "$HOME/.config/tmux/keybindings.txt"
-link_file "$DOTFILES_DIR/configs/tmux/tmux-start.sh"   "$HOME/.config/tmux/tmux-start.sh"
-link_file "$DOTFILES_DIR/configs/tmux/scripts/claude-usage-status.sh" \
-  "$HOME/.config/tmux/scripts/claude-usage-status.sh"
+info "Setting up herdr configuration..."
+link_file "$DOTFILES_DIR/configs/herdr/config.toml" "$HOME/.config/herdr/config.toml"
+link_file "$DOTFILES_DIR/configs/herdr/scripts/claude-usage.sh" \
+  "$HOME/.config/herdr/scripts/claude-usage.sh"
 
 # =============================================================================
 # 6. Alacritty configuration

@@ -61,9 +61,6 @@ __pycache__/
 # Local environment settings (machine-specific, not tracked)
 shell/zsh/local.zsh
 
-# tmux local startup config
-configs/tmux/tmux-start.local.sh
-
 # Ghostty machine-specific overrides
 configs/ghostty/local.conf
 

@@ -1,7 +1,7 @@
 # Shell
 shell-integration = zsh
 shell-integration-features = cursor,sudo,title
-command = /bin/zsh -l -c "~/.config/tmux/tmux-start.sh"
+command = /bin/zsh -l -c "herdr"
 
 # Theme
 theme = tokyonight

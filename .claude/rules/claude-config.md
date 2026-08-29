@@ -5,11 +5,11 @@ paths:
 
 # Claude Code Config Rules
 
-- Hooks must use shared functions from `configs/claude/hooks/tmux-lib.sh`
 - Don't put `//` comments in the `permissions` arrays — Claude Code v2.1.216+ warns on unknown deny/ask rules (`"// ..." matches no known tool`). File rules must use `Edit()`/`Read()`, not `Write()`/`Glob()` (file permission checks only consult those two forms; `Write()`/`Glob()` are silently ignored)
 - Don't add `Bash(git -C * <subcmd> *)`-style **allow** rules — the wildcard before the subcommand also matches injected options (`-c core.fsmonitor=...`, `--exec-path`), so arbitrary commands get approved without a prompt, and Claude Code warns about it at every startup. Cross-repo `git -C` is handled by the auto-mode classifier + PreToolUse validator instead (removed in this repo once; don't reintroduce). Wildcards in `ask` rules are fine — worst case is an extra prompt
 - Update `setup-claude.sh` when adding new symlink targets
-- Use `set -euo pipefail` in hook scripts (except tmux hooks — guard pattern `tmux_guard || exit 0` and emoji matching conflict with `-e`/`-u` — and `pretooluse-validate-command.sh` — validators must fail open; with `-e` a jq parse failure exits 2, which PreToolUse treats as "block all commands")
+- Use `set -euo pipefail` in hook scripts, except `pretooluse-validate-command.sh` — validators must fail open; with `-e` a jq parse failure exits 2, which PreToolUse treats as "block all commands"
+- `herdr-agent-state.sh` は herdr が生成・管理する（`# installed by herdr` ヘッダと `HERDR_INTEGRATION_VERSION` が目印、状態は `herdr integration status`）。この repo の hook 規約は**適用外**で、手で編集しない — `herdr integration install` と herdr 本体の更新が上書きする。`~/.claude/hooks` は repo への symlink なので herdr の書き込みは working tree に直接現れる。統合を更新したら差分をそのままコミットすること（整形やスタイル修正を加えない）
 
 ## PreToolUse validator: 実行されないテキスト領域の除去
 
@@ -47,28 +47,3 @@ bash が double quote 内 / unquoted heredoc 本文で**実行**を起こせる�
 ### 変更するときは
 
 `configs/claude/hooks/test-pretooluse-validate-command.sh` の `rule 0: bypass 回帰` section は、確認済みの bypass を固定したもの。削らないこと。`.github/workflows/hooks-test.yml` が PR で ubuntu (bash 5) と macOS (`/bin/bash` 3.2) の両方で走る。ローカルでは `HOOK_BASH=/bin/bash bash configs/claude/hooks/test-pretooluse-validate-command.sh` で 3.2 を確認できる。
-
-## tmux status emoji priority model
-
-| emoji | priority | meaning |
-|---|---|---|
-| ⚠️ | 50 | Awaiting user / API error (permission_prompt / idle_prompt / elicitation_dialog / StopFailure) |
-| ❌ | 40 | Tool failure (PostToolUseFailure) |
-| ✅ | 30 | Response complete (Stop) |
-| 🤖 | 20 | Subagent running (SubagentStart, when counter == 1) |
-| ⏳ | 10 | Working (SessionStart / UserPromptSubmit / PostToolUse) |
-
-Priority-guarded: a higher-priority state is not overwritten by a lower one. Only `UserPromptSubmit` / `Stop` / `StopFailure` / `SessionStart` force-update. ✅ is reset to ⏳ on the next `UserPromptSubmit`, and ⚠️/❌ is demoted to ⏳ on the next `PostToolUse` (permission approval / tool retry には解除イベントが無いので、次の tool 実行で自動回復させる)。
-
-`SessionStart` の base name は既存の window 名 (絵文字剥ぎ後) を保持し、空のときのみ `basename $PWD` にフォールバックする。これで `tmux-start.local.sh` 等で明示した window 名を上書きしない。
-
-When adding a new hook, choose one of the four `tmux-lib.sh` APIs:
-
-- `tmux_force_set_status <emoji> <hook> [<base>]` — force update, ignores priority. For new-turn / completion events only
-- `tmux_set_status_if_priority_allows <emoji> <hook>` — update only when `new >= current`. Default choice
-- `tmux_set_status_or_demote_alert <emoji> <hook>` — same as priority-allows, but also demotes ⚠️/❌ regardless of `new`. Used by `PostToolUse` to recover from permission-approval / tool-retry
-- `tmux_demote_status <from> <to> <hook>` — downgrade only when current matches `<from>`. Used by SubagentStop (🤖→⏳)
-
-Skip logs (`reason=priority_too_low`) are suppressed by default because `PostToolUse` fires very frequently. Enable with `CLAUDE_TMUX_LOG_SKIP=1` for debugging.
-
-Each hook must call `_tmux_hook_init "$(cat)"` first (runs `tmux_guard` and extracts `session_id` from stdin for log lines).

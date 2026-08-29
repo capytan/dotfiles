@@ -26,8 +26,8 @@ dotfiles/
 │   ├── cursor/rules/    # Cursor IDE rules
 │   ├── ghostty/         # Ghostty terminal config
 │   ├── git/             # Git config, ignore, completion, prompt
+│   ├── herdr/           # herdr multiplexer config and tab bar scripts
 │   ├── mise/            # Development environment manager config
-│   ├── tmux/            # tmux config, keybindings, startup scripts
 │   └── vscode/          # VSCode/Cursor settings and extensions
 ├── shell/               # Shell configuration (shared layer)
 │   ├── zshrc            # Thin loader (auto-detects platform)
@@ -77,7 +77,4 @@ For settings that differ between personal and work machines, use gitignored loca
 ```bash
 # Shell-level (proxy, API keys, team aliases)
 cp shell/zsh/local.zsh.example shell/zsh/local.zsh
-
-# tmux window layout
-cp configs/tmux/tmux-start.local.sh.example configs/tmux/tmux-start.local.sh
 ```

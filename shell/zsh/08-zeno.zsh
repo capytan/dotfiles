@@ -8,7 +8,6 @@ ZENO_DIR="${HOME}/.local/share/zeno"
 
 # Environment
 export ZENO_HOME="${XDG_CONFIG_HOME:-$HOME/.config}/zeno"
-export ZENO_ENABLE_FZF_TMUX=1
 export ZENO_GIT_CAT="bat --color=always --style=plain"
 export ZENO_GIT_TREE="eza --tree --icons --color=always"
 
