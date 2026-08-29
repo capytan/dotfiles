@@ -627,15 +627,12 @@
   },
   "alwaysThinkingEnabled": true,
   "effortLevel": "high",
+  "showClearContextOnPlanAccept": true,
   "tui": "fullscreen",
   "autoMemoryEnabled": true,
   "skipWorkflowUsageWarning": true,
-  "showClearContextOnPlanAccept": true,
   "showTurnDuration": true,
   "teammateMode": "auto",
   "skipAutoPermissionPrompt": true,
-  "additionalDirectories": [
-    "~/ghq",
-    "~/dev"
-  ]
+  "additionalDirectories": ["~/ghq", "~/dev"]
 }
