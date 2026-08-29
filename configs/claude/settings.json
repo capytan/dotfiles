@@ -169,9 +169,6 @@
       "WebFetch(domain:www.builder.io)",
       "WebFetch(domain:www.humanlayer.dev)",
       "WebFetch(domain:medium.com)",
-      "Bash(tmux list-panes *)",
-      "Bash(tmux show-options *)",
-      "Bash(tmux show-window-options *)",
       "Bash(printf *)",
       "Skill(commit-commands:commit)",
       "Skill(dig:dig)",
@@ -298,7 +295,7 @@
     ],
     "defaultMode": "auto"
   },
-  "model": "opus[1m]",
+  "model": "opus",
   "enableAllProjectMcpServers": false,
   "enabledMcpjsonServers": [],
   "hooks": {
@@ -313,137 +310,14 @@
         ]
       }
     ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.claude/hooks/tmux-notify.sh"
-          }
-        ]
-      }
-    ],
-    "Notification": [
-      {
-        "matcher": "permission_prompt",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.claude/hooks/tmux-alert.sh permission_prompt"
-          }
-        ]
-      },
-      {
-        "matcher": "idle_prompt",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.claude/hooks/tmux-alert.sh idle_prompt"
-          }
-        ]
-      },
-      {
-        "matcher": "elicitation_dialog",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.claude/hooks/tmux-alert.sh elicitation_dialog"
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.claude/hooks/tmux-reset.sh"
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.claude/hooks/tmux-working.sh"
-          }
-        ]
-      }
-    ],
-    "PostToolUseFailure": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.claude/hooks/tmux-tool-failure.sh"
-          }
-        ]
-      }
-    ],
-    "SubagentStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.claude/hooks/tmux-subagent-start.sh"
-          }
-        ]
-      }
-    ],
-    "SubagentStop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.claude/hooks/tmux-subagent-stop.sh"
-          }
-        ]
-      }
-    ],
-    "TeammateIdle": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.claude/hooks/tmux-teammate-idle-close.sh"
-          }
-        ]
-      }
-    ],
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.claude/hooks/tmux-session-start.sh"
-          }
-        ]
-      }
-    ],
     "SessionEnd": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/hooks/tmux-session-end.sh"
-          },
-          {
-            "type": "command",
-            "command": "bash ~/.claude/hooks/tmux-session-end-usage.sh",
-            "timeout": 30000,
+            "command": "bash ~/.claude/hooks/session-end-usage.sh",
+            "timeout": 30,
             "async": true
-          }
-        ]
-      }
-    ],
-    "StopFailure": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.claude/hooks/tmux-stop-failure.sh"
           }
         ]
       }
@@ -454,7 +328,7 @@
           {
             "type": "command",
             "command": "bash ~/.claude/hooks/worktree-git-wt.sh",
-            "timeout": 30000
+            "timeout": 30
           }
         ]
       }
@@ -465,7 +339,19 @@
           {
             "type": "command",
             "command": "bash ~/.claude/hooks/worktree-git-wt.sh",
-            "timeout": 30000
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/herdr-agent-state.sh session",
+            "timeout": 10
           }
         ]
       }
@@ -634,5 +520,8 @@
   "showTurnDuration": true,
   "teammateMode": "auto",
   "skipAutoPermissionPrompt": true,
-  "additionalDirectories": ["~/ghq", "~/dev"]
+  "additionalDirectories": [
+    "~/ghq",
+    "~/dev"
+  ]
 }

@@ -1,0 +1,27 @@
+# herdr configuration
+# 全キーの一覧とデフォルト値は `herdr --default-config` で確認する。
+# 検証は `herdr config check`、稼働中サーバーへの反映は `herdr server reload-config`。
+#
+# prefix は herdr デフォルトの ctrl+b をそのまま使うので [keys] は書かない。
+# Claude Code の状態 (working/blocked/done/idle) は herdr が pane 出力から
+# 自動検出して sidebar に出すので、状態通知用の hook は要らない。
+
+onboarding = false
+
+[theme]
+name = "catppuccin"
+auto_switch = false
+
+[ui]
+# Claude の使用量を tab bar 右端に表示する (時計は置かない)
+tab_bar_right = [
+  { type = "command", command = "~/.config/herdr/scripts/claude-usage.sh", interval_seconds = 5 },
+]
+
+show_agent_labels_on_pane_borders = true
+status_indicators = "dots"
+[ui.toast]
+delivery = "system"
+
+[ui.sound]
+enabled = true

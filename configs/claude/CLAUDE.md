@@ -22,9 +22,7 @@
 - validator は fail open、出力は `hookSpecificOutput.permissionDecision` schema。実装は `configs/claude/hooks/pretooluse-validate-command.sh`。除去アルゴリズムの詳細・過去の bypass 実例・変更時の注意は `.claude/rules/claude-config.md`（dotfiles リポジトリ内でのみ自動ロードされる path-scoped rule）
 - hook が `deny` を返したら、**hook のメッセージが明示した代替手段のみ**を使う (`sed -i` → Edit ツール、鍵ファイル → ユーザーが `!` プレフィックスで実行)。拒否された効果そのものを別コマンドで達成しない (`git branch -D` → `git update-ref -d`、`rm -rf` → `find -delete` 等)。ユーザーが会話で承認しても迂回経路は使わず、状況を報告して指示を仰ぐ。ゲートが厳しすぎるなら迂回ではなく hook 自体を直す
 - settings.json の `Read()`/`Edit()` deny・ask はファイル操作ツール (Read / Edit / Write) にのみ適用され、Bash 経由の `cat`/`head`/`tail`/`echo`/`printf` は素通り。具体パスの秘密ファイルは上記 validator が deny/ask で塞ぐが、`**/*key*`・`**/*token*` 等の広い名前パターンは false positive 過多で validator に入れていないので、この種の名前のファイルを Bash で触るときはエージェント側で回避する
-- tmux window-name emoji state: ⏳ working / 🤖 subagent / ⚠️ permission/error / ❌ tool failure / ✅ stop. **1 tmux window = 1 Claude Code pane** (panes in the same window fight over the name)
-- tmux ops: log `tail -F ~/.cache/claude-tmux-status.log`, disable `export CLAUDE_TMUX_LOG=0`. Engineering details (priority table, force-update events, ✅→⏳ reset) live in `~/dotfiles/.claude/rules/claude-config.md` (path-scoped to `configs/claude/**`)
-- teammate（名前付き subagent）は tmux pane で起動する。pane 表示は維持し、作業を終えて idle になったら `tmux-teammate-idle-close.sh`（TeammateIdle hook）が閉じる。既定は idle 後 60 秒待ち CPU 使用率 5% 未満なら close（起こされた場合は close しない）。調整は `CLAUDE_TMUX_TEAMMATE_GRACE` / `CLAUDE_TMUX_TEAMMATE_IDLE_PCT`、無効化は `CLAUDE_TMUX_TEAMMATE_CLOSE=0`
+- agent の状態 (working / blocked / done / idle) は multiplexer の herdr が pane 出力から自動検出して sidebar に出す。状態表示の hook を自作しない。`herdr-agent-state.sh` は herdr の公式統合が入れるもので herdr 管理下 — 手で編集しない（統合の再インストール・更新で上書きされる）
 
 ## AWS
 
