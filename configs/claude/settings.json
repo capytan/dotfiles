@@ -295,7 +295,7 @@
     ],
     "defaultMode": "auto"
   },
-  "model": "opus",
+  "model": "opus[1m]",
   "enableAllProjectMcpServers": false,
   "enabledMcpjsonServers": [],
   "hooks": {
