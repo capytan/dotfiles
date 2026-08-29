@@ -1,6 +1,6 @@
 #!/bin/bash
 # SessionEnd hook (async): 今日のトークン使用量を集計してキャッシュ更新
-# tmux の有無に関わらず動作する（tmux_guard 不要）
+# 出力は herdr の tab_bar_right から claude-usage.sh 経由で表示される
 #
 # 出力先: ~/.cache/claude-usage.txt
 # 出力例: "128K tok"
@@ -105,8 +105,8 @@ PYEOF
 }
 
 # --- トークン数をヒューマンリーダブルに変換 ---
-# 0 は空文字を返して、reader 側 (claude-usage-status.sh) の [ -n ... ] ガードで
-# status bar から usage セグメントを隠す
+# 0 は空文字を返して、reader 側 (claude-usage.sh) の [ -n ... ] ガードで
+# tab bar から usage エントリを隠す
 format_tokens() {
     awk -v t="${1:-0}" 'BEGIN {
         n = t + 0
@@ -135,7 +135,7 @@ fi
 FORMATTED=$(format_tokens "$TOTAL_TOKENS")
 
 # atomic replace: 一時ファイルに書いてから mv。
-# reader (1秒毎に読む claude-usage-status.sh) が truncate 中の空ファイルを
+# reader (5秒毎に読む claude-usage.sh) が truncate 中の空ファイルを
 # 掴む race を防ぐ。
 TMP_FILE="${CACHE_FILE}.tmp.$$"
 printf '%s\n' "$FORMATTED" > "$TMP_FILE" && mv -f "$TMP_FILE" "$CACHE_FILE"
