@@ -296,6 +296,7 @@
     "defaultMode": "auto"
   },
   "model": "opus[1m]",
+  "advisorModel": "fable",
   "enableAllProjectMcpServers": false,
   "enabledMcpjsonServers": [],
   "hooks": {
