@@ -11,7 +11,7 @@
 > - `[community:mid]` = GitHub 10-50 stars, verified in a tech blog
 > - `[custom]` = Derived from this repo's own practice
 
-last_updated: 2026-08-12
+last_updated: 2026-09-04
 sources:
   - https://code.claude.com/docs/en/skills
   - https://code.claude.com/docs/en/changelog
@@ -40,10 +40,13 @@ Summary from Official Documentation:
 - Table of Contents for Long Reference Files
 - Degrees of Freedom
 - Invocation Control
+- Pre-approved Tools Are Turn-Scoped & Not Trust-Gated
 - Skill Content Lifecycle
 - Running Skills in Subagents
 - String Substitutions
 - Dynamic Context Injection
+- Injected-Command Failure Semantics
+- Skills Synced from claude.ai & the Reserved `synced` Name
 - Workflows & Feedback Loops
 - Content Guidelines
 - Evaluation-Driven Development
@@ -77,6 +80,8 @@ Three bundled skills work together to launch the app and confirm changes against
 
 **A skill at any scope (personal/project/plugin) overrides a bundled skill with the same name `[official]` (added 2026-06-26).** For example, a `code-review` skill in your project's `.claude/skills/` replaces the bundled `/code-review`. Plugin skills use a `plugin-name:skill-name` namespace, so they cannot conflict with other levels. — https://code.claude.com/docs/en/skills (retrieved 2026-06-26)
 
+**…but NOT the bundled skill's aliases `[official]` (added 2026-09-04):** "A skill at any of these levels also overrides a bundled skill with the same name, but not the bundled skill's aliases. For example, a `code-review` skill in your project's `.claude/skills/` replaces the bundled `/code-review`, and typing the bundled alias `/review` never runs your skill." — https://code.claude.com/docs/en/skills (retrieved 2026-09-04). Changelog v2.1.248 also fixed `skillOverrides` entries keyed on a bundled skill's alias (e.g. `checkup` for `/doctor`) not applying, and `Skill(name)` deny rules not covering a nested skill listed as `<dir>:name`. Note `/doctor` itself is a bundled skill as of v2.1.205 (alias `checkup`) and is exempt from `disableBundledSkills`.
+
 ### SKILL.md Structure `[official]`
 
 > "Every skill needs a SKILL.md file with two parts: YAML frontmatter (between --- markers) that tells Claude when to use the skill, and markdown content with instructions Claude follows when the skill is invoked."
@@ -108,6 +113,8 @@ my-skill/
 - Live change detection: Claude Code watches skill directories; adding/editing/removing under `~/.claude/skills/`, project `.claude/skills/`, or `--add-dir` skills directories takes effect within the session without restart (new top-level directories still require restart). `[official]`
 - **Plugin-skill folders `[official]` (added 2026-06-26):** "Add a `.claude-plugin/plugin.json` to a skill folder and it loads as a plugin named `<name>@skills-dir`, so it can bundle agents, hooks, and MCP servers." (project skills require accepting the workspace-trust dialog first.) — https://code.claude.com/docs/en/skills (retrieved 2026-06-26)
 - Automatic discovery from nested `.claude/skills/` under the current working tree (monorepo support). `[official]`
+- **Symlinked skill directories `[official]` (added 2026-09-04):** "A `<skill-name>` entry in the enterprise, personal, or project locations can be a symlink to a directory elsewhere on disk. Claude Code follows the symlink and reads `SKILL.md` from the target directory, and if the same target is reachable from more than one location, Claude Code loads the skill once." — https://code.claude.com/docs/en/skills (retrieved 2026-09-04)
+- **`/cd` picks up the new directory's project skills** on v2.1.246+. `[official]` (retrieved 2026-09-04)
 - **Live change detection scope `[official]` (clarified 2026-06-26):** covers `SKILL.md` text only; for a skill folder that is also a plugin, edits to `hooks/`, `.mcp.json`, `agents/`, and `output-styles/` need `/reload-plugins` to take effect.
 
 ### Frontmatter Reference `[official]`
@@ -124,8 +131,8 @@ my-skill/
 | `arguments` | No | Named positional arguments for `$name` substitution. Space-separated string or YAML list; names map to positions in order. **NEW 2026.** |
 | `disable-model-invocation` | No | `true` prevents Claude from auto-loading. Also prevents the skill from being preloaded into subagents. Default: `false`. |
 | `user-invocable` | No | `false` hides from `/` menu. Default: `true`. |
-| `allowed-tools` | No | Tools Claude can use without asking permission when skill is active. Space- or comma-separated string or YAML list. |
-| `disallowed-tools` | No | Tools removed from Claude's pool while the skill is active (e.g., block `AskUserQuestion` in a background loop). Restriction clears on the next user message. **NEW 2026.** |
+| `allowed-tools` | No | Tools Claude can use without asking permission **during the turn that invokes the skill; the grant clears when you send your next message** (clarified 2026-09-04 — persistence applies to the skill's instructions, not its permissions). Space- or comma-separated string or YAML list. `${CLAUDE_SKILL_DIR}` / `${CLAUDE_PROJECT_DIR}` (and, in plugin skills, `${CLAUDE_PLUGIN_ROOT}` / `${CLAUDE_PLUGIN_DATA}`) are substituted in Bash rules here as well as in the body. |
+| `disallowed-tools` | No | Tools removed from Claude's pool while the skill is active (e.g., block `AskUserQuestion` in a background loop). Restriction clears on the next user message. Like deny rules, cannot remove `EndConversation` while any other tool remains. **NEW 2026.** |
 | `model` | No | Model to use when skill is active. Turn-scoped: "The override applies for the rest of the current turn and is not saved to settings; the session model resumes on your next prompt." Accepts same values as `/model`, or `inherit`. |
 | `effort` | No | Effort level: `low`, `medium`, `high`, `xhigh`, `max` (availability depends on model). Overrides session effort. |
 | `context` | No | Set to `fork` to run in a forked subagent context. |
@@ -165,7 +172,7 @@ One operative limit applies as of 2026-07-25:
    > "Front-load the key use case: the combined description and when_to_use text is truncated at 1,536 characters in the skill listing to reduce context usage."
    > — https://code.claude.com/docs/en/skills (retrieved 2026-04-17)
 
-> **Note on historical guidance**: Both the "250 characters per entry" limit and the 1024-char field-level cap have been superseded. Current docs specify only 1,536 characters as the per-entry cap in listings (combined `description` + `when_to_use`), itself configurable via the `maxSkillDescriptionChars` setting. `[official]` (2026-07-25)
+> **Note on historical guidance**: Both the "250 characters per entry" limit and the 1024-char field-level cap have been superseded. Current docs specify only 1,536 characters as the per-entry cap in listings (combined `description` + `when_to_use`). `[official]` (2026-07-25) **Setting name corrected 2026-09-04**: the cap "is configurable with `skillListingMaxDescChars`" — the previously-recorded name `maxSkillDescriptionChars` no longer appears in the docs.
 
 - Overall skill-listing budget scales at 1% of context window. When the budget overflows, descriptions for the **least-invoked** skills are dropped first, so skills you actually use keep their full text — names are always listed. `[official]` (updated 2026-05)
 - Raise the budget with the `skillListingBudgetFraction` setting (e.g. `0.02` = 2%) or the `SLASH_COMMAND_TOOL_CHAR_BUDGET` env var (fixed char count). Free budget for other skills by setting low-priority entries to `"name-only"` in `skillOverrides`.
@@ -258,6 +265,17 @@ Match specificity to task fragility:
 **Permission rules for skills `[official]` (2026-06):** specific skills can be allowed/denied via permission rules — `Skill(name)` for exact match, `Skill(name *)` for prefix match with any arguments; denying `Skill` itself disables all skills. `disable-model-invocation: true` "removes the skill from Claude's context entirely."
 > — https://code.claude.com/docs/en/skills (retrieved 2026-06-10)
 
+### Pre-approved Tools Are Turn-Scoped & Not Trust-Gated `[official]` (added 2026-09-04)
+
+> "The `allowed-tools` field grants permission for the listed tools during the turn that invokes the skill... The grant clears when you send your next message, even though the skill content stays in context; invoking the skill again re-applies it for that turn."
+> — https://code.claude.com/docs/en/skills (retrieved 2026-09-04)
+
+It does not restrict availability — every tool remains callable under normal permission settings. For session-wide pre-approval, use permission allow rules instead.
+
+> "Workspace trust doesn't gate this field. Claude Code applies a project skill's `allowed-tools` whenever you or Claude invoke the skill, including in a `-p` run in a folder you've never trusted. A skill can grant itself broad tool access, so review the `allowed-tools` of skills checked into a repository before you run Claude Code there."
+
+Reviewer implication: overly-broad `allowed-tools` (e.g. `Bash(*)`) in a repo-committed skill is a security finding, not just style.
+
 ### Skill Content Lifecycle `[official]` (NEW)
 
 > "When you or Claude invoke a skill, the rendered SKILL.md content enters the conversation as a single message and stays there for the rest of the session. Claude Code does not re-read the skill file on later turns, so write guidance that should apply throughout a task as standing instructions rather than one-time steps."
@@ -268,6 +286,8 @@ Match specificity to task fragility:
 
 > "Keep the body itself concise. Once a skill loads, its content stays in context across turns, so every line is a recurring token cost. State what to do rather than narrating how or why."
 > — https://code.claude.com/docs/en/skills (retrieved 2026-06-10)
+
+**Re-invocation dedup `[official]` (added 2026-09-04):** "When Claude re-invokes a skill whose rendered content is identical to the copy already in context, Claude Code adds a short note that the skill is already loaded rather than a second copy of the content. When the rendered content differs, because the arguments changed or a dynamic context command produced new output, Claude Code appends the full content again." — https://code.claude.com/docs/en/skills (retrieved 2026-09-04)
 
 ### Running Skills in Subagents `[official]`
 
@@ -292,15 +312,46 @@ Match specificity to task fragility:
 | `${CLAUDE_SESSION_ID}` | Current session ID |
 | `${CLAUDE_EFFORT}` | Current effort level (`low`/`medium`/`high`/`xhigh`/`max`; ultracode reports `xhigh`). **NEW 2026.** |
 | `${CLAUDE_SKILL_DIR}` | Directory containing the skill's SKILL.md (for plugin skills, the skill's subdirectory, not the plugin root) |
+| `${CLAUDE_PROJECT_DIR}` | The project root directory — same path hooks/MCP servers receive as `CLAUDE_PROJECT_DIR`. Requires v2.1.196+. **NEW 2026-09.** |
+| `${CLAUDE_PLUGIN_ROOT}` | The plugin's installation directory. Substituted only in plugin skills. **NEW 2026-09.** |
+| `${CLAUDE_PLUGIN_DATA}` | The plugin's persistent data directory, survives plugin updates. Substituted only in plugin skills. **NEW 2026-09.** |
 
 Indexed arguments use shell-style quoting; multi-word values need quotes.
+
+**Substitution also runs in `allowed-tools` `[official]` (added 2026-09-04):** "Claude Code substitutes `${CLAUDE_SKILL_DIR}` and `${CLAUDE_PROJECT_DIR}` in two places: the skill's markdown content, and Bash rules in the `allowed-tools` frontmatter... Using the same variable in both places lets a skill run a bundled script without a permission prompt." (e.g. `allowed-tools: Bash(${CLAUDE_SKILL_DIR}/scripts/render.sh *)` matching a body step that runs the same script.) — https://code.claude.com/docs/en/skills (retrieved 2026-09-04)
+
+**Argument literalness & escaping `[official]` (added 2026-09-04):** an indexed placeholder with no corresponding argument stays as literal text; a named placeholder with no matching argument expands to empty string. An argument value containing `$1`/`$ARGUMENTS` is inserted literally, never re-expanded. Escape a literal `$` before a digit/`ARGUMENTS`/declared name with a single backslash (`\$1.00`); the escape does not apply to `${CLAUDE_*}` variables. — https://code.claude.com/docs/en/skills (retrieved 2026-09-04)
 
 ### Dynamic Context Injection `[official]`
 
 > "The !`<command>` syntax runs shell commands before the skill content is sent to Claude."
 > — https://code.claude.com/docs/en/skills (retrieved 2026-04-17)
 
-Multi-line: use fenced block opened with ` ```! `. Disable via `"disableSkillShellExecution": true` in settings.
+Multi-line: use fenced block opened with ` ```! `. Disable via `"disableSkillShellExecution": true` in settings (each command replaced with `[shell command execution disabled by policy]`; bundled/managed skills unaffected).
+
+Recognition rules `[official]` (added 2026-09-04): the inline form is only recognized when `!` appears at the start of a line or immediately after whitespace — `` KEY=!`cmd` `` stays literal. Substitution runs once over the original file; command output is not re-scanned for further placeholders.
+
+### Injected-Command Failure Semantics `[official]` (added 2026-09-04)
+
+Execution: commands run through the Bash tool (or PowerShell per `shell:`), in the session shell's current working directory (which moves with `cd` — use `${CLAUDE_SKILL_DIR}`/`${CLAUDE_PROJECT_DIR}` for stable paths), stderr merged into stdout, under the Bash tool's default 2-minute timeout (auto-backgroundable commands are moved to background and the skill still renders; others are killed and the invocation aborts). `shell: bash` on Windows without Git Bash fails the invocation outright.
+
+> "A failed command aborts the entire skill invocation, not just its own placeholder. Claude never sees the skill content for that invocation."
+> — https://code.claude.com/docs/en/skills (retrieved 2026-09-04)
+
+- Any non-zero exit fails, except exit code 1 from the search/comparison command carveout list (e.g. `grep`, `git diff`); exit ≥2 fails even for those.
+- "With the default `bash` shell, append `|| true` to any other command you expect to exit non-zero. A check script that exits 1 when it finds problems is one example."
+- "Injected commands never prompt for permission. When a command's permission check returns anything other than allow, Claude Code aborts the invocation. This includes a rule that would normally ask you." Pre-approve unmatched commands with `allowed-tools`; **a matching ask or deny rule still aborts the invocation regardless of `allowed-tools`**.
+
+Reviewer implication: a `` !`command` `` that can legitimately exit non-zero without `|| true`, or that matches an ask/deny permission rule, silently breaks the whole skill.
+
+### Skills Synced from claude.ai & the Reserved `synced` Name `[official]` (added 2026-09-04)
+
+- The folder name `synced` is **reserved** in the enterprise, personal, and project skills locations, in any capitalization: Claude Code downloads claude.ai-enabled skills into `~/.claude/skills/synced/` (via `CLAUDE_CODE_SYNC_SKILLS=1` in a `-p` run) "and skips a skill you author at that name."
+- A synced skill whose name matches **any** other command (built-in, bundled, local skill, plugin skill, command file, MCP prompt) is skipped; the comparison ignores case, spacing, invisible characters, and compatibility forms (fullwidth letters, dash variants).
+- Synced-skill frontmatter is honored but display text is sanitized (control characters removed, angle brackets escaped). In regular local sessions the synced body's `` !` `` commands do not run, `@` references are not attached, and `${CLAUDE_PROJECT_DIR}`/`${CLAUDE_SESSION_ID}` reach Claude as literal text.
+- Cowork and cloud sessions (including routines) **don't read `~/.claude/skills/`** — a personal-only skill "was not found" there; enable it on claude.ai or commit it to the repo's `.claude/skills/`.
+
+> — https://code.claude.com/docs/en/skills (retrieved 2026-09-04)
 
 ### Workflows & Feedback Loops `[official]`
 
@@ -388,10 +439,14 @@ Per-model considerations: Haiku (does the skill give enough guidance?), Sonnet (
 
 **Skill descriptions cut short:**
 - Budget scales at 1% of context window; least-invoked skills' descriptions are dropped first when it overflows (names always kept)
-- Front-load key use case (1,536-char per-entry cap in listing; configurable via `maxSkillDescriptionChars`)
+- Front-load key use case (1,536-char per-entry cap in listing; configurable via `skillListingMaxDescChars`)
 - Raise budget with `skillListingBudgetFraction` setting or `SLASH_COMMAND_TOOL_CHAR_BUDGET` env var; run `/doctor` to diagnose overflow; set low-priority entries to `"name-only"` in `skillOverrides`
 
 **Malformed YAML frontmatter `[official]` (added 2026-06-26):** "If the frontmatter YAML is malformed, Claude Code loads the skill body with empty metadata, so `/skill-name` still works but Claude has no `description` to match against. Run with `--debug` to see the parse error." — https://code.claude.com/docs/en/skills (retrieved 2026-06-26). Implication for reviewers: a skill whose `/name` works manually but never auto-triggers may have invalid YAML — check the description field exists.
+
+**`claude plugin validate` on skills directories `[official]` (added 2026-09-04, v2.1.233+):** "To find SKILL.md files whose frontmatter doesn't parse, run `claude plugin validate` on the skills directory, for example `claude plugin validate .claude/skills` for project skills or `claude plugin validate ~/.claude/skills` for personal skills."
+
+**Frontmatter must open the file `[official]` (added 2026-09-04):** "Claude Code reads the frontmatter only when the opening `---` is the file's first line. Otherwise it treats the whole file, `---` markers included, as skill content." Also v2.1.243 fixed `.md` files starting with a UTF-8 BOM being **silently ignored** — on older versions a BOM makes the whole skill disappear.
 
 **Frontmatter key-case tolerance `[official]` (added 2026-06-26, changelog v2.1.186, 2026-06-22):** SKILL.md frontmatter now accepts kebab-case, snake_case, and camelCase keys equivalently (e.g. `when_to_use`, `whenToUse`, `when-to-use` all work). Keeps loading even when the SKILL.md YAML is otherwise malformed — loads with empty metadata.
 
@@ -435,4 +490,5 @@ Per-model considerations: Haiku (does the skill give enough guidance?), Sonnet (
 - 2026-06-10: Refresh against code.claude.com/docs/en/skills (retrieved 2026-06-10). Added: bundled skills (`/run`, `/verify`, `/run-skill-generator` v2.1.145+, `disableBundledSkills`); compaction detail that the 25k budget fills from the most recently invoked skill so **oldest skills can be dropped entirely**; "keep the body concise — recurring token cost" quote; `context: fork` correction — CLAUDE.md is loaded **except** when the agent is Explore or Plan; `model` field is turn-scoped (not saved to settings); `Skill(name)` / `Skill(name *)` permission-rule syntax. Core scoring facts re-verified unchanged: 1,536-char combined cap (`maxSkillDescriptionChars` configurable), 1% listing budget (`skillListingBudgetFraction` / `SLASH_COMMAND_TOOL_CHAR_BUDGET`, `/doctor` diagnostics), 500-line SKILL.md guidance, all 2026 frontmatter fields (`when_to_use`, `arguments`, `disallowed-tools`, `effort`, `paths`, `shell`, `hooks`), `skillOverrides` states, live change detection, `disable-model-invocation` removing description from context and blocking subagent preload.
 - 2026-06-26: Refresh against code.claude.com/docs/en/skills (retrieved 2026-06-26) and changelog v2.1.181–v2.1.193. **Material additions**: (1) **Project/personal/plugin skills override bundled skills with the same name** — e.g. a `code-review` skill in `.claude/skills/` replaces the bundled `/code-review`. (2) **Plugin-skill folders**: adding `.claude-plugin/plugin.json` to a skill folder turns it into a plugin (`<name>@skills-dir`) that can bundle agents, hooks, MCP servers; trust-gated for project skills. (3) **Live change detection scope clarified**: covers SKILL.md text only; plugin extras (hooks/, .mcp.json, agents/, output-styles/) need `/reload-plugins`. (4) **Malformed YAML behavior**: invalid frontmatter still loads the skill body with empty metadata; use `--debug` to see parse errors (changelog v2.1.186, 2026-06-22). (5) **Frontmatter key-case tolerance**: kebab/snake/camelCase keys all accepted (v2.1.186). (6) **`/reload-skills` command** to force-reload definitions without restarting. (7) **`skill-creator` is now an officially-distributed plugin** at `anthropics/claude-plugins-official` — produces `evals/evals.json`, `grading.json`, `benchmark.json`, plus HTML report viewer and blind A/B version comparison. (8) **Baseline comparison rule**: fresh session matters because authoring-session context masks gaps. Core scoring facts unchanged. last_updated bumped to 2026-06-26.
 - 2026-07-25: Refreshed against code.claude.com/docs/en/skills (retrieved 2026-07-25) + changelog v2.1.196-v2.1.218. **Material additions**: (1) **Command-name resolution table** - in a personal or project skill the frontmatter `name` sets only the display label and the command comes from the **directory name**; `name` forms the command's last segment only for plugin skills and plugin-root SKILL.md (fallback: the plugin directory name). Nested `.claude/skills/` that clash get a path-prefixed command (`/apps/web:deploy`). Before v2.1.216 a plugin skill's `name` replaced the whole command, dropping the plugin prefix. (2) **Description cap restated as 1,536 characters** for the combined `description` + `when_to_use` text in the skill listing; the previously-recorded 1024-char hard cap is no longer stated. (3) **Boolean tolerance** - `yes`/`no`/`on`/`off`/`1`/`0` in any case (v2.1.218). (4) **`background` frontmatter field** for `context: fork` skills (v2.1.218): default `true` runs the fork in the background with the **narrower background-subagent tool set**; `background: false` waits in the invoking turn and keeps the full tool set. (5) **Skill stacking** (v2.1.199): the first skill plus up to five more, trailing text passed as `$ARGUMENTS` to each; expansion stops at the first token that is not an inline user-invocable skill, including a forked skill such as `/code-review` (forked from v2.1.218) or `/loop`. (6) **`/verify` and `/code-review` are user-invoke-only** (v2.1.215) and therefore cannot be preloaded into subagents. (7) **`disable-model-invocation: true` also blocks scheduled-task firing** (v2.1.196). (8) Full substitution list re-verified: `$ARGUMENTS`, `$ARGUMENTS[N]`, `$N`, `$name`, `${CLAUDE_SESSION_ID}`, `${CLAUDE_EFFORT}` (ultracode reports as `xhigh`), `${CLAUDE_SKILL_DIR}`. (9) `paths` frontmatter scopes **automatic** activation only, using the path-specific-rules glob format. Frontmatter table otherwise re-verified in full. last_updated bumped to 2026-07-25.
+- 2026-09-04: Refreshed against code.claude.com/docs/en/skills and platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices (both retrieved 2026-09-04) + changelog v2.1.229-v2.1.260. **Material additions**: (1) **Three new substitutions** — `${CLAUDE_PROJECT_DIR}` (v2.1.196+), and plugin-skill-only `${CLAUDE_PLUGIN_ROOT}` / `${CLAUDE_PLUGIN_DATA}`; substitution of `${CLAUDE_SKILL_DIR}` / `${CLAUDE_PROJECT_DIR}` (and plugin vars) also runs in `allowed-tools` Bash rules, enabling the "bundled script without permission prompt" pattern. Argument escaping rules (`\$1.00`; argument values containing `$1`/`$ARGUMENTS` inserted literally). (2) **`allowed-tools` is turn-scoped** — the grant clears on the next user message even though content persists — **and not gated by workspace trust**: a repo-committed skill's `allowed-tools` applies even in untrusted `-p` runs, so broad grants are a security finding. (3) **Injected-command failure semantics** — a failed `` !`command` `` aborts the entire invocation (Claude never sees the content); non-zero exit fails except the exit-1 search/comparison carveout; `|| true` advised for checks; injected commands never prompt — an ask **or** deny rule aborts regardless of `allowed-tools`; inline `!` recognized only at line start/after whitespace; output not re-scanned; cwd follows the session shell; 2-min timeout; `shell: bash` without Git Bash fails outright. (4) **Synced-skills rules** — `synced` is a reserved folder name in any capitalization; a synced skill is skipped when its name matches any other command (case/spacing/fullwidth-insensitive); synced bodies lose `!` execution and `@`/`${CLAUDE_*}` substitution in regular local sessions; Cowork/cloud sessions don't read `~/.claude/skills/`. (5) **Bundled-skill override does not cover aliases** (`/review` still runs bundled `code-review`); v2.1.248 fixed alias-keyed `skillOverrides` and `Skill(name)` deny for nested `<dir>:name`; `/doctor` is a bundled skill (v2.1.205, alias `checkup`) exempt from `disableBundledSkills`. (6) **Re-invocation dedup** — identical rendered content re-invoked adds an "already loaded" note instead of a second copy. (7) **Diagnostics** — `claude plugin validate <skills-dir>` (v2.1.233+) finds unparseable frontmatter; frontmatter only parsed when `---` is the file's first line; UTF-8 BOM silently hid skills before v2.1.243. (8) **Setting-name correction** — the 1,536 listing cap is configured by `skillListingMaxDescChars`, not the previously-recorded `maxSkillDescriptionChars`. (9) Symlinked skill directories officially supported (deduped); `/cd` loads the new directory's project skills (v2.1.246); plugin `name` carrying its own `<plugin>:` prefix no longer doubles (v2.1.246+, doubled v2.1.216-245); frontmatter `model:` on skills was **ignored in interactive sessions until fixed in v2.1.248**; `disallowed-tools` can't remove `EndConversation`. Platform best-practices page re-verified unchanged (1,024-char field cap still stated there, 500-line body, gerund naming, one-level-deep, TOC>100, eval-driven development). last_updated bumped to 2026-09-04.
 - 2026-08-12: Refreshed against code.claude.com/docs/en/skills and platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices (both retrieved 2026-08-12) + changelog v2.1.219-v2.1.228. **Material additions**: (1) New **Portability** section - the Agent Skills spec permits only `name`, `description`, `license`, `compatibility`, `metadata`, `allowed-tools` for claude.ai uploads / the Skills API / `package_skill.py`, and an out-of-spec key is a **hard error**, not an ignored field. Claude Code-only fields are correct in Claude Code-only skills and must not be deducted; flag only when the skill targets those export paths. (2) Frontmatter table completed with `background` (v2.1.218), `metadata` (must be a map; non-map values dropped; don't reuse field names like `paths` as keys), `license`, and `compatibility` (max 500 characters). (3) **`model` + `availableModels`**: an org-excluded value is not used and the session keeps its current model; with `context: fork` it sets the fork's model and follows subagent-override rules. (4) Platform best-practices page re-verified unchanged: 64-char/lowercase-hyphen `name` with reserved words `anthropic`/`claude` barred, 1,024-char `description` cap at the field level, third-person voice, gerund naming, 500-line body target, one-level-deep references, 100-line TOC rule, degrees-of-freedom framing, evaluation-driven development (3+ evals, test on Haiku/Sonnet/Opus), and the full authoring checklist. (5) Changelog notes: skills synced from claude.ai no longer shadow local commands or MCP prompts (v2.1.228); plugin/org skills named after terminal built-ins are invocable again (v2.1.221); plugins accept `.` as a `skills` path (v2.1.221); refusal message improved when Claude invokes a `disable-model-invocation` skill (v2.1.222); `/review` is now an alias of `/code-review` (v2.1.223). Description caps (1,536 combined listing / 1,024 field), listing budget, command-name resolution, substitutions, stacking, and lifecycle all re-verified unchanged. last_updated bumped to 2026-08-12.

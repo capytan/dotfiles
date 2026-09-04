@@ -3,7 +3,7 @@
 > Referenced during Phase 2, criterion E (Anti-patterns) for agent file reviews.
 > Each pattern has a severity: Critical / Major / Minor.
 
-last_updated: 2026-08-12
+last_updated: 2026-09-04
 
 ---
 
@@ -34,6 +34,19 @@ As of changelog v2.1.208, when nothing in the `tools` list resolves to a real to
 - Every `tools:` entry is in the always-filtered set (`AskUserQuestion`, `EndConversation`, `EnterPlanMode`, `ExitPlanMode` unless `permissionMode: plan`) — these resolve as names but are stripped at launch, leaving an empty pool
 
 **Fix:** Correct the tool names, or drop `tools:` entirely to inherit all tools. Score under agent-quality-criteria.md criterion A (0 pts) — do not also zero criterion E.
+
+### Agent File That Never Loads `[official]` (added 2026-09-04)
+
+Two defects make Claude Code skip the file entirely, so the agent silently doesn't exist:
+
+1. **`name` contains `:`** — reserved for plugin-scoped identifiers ("Claude Code doesn't load a file whose name contains one and logs an error to the debug log"; behavior since v2.1.218). Plugin scope prefixes (`my-plugin:reviewer`) are assigned by the loader, never written in `name`.
+2. **UTF-8 BOM at the start of the `.md` file** — silently ignored before v2.1.239 (changelog: "Fixed agents, skills, and commands whose `.md` file starts with a UTF-8 BOM being silently ignored"). Loads on current versions, but breaks teammates on older Claude Code.
+
+**Detection patterns:**
+- `name:` value containing `:`
+- First 3 bytes of the file are `EF BB BF` (`head -c 3 <file> | xxd`)
+
+**Fix:** Rename to lowercase-and-hyphens without `:`; re-save the file without a BOM. Score the `:` case under agent-quality-criteria.md criterion A (0 pts, Critical); the BOM case is -2 pts under criterion G on current versions.
 
 ---
 
@@ -175,3 +188,4 @@ System prompt lacks guidance for failure modes or unusual inputs.
 - 2026-06-26: Freshness re-run against code.claude.com/docs/en/sub-agents (retrieved 2026-06-26). No new anti-patterns; catalog re-verified current. **Assessor notes (de-flag previously-uncertain patterns)**: (1) **`background: true`** is NOT a permission-auto-deny risk since changelog v2.1.186 — background subagent permission prompts now surface in the main session. (2) **Nested subagent spawning** is now officially allowed up to depth 5 (changelog v2.1.172) — an agent that lists `Agent` in `tools` to delegate further is not an anti-pattern unless the depth budget is clearly being abused. (3) Old anti-pattern "Subagents cannot spawn other subagents" wording is now outdated guidance from third-party sources — do not penalize agents that rely on official depth-5 nesting.
 - 2026-07-25: Freshness re-run against sub-agents docs (retrieved 2026-07-25) + changelog v2.1.196-v2.1.218. **One new Critical anti-pattern**: a `tools` list in which no entry resolves to a real tool - as of v2.1.208 Claude Code refuses to launch the subagent and returns an error naming the unresolved entries (before v2.1.208 it launched tool-less and returned confusing output). Remember the always-filtered set (`Agent` without nested spawning, `AskUserQuestion`, `EndConversation`, `EnterPlanMode`, `ExitPlanMode` unless `permissionMode: plan`) counts toward this. **One new Major**: an `isolation: worktree` agent whose body instructs a git redirect back into the main checkout (`git -C`, `--git-dir`, `GIT_DIR`/`GIT_WORK_TREE`, or a `cd` first) now fails outright (v2.1.216); a command too complex to check also fails. **One new Minor**: agent text telling users to run `/agents` to create a subagent is stale - the interactive wizard was removed in v2.1.198. **One de-escalation**: do not flag the absence of a per-subagent thinking setting; subagents inherit the main conversation's extended-thinking config as of v2.1.198 and no such field exists. last_updated bumped to 2026-07-25.
 - 2026-08-12: Freshness re-run against code.claude.com/docs/en/sub-agents (retrieved 2026-08-12) + changelog v2.1.219-v2.1.228. No new anti-patterns. **Correction to the 2026-06-26 assessor note**: the nested-subagent budget is **depth 3 by default** as of v2.1.219, superseding the depth-5 figure recorded then. Delegation-chain designs assuming 4-5 levels are now over budget; still advisory, not a deduction. **De-flag**: the 200-subagent-per-session spawn cap was removed (v2.1.224), so orchestrator agents are not a resource-exhaustion smell on that basis. **New advisory**: an agent body that relies on `permissionMode: bypassPermissions` to work around organization policy is now broken by design - v2.1.223 closed that gap. last_updated bumped to 2026-08-12.
+- 2026-09-04: Refreshed against code.claude.com/docs/en/sub-agents (retrieved 2026-09-04) + changelog v2.1.229-v2.1.260. **One new Critical anti-pattern**: "Agent File That Never Loads" — a `name` containing `:` (reserved for plugin scopes, file skipped with only a debug-log error, since v2.1.218) or a UTF-8 BOM at the start of the `.md` (silently ignored before v2.1.239). **Assessor notes**: (1) an agent body that depends on `CLAUDE_CODE_SUBAGENT_MODEL` overriding its `model:` frontmatter is stale — since v2.1.251 the env var is a default, not an override (`CLAUDE_CODE_SUBAGENT_MODEL_FORCE`, v2.1.257, is the explicit override). (2) Do not flag `maxTurns` as risking silent truncation: since v2.1.246 output stopped at the limit is marked partial and the subagent is resumable. (3) The background tool set is now enumerated (19 built-ins + all MCP tools; forks exempt) — check body tool dependencies against it since interactive spawns run in the background by default. (4) Very long descriptions now carry a documented cost: 15,000-token combined description budget with a startup warning. (5) Nesting depth remains 3 by default but is configurable via `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH`; a concurrent cap of 20 subagents exists (`CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS`) — both platform limits, advisory only. last_updated bumped to 2026-09-04.
