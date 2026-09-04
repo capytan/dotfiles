@@ -1,6 +1,6 @@
 # Modularization Guide
 
-last_updated: 2026-08-12
+last_updated: 2026-09-04
 
 > Referenced in Phase 4 when proposing CLAUDE.md splits.
 
@@ -65,6 +65,8 @@ These rules only load when Claude reads files matching the pattern.
 - Load order is not guaranteed — avoid inter-file dependencies
 - Supports symlinks for sharing rules across projects
 - User-level rules in `~/.claude/rules/` apply to every project
+- To exclude a symlinked rules file via `claudeMdExcludes`, a pattern matching **either** the `.claude/rules/` path or the link target works (v2.1.239–v2.1.243; previously only the link target matched)
+- Cowork desktop sessions skip a symlinked `~/.claude/rules/` directory or rule file pointing outside the session's working directory (retrieved 2026-09-04)
 
 ## Method 2: `@path/to/file.md` (Explicit Reference)
 
@@ -245,3 +247,4 @@ Move absolute rules to hooks instead of relying on CLAUDE.md compliance.
 - 2026-06-26: Freshness re-run (2 days stale). All six methods re-verified against memory + skills docs (retrieved 2026-06-26). One clarification worth noting in Method 2 (`@path`): the official docs now state explicitly that **import parsing skips Markdown code spans and fenced code blocks** — wrap paths in backticks (`` `@path` ``) to mention them without importing. No structural change to the methods. last_updated bumped to 2026-06-26.
 - 2026-07-25: Freshness re-run (29 days stale) against code.claude.com/docs/en/memory (retrieved 2026-07-25). All six methods re-verified current. **Method 1 (`.claude/rules/`) gains four operational caveats**: path-scoped rules now also match when Claude reaches a file through a **symlinked path** into the project (v2.1.198) - previously such rules appeared not to fire, which matters for symlink-based dotfiles and symlinked checkouts; a rule's whole `paths` list shares a budget of **1,000 expanded brace patterns and 4 MiB**, and an over-budget pattern is used unexpanded so its literal braces match nothing (v2.1.217); an unparseable `[` makes that single pattern match nothing while the rule's other patterns keep working, and a literal `[` must be escaped as `\[` (v2.1.207); project rules are skipped when `project` is excluded from `--setting-sources`, including on-demand and nested rules, as of v2.1.211. **New method note**: `CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD=1` makes `--add-dir` also load that directory's `CLAUDE.md`, `.claude/CLAUDE.md`, `.claude/rules/*.md`, and `CLAUDE.local.md` - a way to share one rules tree across sibling repos without symlinks. No structural change to the six methods. last_updated bumped to 2026-07-25.
 - 2026-08-12: Freshness re-run against code.claude.com/docs/en/memory (retrieved 2026-08-12) + changelog v2.1.219-v2.1.228. Decision table (`.claude/rules/*.md` vs `@path` import vs subdirectory CLAUDE.md) re-verified unchanged, including the rule that imports do not reduce context because they load at launch. No content changes. last_updated bumped to 2026-08-12.
+- 2026-09-04: Refreshed against memory docs (retrieved 2026-09-04) + changelog v2.1.229–v2.1.260. All six methods structurally unchanged. **Method 1 gains two symlink caveats**: `claudeMdExcludes` now excludes a symlinked rules file when the pattern matches either the rules path or the link target (v2.1.239–v2.1.243), and Cowork desktop sessions skip symlinked user-scope rules pointing outside the working directory. Related but out of scope here: the new `/import` command (v2.1.213+) copies another agent's config (AGENTS.md, MCP, commands, subagents, skills) into Claude Code one-time — an onboarding tool, not a modularization method; details in official-best-practices. last_updated bumped to 2026-09-04.
