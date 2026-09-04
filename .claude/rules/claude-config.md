@@ -1,6 +1,7 @@
 ---
 paths:
   - "configs/claude/**"
+  - ".github/workflows/hooks-test.yml"
 ---
 
 # Claude Code Config Rules

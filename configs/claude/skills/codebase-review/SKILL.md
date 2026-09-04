@@ -1,6 +1,6 @@
 ---
 name: codebase-review
-description: Full codebase review: seven parallel reviewers (rules, bugs, git hotspots, comments, architecture, OWASP, dependencies) plus independent scoring. Use when asked to review or audit the whole codebase; for diff/PR reviews use code-review instead.
+description: "Full codebase review: seven parallel reviewers (rules, bugs, git hotspots, comments, architecture, OWASP, dependencies) plus independent scoring. Use when asked to review or audit the whole codebase; for diff/PR reviews use code-review instead."
 allowed-tools: Read, Bash, Agent, AskUserQuestion
 ---
 

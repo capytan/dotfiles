@@ -9,7 +9,7 @@
 > - `[community:mid]` = GitHub 10-50 stars, verified in a tech blog
 > - `[community:low]` = Individual report, unverified but reasonable (reference only)
 
-last_updated: 2026-08-12
+last_updated: 2026-09-04
 
 ---
 
@@ -69,6 +69,15 @@ Commonly recommended recall verbs: `review`, `analyze`, `optimize`, `audit`, `ge
 > — https://claude.com/blog/subagents-in-claude-code (Anthropic blog, retrieved 2026-04-17)
 
 Description should state **trigger conditions**, not just capabilities.
+
+### "Triage rule" description template `[community:mid]` (added 2026-09-04)
+
+2026 community guides converge on writing the description as a routing/triage rule with an output-shape clause:
+
+> "Write the description as a triage rule — 'Use this subagent when [condition]. It returns [output shape]'. Give each subagent one clear goal, input, output, and handoff rule."
+> — https://nimbalyst.com/blog/claude-code-subagents-guide/ (retrieved 2026-09-04)
+
+The "[output shape]" clause is a genuine addition over the existing trigger-condition guidance: telling the router what comes back helps the parent decide whether delegation is worth it. Now that descriptions have an official token budget (15,000 tokens combined — see official-best-practices), this one-sentence template is also the budget-friendly style.
 
 ---
 
@@ -179,6 +188,15 @@ First-person (`I will...`) and third-person (`The agent will...`) both break the
 > "When a task requires exploring ten or more files, or involves three or more independent pieces of work, that's a strong signal to direct Claude toward subagents."
 > — https://claude.com/blog/subagents-in-claude-code (Anthropic blog, retrieved 2026-04-17)
 
+### Single agent + skills often beats subagent architectures `[semi-official]` (added 2026-09-04)
+
+From Anthropic's commerce-agents guide (published ~2026-08-28):
+
+> "In comparisons across enterprise deployments, a single agent with skills consistently outperformed both one-prompt-for-everything and subagent designs; subagents earn their place when called as a tool for a narrow, self-contained task benefiting from its own context window."
+> — https://claude.com/blog/the-anatomy-of-effective-commerce-agents (retrieved 2026-09-04)
+
+Reinforces the existing "use subagents for context isolation, skills for shared context" consensus — an agent pool full of generic role agents that could have been skills is over-architected. Not a per-file deduction; context for reviewers judging whether an agent should exist at all.
+
 ### Chain vs. parallel `[community:high]`
 
 - **Chain** (sequential): `"Use the code-reviewer subagent to find performance issues, then use the optimizer subagent to fix them"` — results flow between agents
@@ -222,3 +240,4 @@ Sources:
 - 2026-06-26: Freshness re-run (16 days stale). No new community insights worth adopting. Re-verified existing sections against late-June 2026 sources: third-person description + second-person body, MUST BE USED / Use PROACTIVELY trigger formula, action-verb specificity, role-based tool tiers, model routing (Opus/Sonnet/Haiku), five-layer system-prompt blueprint, "one job and a clear definition of done," 300–800-line body target, feature-specific over generic role agents, second-person voice universality, chain vs parallel patterns, @agent-<name> typeahead, Japanese context-isolation framing — all current. Notable official additions in this window (nested subagent spawning v2.1.172, background subagent permission surfacing v2.1.186, nested project agent tie-break v2.1.178) are recorded in official-best-practices, not here. last_updated bumped to 2026-06-26.
 - 2026-07-25: Freshness re-run (29 days stale). Surveyed 2026-07 subagent guidance (pubnub, tembo.io, nimbalyst, agentkit.best, computingforgeeks). Existing items re-verified: description-drives-delegation, one job + clear definition of done, explicit output format (parent sees only the final result), tools-as-security-lever, model-as-cost-lever, body-is-the-verbatim-system-prompt. **Correction recorded**: several 2026-07 community articles still describe `/agents` as an interactive creation wizard - that was removed in v2.1.198; official wins, treat the community claim as stale. One new `[community:mid]` datapoint: subagent-heavy workflows can run ~7x the tokens of a single-thread session because each subagent carries its own context - supports existing guidance to reserve subagents for genuinely context-heavy side tasks. No scoring-criteria changes. last_updated bumped to 2026-07-25.
 - 2026-08-12: Freshness re-run (18 days stale). Community sources re-checked (SmartScope "Claude Code Advanced Best Practices [2026]", Tembo "Claude Code Subagents: A 2026 Practical Guide", shanraisshan/claude-code-best-practice, mcp.directory best-practices roundup; all `[community:mid]` or better). **No new practices worth adopting** - the surveyed articles restate practices already recorded here: third-person `description` with `PROACTIVELY`/`MUST BE USED` triggers, comma-separated `tools` allowlist with `Agent(agent_type)` restriction syntax, `model` routing including `inherit` as default, `skills` preload injecting full content, per-subagent `hooks`, and `effort` overrides. One framing worth noting: the 2026 community consensus now leads with a **surface-selection decision tree** ("enforcement -> hooks/permissions; contextual knowledge -> skills; delegation boundary -> subagents; always-on guidance -> short CLAUDE.md") rather than agent-specific tips - consistent with the cross-artifact checks already in this skill. Official-only changes in this window (nesting depth 3, spawn-cap removal, `availableModels` substitution, `bypassPermissions` org-policy fix) are recorded in official-best-practices, not here. last_updated bumped to 2026-08-12.
+- 2026-09-04: Freshness re-run (23 days stale). Community sources surveyed (Nimbalyst 2026 practical guide, pubnub, ComputingForGeeks, shanraisshan repo, Zenn 2026 subagent articles, Qiita "Subagentの作り方 完全ガイド 2026年版"). Mostly restatements of recorded practices (single responsibility, detailed trigger-focused description, minimal tool allowlists, VCS sharing, context-isolation framing). **Two additions**: (1) `[community:mid]` "triage rule" description template — "Use this subagent when [condition]. It returns [output shape]" — the output-shape clause is new and pairs well with the new official 15,000-token combined description budget. (2) `[semi-official]` Anthropic commerce-agents guide (2026-08-28): a single agent with skills consistently outperformed subagent designs in enterprise comparisons; subagents earn their place only for narrow, self-contained tasks needing their own context window. **Stale community claims to ignore**: older Zenn/Qiita articles still say subagents cannot nest (superseded by official depth-3 nesting) and still recommend the `/agents` creation wizard (removed v2.1.198). Official-window changes (name `:` ban, `experimental.cacheTtl`, model resolution order, background tool-set enumeration, SendMessage-without-teams) are recorded in official-best-practices, not here. last_updated bumped to 2026-09-04.

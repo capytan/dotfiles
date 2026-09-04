@@ -1,6 +1,6 @@
 # Anti-Pattern Catalog
 
-last_updated: 2026-08-12
+last_updated: 2026-09-04
 
 > Referenced during Phase 2, criterion F (Anti-patterns).
 > Each pattern has a severity: Critical / Major / Minor.
@@ -188,6 +188,20 @@ Content that needs constant updates belongs elsewhere.
 
 **Fix:** Move to auto memory, a separate referenced file, or retrieve dynamically via hooks/commands.
 
+### Emphasis Overuse `[official]`
+
+Emphasis markers ("IMPORTANT", "YOU MUST", "NEVER") applied to many lines, so none stands out.
+
+> "If Claude keeps skipping one instruction, add emphasis such as 'IMPORTANT' to that line alone. If you emphasize many lines, none of them stands out."
+> — https://code.claude.com/docs/en/best-practices (retrieved 2026-09-04)
+
+**Detection patterns:**
+- "IMPORTANT" / "YOU MUST" / all-caps directives on a large share of instructions (rough heuristic: 5+ occurrences, or >10% of lines)
+- Every section opening with an emphasis marker
+- Escalation stacking ("VERY IMPORTANT!!", "ABSOLUTELY NEVER")
+
+**Fix:** Reserve emphasis for the one or two instructions Claude actually keeps skipping. If a rule needs guaranteed compliance, convert it to a hook instead of shouting louder (see "Guidance That Should Be a Hook").
+
 ### Session-Specific Content in CLAUDE.md `[official]`
 
 Content that only applies to a specific task or session.
@@ -215,3 +229,4 @@ Content that only applies to a specific task or session.
 - 2026-06-26: Freshness re-run (2 days stale). No new anti-patterns; catalog re-verified against memory docs (retrieved 2026-06-26). One related detail surfaced in the official docs that does not change the catalog but worth noting for assessors: **`@path` imports inside fenced code blocks or backtick-wrapped spans are NOT parsed**, so previously-flagged "accidental imports in code examples" are not actually a problem if the path is properly fenced. Existing Major/Minor/Critical patterns all current. last_updated bumped to 2026-06-26.
 - 2026-07-25: Freshness re-run (29 days stale) against code.claude.com/docs/en/memory (retrieved 2026-07-25). No new authoring anti-patterns; the Critical/Major/Minor catalog is re-verified current. **Two assessor notes added from this window**: (1) the `/doctor` trim checkup (v2.1.206) now codifies the Over-Specified pattern in official tooling - it cuts directory layouts, dependency lists, and architecture overviews and keeps pitfalls, rationale, and non-default conventions, so those three content types are officially inferable content, not merely community opinion. (2) Path-scoped `.claude/rules/` gotchas that read as authoring bugs but are platform behavior: an over-budget brace pattern (1,000 expanded patterns / 4 MiB per rule) is used **unexpanded** so its literal braces match nothing (v2.1.217), and an unparseable `[` bracket expression makes that one pattern match nothing while the rule's other patterns keep working (v2.1.207). Flag these as rule-authoring defects, not CLAUDE.md anti-patterns. last_updated bumped to 2026-07-25.
 - 2026-08-12: Freshness re-run against code.claude.com/docs/en/memory (retrieved 2026-08-12) + changelog v2.1.219-v2.1.228. No new anti-patterns; catalog re-verified current. No de-flags. last_updated bumped to 2026-08-12.
+- 2026-09-04: Refreshed against memory + best-practices docs (retrieved 2026-09-04) and changelog v2.1.229–v2.1.260. **One new Minor anti-pattern added: Emphasis Overuse `[official]`** — the best-practices page now explicitly says to emphasize only the one skipped line ("If you emphasize many lines, none of them stands out"); previously the docs only said emphasis improves adherence, so blanket IMPORTANT/YOU MUST usage was not flaggable. Community had long advised this (`use only for genuine hard constraints`); now official. Assessor note: a CLAUDE.md over **4 MiB is skipped entirely** (not truncated) — treat as an extreme instance of Over-Specified. All other patterns re-verified current; no de-flags. last_updated bumped to 2026-09-04.

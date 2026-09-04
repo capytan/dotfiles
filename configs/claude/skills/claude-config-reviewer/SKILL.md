@@ -28,8 +28,8 @@ Phase 4: Fix Proposals & Apply (after user approval)
 
 ## Paths
 
-Skill directory: `~/.claude/skills/claude-config-reviewer/`
-Reference files: `~/.claude/skills/claude-config-reviewer/references/`
+Skill directory: `${CLAUDE_SKILL_DIR}/`
+Reference files: `${CLAUDE_SKILL_DIR}/references/`
 
 ⚠️ Always use these absolute paths for Glob/Read. The current working directory is the project being reviewed, not this skill's directory.
 
