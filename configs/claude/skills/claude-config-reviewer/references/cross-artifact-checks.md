@@ -3,13 +3,13 @@
 > Referenced during Phase 3 (Report) for Cross-Artifact Summary.
 > These checks detect issues spanning multiple configuration artifact types.
 
-last_updated: 2026-08-12
+last_updated: 2026-09-04
 
 ---
 
 ## Contents
 
-- Check Categories 1-14: Reference Existence, Description Consistency, Circular References, Tool Consistency, Stale References, Subagent Skill-Preload Validity, Duplicate Agent Names, Skill/Bundled-Skill Name Collision, Agent `background: true`, Unresolvable Agent `tools` List, Non-Preloadable Bundled Skills, Stale `/agents` Wizard Guidance, Body Step Requires an Unavailable Tool, Skill Portability (conditional)
+- Check Categories 1-17: Reference Existence, Description Consistency, Circular References, Tool Consistency, Stale References, Subagent Skill-Preload Validity, Duplicate Agent Names, Skill/Bundled-Skill Name Collision, Agent `background: true`, Unresolvable Agent `tools` List, Non-Preloadable Bundled Skills, Stale `/agents` Wizard Guidance, Body Step Requires an Unavailable Tool, Skill Portability (conditional), Personal-Skill Availability in Cloud Contexts, Pool-Wide Agent Description Token Budget, Subagent Model Env Override
 - Severity Classification (per-check severity table)
 - Changelog
 
@@ -64,12 +64,14 @@ last_updated: 2026-08-12
 - "A skill at any of these levels also overrides a bundled skill with the same name. For example, a `code-review` skill in your project's `.claude/skills/` replaces the bundled `/code-review`." (https://code.claude.com/docs/en/skills, retrieved 2026-06-26)
 - Bundled skill names to check against: `code-review`, `batch`, `debug`, `loop`, `claude-api`, `run`, `verify`, `run-skill-generator`, `init`, `review`, `security-review`
 - Detection: Glob each `<scope>/skills/<name>/SKILL.md`; warn if `<name>` matches any bundled name. Plugin skills are namespaced (`plugin:name`) and cannot collide.
+- **Alias carve-out (2026-09)**: the override does **not** capture a bundled skill's alias — a local `code-review` skill replaces `/code-review` but `/review` still runs the bundled one. Flag config text that assumes the alias follows the override. (v2.1.248 also fixed `skillOverrides` keyed by alias and `Skill(name)` deny rules covering nested `<dir>:name` forms.)
 
 ### 9. Agent `background: true` No Longer a Permission Risk `[official]` (2026-06)
 [Since changelog v2.1.186, background subagent permission prompts surface in main session]
 - Do not flag `background: true` agents for "will silently auto-deny on permission prompts" — that behavior was fixed.
 - Still flag a `background: true` agent that has no `tools` allowlist + relies on Bash for irreversible operations (high-blast-radius pattern, separate concern).
 - **Updated 2026-07**: background is the *default* as of v2.1.198, and background subagents receive a **narrower built-in tool set** (forks exempt). Flag Major only when the agent's core workflow provably needs an excluded tool; advisory NOTE otherwise. Use this single threshold — it supersedes any flat-Major wording elsewhere.
+- **Note (2026-09)**: injected-command abort semantics apply to skills preloaded into forked/background subagents too — a skill whose `` !`cmd` `` exits non-zero aborts the invocation there as well (see skill pool references).
 
 ### 10. Unresolvable Agent `tools` List `[official]` (2026-07)
 [A `tools` list where nothing resolves means the agent cannot launch at all]
@@ -101,6 +103,21 @@ last_updated: 2026-08-12
 - For Claude Code-only skills those same fields are **correct** — never deduct.
 - Detection: grep the skill's text for an export declaration; if found, diff its frontmatter keys against the six-key allowlist. Classify Major.
 
+### 15. Personal-Skill Availability in Cloud/Routine Contexts `[official]` (2026-09)
+[Cowork, cloud sessions, and routines do not read `~/.claude/skills/`]
+- A workflow declared to run as a routine, scheduled cloud agent, or Cowork session that depends on a personal skill (`~/.claude/skills/`) will not find it — the skill must be enabled via claude.ai or committed to the repo (`.claude/skills/`).
+- Detection: grep CLAUDE.md, agent bodies, and skill bodies for routine/cloud/Cowork usage claims; if a referenced skill resolves only under `~/.claude/skills/`, flag Major. Skip when no cloud/routine usage is declared.
+
+### 16. Pool-Wide Agent Description Token Budget `[official]` (2026-09)
+[All loaded agent `description` fields share a ~15,000-token budget; exceeding triggers a startup warning]
+- This is inherently a cross-file check — no single agent file can violate it alone.
+- Detection: estimate total tokens across every discovered agent's `description` (word count × ~1.3 English / ~2.0 Japanese). Flag Minor when the total approaches or exceeds 15,000, naming the largest contributors.
+
+### 17. Subagent Model Env Override `[official]` (2026-09)
+[settings.json `env` can silently neutralize agent `model:` frontmatter]
+- `CLAUDE_CODE_SUBAGENT_MODEL_FORCE` (v2.1.257) overrides every agent's `model:` field; `CLAUDE_CODE_SUBAGENT_MODEL` is only a default below frontmatter in the v2.1.251 resolution order (per-invocation > frontmatter > env default > main). Related env: `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH` (default 3), `CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS` (default 20), `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS`.
+- Detection: read `env` from discovered settings.json files; if `CLAUDE_CODE_SUBAGENT_MODEL_FORCE` is set while agents declare `model:`, flag Minor (frontmatter is inert, likely surprising). Note depth/concurrency env values when delegation-chain checks (Check 13) assume defaults.
+
 ---
 
 ## Severity Classification
@@ -120,6 +137,9 @@ last_updated: 2026-08-12
 | Stale `/agents` Wizard Guidance | Minor (this table is the single source for this rule's severity) |
 | Body Step Requires a Tool the Subagent Cannot Have | Major |
 | Skill Portability (conditional) | Major when the skill declares an export target; not run otherwise |
+| Personal-Skill Availability in Cloud Contexts | Major when cloud/routine usage is declared; not run otherwise |
+| Pool-Wide Agent Description Token Budget | Minor (startup warning, not a functional break) |
+| Subagent Model Env Override | Minor (advisory — frontmatter silently inert) |
 
 ---
 
@@ -129,4 +149,5 @@ last_updated: 2026-08-12
 - 2026-06-10: Added `last_updated` header (was missing). Added two new checks from code.claude.com/docs/en/sub-agents (retrieved 2026-06-10): Subagent Skill-Preload Validity (skills with `disable-model-invocation: true` are silently skipped at preload) and Duplicate Agent Names Within a Scope (recursive scan; one file silently discarded). Both classified Major.
 - 2026-06-26: Added two new checks and one rule refinement. **Check 8 (new)**: Skill Name Collides with Bundled Skill — project/personal/plugin skills silently override bundled ones (`code-review`, `batch`, `debug`, `loop`, `claude-api`, `run`, `verify`, `run-skill-generator`, plus Skill-tool-callable built-ins `init`, `review`, `security-review`); classified Minor (advisory only — sometimes intentional). **Check 9 (new)**: Agent `background: true` is no longer a permission-auto-deny risk since changelog v2.1.186 — guidance for reviewers, not a check. **Check 7 refinement (changelog v2.1.178)**: nested project `.claude/agents/` along the cwd walk now have a deterministic closest-wins tie-break — downgrade severity to Minor for that specific case (within-one-scope silent-discard stays Major). last_updated bumped to 2026-06-26.
 - 2026-07-25: Added three checks from code.claude.com/docs/en/{skills,sub-agents} (retrieved 2026-07-25) and changelog v2.1.196–v2.1.218. **Check 10 (new)**: Unresolvable Agent `tools` List — as of v2.1.208 an all-unresolvable `tools` list makes Claude Code refuse to launch the subagent (previously it launched tool-less), so this is Critical, not cosmetic; the subagent-filtered tool set (`Agent`, `AskUserQuestion`, `EndConversation`, `EnterPlanMode`, `ExitPlanMode`) counts toward the zero-tools case. **Check 11 (new)**: Non-Preloadable Bundled Skills in `skills:` — v2.1.215 made `/verify` and `/code-review` user-invoke-only, extending Check 6's preload exclusion beyond `disable-model-invocation: true`; classified Major. **Check 12 (new)**: Stale `/agents` Wizard Guidance — v2.1.198 removed the interactive creation wizard, so config text telling users to run `/agents` to create a subagent is stale; Minor. Checks 1–9 re-verified current. last_updated bumped to 2026-07-25.
+- 2026-09-04: Refreshed from pool research against code.claude.com/docs/en/{memory,skills,sub-agents,best-practices} + changelog v2.1.229-v2.1.260 (retrieved 2026-09-04). **Check 8 alias carve-out**: bundled-skill override does not capture the alias (`/review` stays bundled even with a local `code-review`); v2.1.248 fixed alias-keyed `skillOverrides` and `Skill(name)` deny on nested `<dir>:name`. **Check 9 note**: injected-command abort semantics reach fork/background-preloaded skills. **Check 15 (new)**: personal skills (`~/.claude/skills/`) are not read by Cowork/cloud/routine sessions — Major when such usage is declared. **Check 16 (new)**: pool-wide ~15,000-token budget for agent descriptions (startup warning) — Minor. **Check 17 (new)**: `CLAUDE_CODE_SUBAGENT_MODEL_FORCE` silently neutralizes agent `model:` frontmatter; depth/concurrency env vars can shift Check 13 assumptions — Minor. Evaluated but not check-affecting: `claudeMdExcludes` symlink both-path matching (v2.1.243), `/context` as the load-verification command, Emphasis Overuse anti-pattern (single-file concern). last_updated bumped to 2026-09-04.
 - 2026-08-12: Refreshed against code.claude.com/docs/en/skills and /sub-agents (both retrieved 2026-08-12) + changelog v2.1.219-v2.1.228. **All existing checks re-verified valid.** Wording updates: the nested-subagent budget referenced by delegation-chain checks is now **depth 3 by default** (v2.1.219, was 5); the 200-subagent-per-session spawn cap referenced nowhere here was removed (v2.1.224). **Check 14 (new, conditional) - Skill Portability**: if a skill is declared as intended for claude.ai upload, the Skills API, or `package_skill.py` packaging, any frontmatter key outside `name`, `description`, `license`, `compatibility`, `metadata`, `allowed-tools` is a hard error on that path (Major). For Claude Code-only skills this check does not apply and Claude Code-only fields must not be flagged. last_updated bumped to 2026-08-12.

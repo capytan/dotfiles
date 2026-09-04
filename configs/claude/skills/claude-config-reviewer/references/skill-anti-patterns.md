@@ -3,7 +3,7 @@
 > Referenced during Phase 2, criterion G (Anti-patterns) for SKILL.md reviews.
 > Each pattern has a severity: Critical / Major / Minor.
 
-last_updated: 2026-08-12
+last_updated: 2026-09-04
 
 ---
 
@@ -94,6 +94,22 @@ Using `bigquery_schema` instead of `BigQuery:bigquery_schema`.
 Scripts that just call `open(path)` and let Claude handle failures.
 **Fix:** Handle known error conditions explicitly (FileNotFoundError, PermissionError) with fallbacks and useful log output.
 
+### Injected Command That Aborts the Invocation `[official]` (added 2026-09-04)
+A `` !`command` `` (or ` ```! ` block) that can exit non-zero without `|| true`, or that matches an **ask or deny** permission rule. "A failed command aborts the entire skill invocation, not just its own placeholder. Claude never sees the skill content for that invocation." Injected commands never prompt: a rule that would normally ask you aborts instead, **regardless of `allowed-tools`**. Only exit code 1 from the search/comparison carveout (e.g. `grep`, `git diff`) is tolerated; exit ≥2 always fails.
+**Fix:** Append `|| true` to commands expected to exit non-zero (check scripts that exit 1 on findings, etc.); pre-approve unmatched commands with `allowed-tools`; remove or rework commands that hit ask/deny rules.
+
+### Content Before the Frontmatter Marker `[official]` (added 2026-09-04)
+Anything before the opening `---` — blank lines, comments, a UTF-8 BOM. "Claude Code reads the frontmatter only when the opening `---` is the file's first line. Otherwise it treats the whole file, `---` markers included, as skill content", losing name/description/all fields. A BOM made the file **silently ignored entirely** before v2.1.243.
+**Fix:** Ensure `---` is byte one of the file; strip BOMs. Diagnose with `claude plugin validate <skills-dir>` (v2.1.233+).
+
+### Broad `allowed-tools` in a Repo-Committed Skill `[official]` (added 2026-09-04)
+A project skill checked into a shared repository with wide grants such as `Bash(*)`. "Workspace trust doesn't gate this field... A skill can grant itself broad tool access, so review the `allowed-tools` of skills checked into a repository before you run Claude Code there" — the grant applies even in a `-p` run in an untrusted folder.
+**Fix:** Scope grants to exact commands, ideally via the `${CLAUDE_SKILL_DIR}`-paired script pattern (`Bash(${CLAUDE_SKILL_DIR}/scripts/x.sh *)`).
+
+### Skill Directory Named `synced` `[official]` (added 2026-09-04)
+The folder name `synced` (any capitalization) is reserved in the enterprise/personal/project skills locations for skills downloaded from claude.ai; Claude Code "skips a skill you author at that name" — the skill never loads.
+**Fix:** Rename the directory.
+
 ### Backgrounded `context: fork` Skill Needing an Excluded Tool `[official]` (added 2026-07-25)
 A `context: fork` skill that leaves `background` at its `true` default while its body depends on a tool outside the narrower background-subagent tool set. The forked skill runs as a regular agent type, so the fork exemption does not cover it (v2.1.218).
 **Fix:** Set `background: false` so the fork waits in the invoking turn and keeps the full tool set. Flag Major only when the body's core workflow provably needs an excluded tool — see cross-artifact-checks.md Check 9 for the single severity threshold.
@@ -105,6 +121,10 @@ A `context: fork` skill that leaves `background` at its `true` default while its
 ### Instructing Claude to Run `/verify` or `/code-review` `[official]` (added 2026-07-25)
 As of v2.1.215 the **bundled** `/verify` and `/code-review` run only when the user invokes them, so an instruction to run them, or an agent `skills:` entry preloading them, silently never fires.
 **Fix:** Inline the steps, or have the user invoke the command. Carve-out: if a local or enabled-plugin skill of the same name overrides the bundled one, it is model-invocable again — check before flagging (cross-artifact-checks.md Checks 8 and 11).
+
+### Hardcoded Absolute Paths to Bundled Files `[official]` (added 2026-09-04)
+Body or `allowed-tools` referencing bundled scripts by absolute path (`/Users/me/.claude/skills/x/scripts/run.sh`). Breaks on relocation and other machines; injected commands also run in the session shell's cwd, which moves with `cd`.
+**Fix:** Use `${CLAUDE_SKILL_DIR}` (or `${CLAUDE_PROJECT_DIR}` for project-local files) in both the body step and the matching `allowed-tools` Bash rule.
 
 ### Inconsistent Terminology `[official]`
 Same concept referred to by different names ("endpoint"/"URL"/"route" for one thing).
@@ -151,4 +171,5 @@ Quote: "Don't railroad Claude in skills — give goals and constraints, not pres
 - 2026-06-10: Freshness re-run against code.claude.com/docs/en/skills (retrieved 2026-06-10). No new anti-patterns; severities re-verified. Note: 2026 frontmatter fields (`when_to_use`, `arguments`, `disallowed-tools`, `effort`, `paths`, `shell`, `hooks`) are official — do not flag as unknown.
 - 2026-06-26: Freshness re-run against code.claude.com/docs/en/skills (retrieved 2026-06-26). No new anti-patterns; catalog re-verified. Assessor notes (negative findings worth flagging): (1) **Frontmatter keys** are case-tolerant (kebab/snake/camelCase all accepted as of changelog v2.1.186) — do NOT flag camelCase variants. (2) **Malformed YAML** still loads the skill body with empty metadata, so a "missing description" can be a YAML parse failure rather than an author omission — recommend running with `--debug` to disambiguate. (3) **Naming collision with bundled skills**: if a project/personal/plugin skill shares a name with a bundled skill (e.g. `code-review`, `debug`, `loop`), it silently replaces the bundled one — surface as advisory NOTE so authors realize they're overriding `/code-review`.
 - 2026-07-25: Freshness re-run against code.claude.com/docs/en/skills (retrieved 2026-07-25) + changelog v2.1.196-v2.1.218. **One new Major anti-pattern**: a `context: fork` skill that leaves `background` at its `true` default while its body depends on a tool outside the **narrower background-subagent tool set** - the forked skill runs as a regular agent type, so the fork exemption does not cover it; the fix is `background: false` (v2.1.218). **One new Minor**: instructing Claude to run `/verify` or `/code-review` itself, or preloading them into a subagent - as of v2.1.215 only the user can invoke them, so the instruction silently never fires. **One de-escalation**: a `name` that differs from the skill's directory is **not** a defect in a personal or project skill - `name` sets only the display label there and the command comes from the directory name; keep the flag only for plugin skills, where `name` forms the command's last segment. **One tolerance note**: boolean frontmatter values `yes`/`no`/`on`/`off`/`1`/`0` in any case are valid as of v2.1.218 - do not flag them as malformed. last_updated bumped to 2026-07-25.
+- 2026-09-04: Freshness re-run against code.claude.com/docs/en/skills + platform best-practices (retrieved 2026-09-04) and changelog v2.1.229-v2.1.260. **Three new Major anti-patterns**: (1) an injected `` !`command` `` that can exit non-zero without `|| true` or that matches an ask/deny permission rule — either aborts the **entire** invocation and Claude never sees the skill content; (2) content (blank lines/comments/UTF-8 BOM) before the opening `---` — frontmatter is parsed only when `---` is the file's first line, and a BOM silently hid the whole skill before v2.1.243; (3) broad `allowed-tools` (e.g. `Bash(*)`) in a repo-committed skill — the field is not workspace-trust-gated and applies even in untrusted `-p` runs. **One new Major**: a skill directory named `synced` (reserved, any capitalization — the skill is skipped entirely). **One new Minor**: hardcoded absolute paths to bundled files instead of `${CLAUDE_SKILL_DIR}`/`${CLAUDE_PROJECT_DIR}` in body + `allowed-tools`. **Assessor-note update**: overriding a bundled skill does NOT capture its aliases (a local `code-review` never receives `/review`; v2.1.248 fixed alias-keyed `skillOverrides`) — extend the 2026-06-26 naming-collision note accordingly. Diagnostic: `claude plugin validate <skills-dir>` (v2.1.233+) finds unparseable frontmatter. last_updated bumped to 2026-09-04.
 - 2026-08-12: Freshness re-run against code.claude.com/docs/en/skills + platform best-practices (retrieved 2026-08-12) and changelog v2.1.219-v2.1.228. No new anti-patterns; catalog re-verified current. **New assessor note**: do **not** treat Claude Code-only frontmatter fields as an anti-pattern in Claude Code-only skills. They break only on the claude.ai upload / Skills API / `package_skill.py` paths, where the Agent Skills spec permits just `name`, `description`, `license`, `compatibility`, `metadata`, `allowed-tools` and an extra key is a hard error. **De-flag**: plugin/org skills named after terminal built-ins are invocable again (v2.1.221), so such a name is no longer a discoverability trap outside the still-reserved terminal-only built-ins. last_updated bumped to 2026-08-12.

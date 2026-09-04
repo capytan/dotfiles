@@ -161,7 +161,7 @@ Claude Code はユーザーに「〜しますか？」と確認を求めるこ�
 ### 出力ルール
 
 1. `reports/` ディレクトリが存在しない場合は Bash で `mkdir -p reports` を実行
-2. Write ツールを使って `reports/prompt-review-YYYY-MM-DD.md` に書き出す（YYYYMMDDは実行日）
+2. Write ツールを使って `reports/prompt-review-YYYY-MM-DD.md` に書き出す（YYYY-MM-DD は実行日）
 3. レポート生成後、ファイルパスをユーザーに通知する
 
 ### 記述上の注意

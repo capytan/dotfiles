@@ -13,7 +13,7 @@
 >
 > **Note:** Phase 0 research (2026-04-17) cross-checked against code.claude.com/docs/en/sub-agents.
 
-last_updated: 2026-08-12
+last_updated: 2026-09-04
 
 ---
 
@@ -41,6 +41,7 @@ Validate the YAML frontmatter between `---` markers for required fields and valu
 - Present, lowercase letters and hyphens, 3–50 chars → PASS
 - Generic name (`helper`, `assistant`, `agent`, `tool`) → -3 pts
 - Missing → 0 pts for entire category
+- **Contains `:` → Critical, 0 pts for entire category (added 2026-09-04)** `[official]`: `:` is reserved for plugin-scoped identifiers; "Claude Code doesn't load a file whose name contains one and logs an error to the debug log" (since v2.1.218). The agent never exists — same severity as the zero-resolvable-tools case. (Plugin agents' scoped IDs like `my-plugin:reviewer` are assigned by the loader, not written in `name`.)
 
 **description field (required):**
 - Present, non-empty → PASS
@@ -64,12 +65,14 @@ Validate the YAML frontmatter between `---` markers for required fields and valu
 - **All entries unresolvable → the agent does not launch (revised 2026-07-25)** `[official]`: as of changelog v2.1.208, when *nothing* in the `tools` list resolves to a real tool, Claude Code **refuses to launch the subagent** and the Agent tool returns an error naming the unresolved entries (before v2.1.208 it launched with zero tools and returned confusing output). Score this as a **Critical** finding and 0 pts for the category — the agent is non-functional, not merely misconfigured.
 - **`Skill` in `tools` is the wrong lever for preloading** `[official]`: to inject skill content at startup use the `skills` field; listing `Skill` only grants the tool.
 
-**Background-by-default tool narrowing (added 2026-07-25)** `[official]`: as of v2.1.198 subagents run in the **background by default**, and background subagents get a **smaller built-in tool set** than foreground ones (forks are exempt). Consequence: an agent whose body depends on a tool outside that set may fail intermittently depending on how Claude launches it. When an agent's instructions require such a tool, expect `background: false`-equivalent handling or an explicit `tools` declaration → advisory NOTE if absent, Major if the body's core workflow provably depends on an excluded tool.
+**Background-by-default tool narrowing (added 2026-07-25; set enumerated 2026-09-04)** `[official]`: as of v2.1.198 subagents run in the **background by default** — and with fork mode on (the interactive default), *every* subagent Claude spawns runs in the background. Background subagents keep every MCP tool but only these built-ins: `Read`, `Grep`, `Glob`, `Bash`, `PowerShell`, `Edit`, `Write`, `NotebookEdit`, `WebFetch`, `WebSearch`, `TodoWrite`, `Skill`, `ToolSearch`, `EnterWorktree`, `ExitWorktree`, `Monitor`, `TaskStop`, `SendMessage`, `Artifact` (forks are exempt; retrieved 2026-09-04). Consequence: an agent whose body depends on a built-in tool outside this set will usually not have it at runtime. Advisory NOTE when the dependency is incidental, Major if the body's core workflow provably depends on an excluded tool.
+
+**`experimental` field (added 2026-09-04)** `[official]`: `experimental` is a recognized frontmatter field (v2.1.248+). Its `cacheTtl` key accepts `5m` or `1h` (per-agent prompt cache TTL); any other value is silently ignored → advisory NOTE for unrecognized values, not a deduction (the field is defined to ignore them).
 
 **Other optional fields (validate if present) `[official]` (2026-06):**
 - `permissionMode`: value in `default | acceptEdits | auto | dontAsk | bypassPermissions | plan | manual` → PASS; unrecognized → -2 pts (`auto` and `dontAsk` are official modes — do NOT flag as invalid; `manual` is an alias for `default` as of v2.1.200)
 - `memory`: value in `user | project | local` → PASS
-- Recognized 2026 fields — do NOT flag as unknown: `disallowedTools`, `maxTurns`, `skills`, `mcpServers`, `hooks`, `memory`, `background`, `effort`, `isolation` (`worktree`), `color`, `initialPrompt`
+- Recognized 2026 fields — do NOT flag as unknown: `disallowedTools`, `maxTurns`, `skills`, `mcpServers`, `hooks`, `memory`, `background`, `effort`, `isolation` (`worktree`), `color`, `initialPrompt`, `experimental` (v2.1.248+)
 - Plugin-distributed agents: `hooks`, `mcpServers`, `permissionMode` are **ignored** for plugin subagents → advisory NOTE if present in a plugin agent file
 
 **15 pts**: All present required fields valid, optional fields valid if present
@@ -92,6 +95,7 @@ Both are valid. Score the style the author chose against its own rubric below.
 **Length:** 10–5,000 characters.
 - Under 10 → 0 pts for entire category
 - Over 5,000 → -3 pts
+- **Official backing for the over-length deduction (added 2026-09-04)** `[official]`: descriptions are always-loaded context; Claude Code warns at startup when the *combined* custom-subagent descriptions exceed 15,000 tokens, with official guidance to "Trim the `description` fields… and move detail into each subagent's system prompt, which only loads when that subagent runs" (retrieved 2026-09-04). For a pool review, note when many long `<example>`-block descriptions together plausibly approach the budget.
 
 **Trigger language (both styles):**
 - Description includes a clear "when to use" clause (e.g., "Use proactively after…", "Use when…", "Use immediately after…") → required
@@ -229,6 +233,8 @@ Verify the agent file is consistent with its environment.
 - `skills` field entries exist and none set `disable-model-invocation: true` (such skills cannot be preloaded; they are skipped with only a debug-log warning) → -2 pts per invalid entry `[official]` (2026-06). **Extended 2026-07-25**: this also covers the bundled `/verify` and `/code-review` skills — as of v2.1.215 only the user can run them, so they cannot be preloaded either `[official]`
 - **Stale `/agents` references (added 2026-07-25)** → advisory NOTE `[official]`: as of v2.1.198 `/agents` no longer opens the interactive creation wizard; it prints a reminder to ask Claude or edit `.claude/agents/` directly. An agent file or doc telling the user to "run `/agents` to create one" is stale guidance. Directories, frontmatter, and file format are unchanged
 - **Duplicate names are now surfaced by `/doctor` (added 2026-07-25)** `[official]`: as of v2.1.205 the `/doctor` setup checkup reports same-directory `name` collisions and proposes renaming or removing all but one. Keep the -3 pt deduction, and cite `/doctor` as the remediation check
+- **UTF-8 BOM in the file (added 2026-09-04)** → -2 pts `[official]`: before v2.1.239 an agent `.md` starting with a UTF-8 BOM was **silently ignored** (changelog: "Fixed agents, skills, and commands whose `.md` file starts with a UTF-8 BOM being silently ignored"). Current versions load it, but a BOM in a checked-in file breaks teammates on older Claude Code — detect with `head -c 3` = `EF BB BF`
+- **Body relying on `CLAUDE_CODE_SUBAGENT_MODEL` overriding `model:` (added 2026-09-04)** → advisory NOTE `[official]`: since v2.1.251 the resolution order is per-invocation > frontmatter > env var > main model — the env var is a default, not an override (unless `CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1`, v2.1.257). Docs or agent bodies asserting the old env-var-wins order are stale
 
 **10 pts**: Fully consistent
 **7 pts**: Minor mismatches (name casing, advisory notes)
@@ -277,3 +283,4 @@ Verify the agent file is consistent with its environment.
   - **A. Frontmatter (`permissionMode`)**: `bypassPermissions` in an agent definition no longer overrides org policy (v2.1.223). An agent relying on `bypassPermissions` to escape managed policy is a Major correctness issue in the body's assumptions, not a frontmatter-validity issue.
   - **Per-session spawn cap removed** (v2.1.224): do not flag long-running orchestrator agents for exhausting a 200-subagent budget.
   last_updated bumped to 2026-08-12.
+- 2026-09-04: Refreshed against code.claude.com/docs/en/sub-agents (retrieved 2026-09-04) and changelog v2.1.229-v2.1.260. **One material scoring change**: **A. Frontmatter (`name`)** — a `name` containing `:` makes Claude Code skip the file entirely (error only in the debug log; behavior since v2.1.218, now documented) → Critical, 0 pts for the category, same treatment as zero-resolvable-tools. **Other updates**: `experimental` (`cacheTtl: 5m|1h`, v2.1.248) added to recognized fields — unknown `experimental` sub-keys are advisory only (the field ignores them by definition); background tool narrowing note updated with the officially enumerated 19-builtin background tool set and the fork-mode-default reality (interactive spawns are effectively always background); **B**: description over-length deduction now has official backing — 15,000-token combined description budget with startup warning; **G**: new -2 pt check for a UTF-8 BOM at the start of the file (silently ignored before v2.1.239, breaks older clients), and advisory NOTE for text assuming `CLAUDE_CODE_SUBAGENT_MODEL` overrides frontmatter `model:` (resolution order changed in v2.1.251; `CLAUDE_CODE_SUBAGENT_MODEL_FORCE` is the override switch since v2.1.257). Nesting-depth advisories unchanged (still 3 by default, now configurable via `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH`); concurrent-spawn cap of 20 (`CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS`) noted for orchestrator reviews — advisory only. last_updated bumped to 2026-09-04.
