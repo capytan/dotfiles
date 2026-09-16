@@ -9,7 +9,7 @@
 > - `[community:mid]` = GitHub 10-50 stars, verified in a tech blog
 > - `[community:low]` = Individual report, unverified but reasonable (reference only)
 
-last_updated: 2026-09-04
+last_updated: 2026-09-16
 
 ---
 
@@ -22,6 +22,8 @@ last_updated: 2026-09-04
 - Measured Description Optimization ("Use when...", Examples)
 - Pushy Descriptions
 - Curate Aggressively: 8-12 Skills, Monthly Audit
+- Pruning with `/skill-doctor` (Sep 2026)
+- Frontmatter Field Inventory: 20 Claude Code Fields vs 6 Spec Fields
 - CLAUDE.md = Always-On, Skills = On-Demand (Mental Model)
 - Evaluation-Driven Skill Creation
 - Token Economics at Scale
@@ -112,6 +114,29 @@ First quantified evidence for the long-standing "description is the trigger" and
 - Complements the official skill-listing budget mechanics (1% of context window; least-invoked descriptions dropped first on overflow) — fewer, better skills keep full descriptions in context
 
 > Sources: https://www.firecrawl.dev/blog/best-claude-code-skills , https://www.developersdigest.tech/blog/best-claude-code-skills-2026 (retrieved 2026-06-10)
+
+## Pruning with `/skill-doctor` (Sep 2026)
+
+`[community:low]` Early coverage of the bundled `/skill-doctor` command (changelog v2.1.261, 2026-09-04) turns the "monthly audit" practice above into a concrete workflow:
+
+- getclaudeskills.com (published 2026-09-05): for skills you maintain, "rewrite the description or add `disable-model-invocation: true`"; for skills you don't, use `skillOverrides` with `"name-only"` (keeps `/name` invocation) or `"off"`. Caution recorded: "a skill flagged unused isn't necessarily broken or badly written, it may just not have come up in your recent sessions."
+- Joe Njenga (Medium, Sep 2026, title "I Tried (New) Claude Code /skill-doctor (And Found Most Skills Are Dead Weight)") — same conclusion from the search snippet; page returned HTTP 403 on fetch, so no direct quote.
+
+Conflict with official: getclaudeskills states the minimum version as v2.1.261; the docs say `/skill-doctor` "requires Claude Code v2.1.252 or later" and is feature-flag-gated. Official wins; the changelog entry is v2.1.261. No scoring impact — the tool is recorded in the official file and criteria as an advisory diagnostic.
+
+> Sources: https://www.getclaudeskills.com/blog/claude-code-skill-doctor-command (retrieved 2026-09-16); https://medium.com/@joe.njenga/i-tried-new-claude-code-skill-doctor-and-found-most-skills-are-dead-weight-2c2c3d0aaf2d (search snippet only, 2026-09-16)
+
+## Frontmatter Field Inventory: 20 Claude Code Fields vs 6 Spec Fields
+
+`[community:mid]` Serverworks engineer blog (Kenji Kubo, published 2026-08-31, "Claude CodeのSkill frontmatterガイド—全20項目とベストプラクティス"): "2026年8月28日時点で、Claude Codeが受け付けるトップレベルのfrontmatterは全部で20項目です。ただし、オープン仕様のAgent Skillsで定義されているのは6項目だけです。" The 20 match the official table verbatim (`name`…`compatibility`); the 6 are the portability set. Practitioner rules it adds, all consistent with official:
+
+- "Skill auto-execution accuracy depends primarily on `description`" — include concrete scenarios and boundary cases.
+- `disable-model-invocation` for deployments, commits, external sends, resource modifications.
+- `allowed-tools` "grants temporary authority for a single turn; unlisted tools remain usable but require approval" — corrects the recurring "restricts capabilities" misreading noted 2026-09-04.
+- **Separate firing tests from output tests** — build test cases that distinguish "did it trigger" from "was the output good"; matches the 2026-09-16 official wording ("measure separately whether Claude invokes it … and whether the output matches").
+- `context: fork` for large-codebase / PR-review / security-analysis tasks, not for reference knowledge.
+
+> Source: https://blog.serverworks.co.jp/claude-code-skill-frontmatter (retrieved 2026-09-16)
 
 ## CLAUDE.md = Always-On, Skills = On-Demand (Mental Model)
 
@@ -240,4 +265,5 @@ Consolidated from the sources above:
 - 2026-06-26: Freshness re-run (16 days stale). No new community insights worth adopting. Re-verified existing items against late-June 2026 sources: SKILL.md <500-line consensus, 1,500-2,000 word target (Anthropic plugin-dev), description-as-trigger, pushy descriptions, JiT loading, "skills are for agents not humans" (no README/CHANGELOG), security review of community skills, 8-12 skill curation, monthly audit — all current. Notable ecosystem updates in this window are official/tooling (skill-creator promoted to official plugin at `anthropics/claude-plugins-official`; `/reload-skills` shipped; kebab/snake/camelCase frontmatter tolerance v2.1.186) — recorded in official-best-practices, not community. last_updated bumped to 2026-06-26.
 - 2026-07-25: Freshness re-run (29 days stale). Surveyed 2026-07 authoring guides (williamspurlock, codemeetai, firecrawl, developersdigest, lipex360x gist, platform.claude.com skill-authoring best practices). Existing items re-verified: description-is-the-trigger, pushy over summarizing, literal user phrasing, verb+trigger shape, one job per skill, lean body with detail in companion files, monthly audit / 8-12 skill portfolio. **Three additions worth recording**: (1) the **'even if they don't explicitly say X' escape-hatch clause** is a specifically effective description pattern for combating undertriggering `[community:mid]`; (2) **`references/` vs `templates/` are distinct roles** - references are read for context and never copied, templates are copied into the project, and conflating them is a common authoring mistake `[community:mid]`; (3) prefer **reasoned instructions ('because X') over rigid ALWAYS/NEVER**, while keeping explicit 'do not' lines where Claude would otherwise drift back to defaults `[community:mid]`. Body-length targets remain split (under 500 lines checklist vs a 300-line practitioner target); no change to the criteria threshold. **Correction**: the community claim that skills never reload mid-session is outdated - `/reload-skills` and live SKILL.md text detection ship officially. last_updated bumped to 2026-07-25.
 - 2026-09-04: Freshness re-run (23 days stale). **No substantive changes found.** Surveyed 2026-08/09 sources: JP practitioner posts (SIOS Tech Lab template guide, playpark SKILL.md design guide reporting an 87% SKILL.md size reduction by offloading branches to scripts, Sei San Sei one-responsibility granularity, Qiita kawabe0201 "2026年最新" guide) and EN roundups (williamspurlock authoring guide, lipex360x gist, mcpmarket Skillify) — all restate recorded consensus: description-as-trigger with "even if they don't explicitly say X" escape hatch, 500-line ceiling with ~200-300-line practitioner targets, one skill one responsibility, progressive disclosure, scripts for deterministic steps, `@` imports only in CLAUDE.md. One recurring community claim to treat with care: "declare `allowed-tools` to restrict capabilities" — official docs clarify `allowed-tools` pre-approves but does not restrict (restriction is `disallowed-tools`/permission rules); official wins. last_updated bumped to 2026-09-04.
+- 2026-09-16: Freshness re-run (12 days stale). Surveyed Sep 2026 EN/JA sources: getclaudeskills.com `/skill-doctor` guide (2026-09-05), Joe Njenga Medium `/skill-doctor` post (403 on fetch, snippet only), Serverworks frontmatter guide (2026-08-31, `[community:mid]`), wentz-design.com skills guide (updated Sep 2026, `[community:low]` — "最も大事なのは description … 三人称の説明調で書く"), genai-ai.co.jp beginner guide (updated 2026-09-01, `[community:low]` — cites a Snyk finding that 36.8% of public skills have some security issue; reinforces "Security: Treat Skills as Code"), plus re-hits of nexa-corp (Mar), Qiita kawabe0201/nogataka, Zenn nocodesolutions (Jul). **Two sections added**: `/skill-doctor` pruning workflow (`[community:low]`, official version conflict noted: docs v2.1.252+ vs article v2.1.261) and the Serverworks 20-vs-6 frontmatter inventory with "separate firing tests from output tests" (`[community:mid]`, now also stated officially). **No scoring changes** — everything scoring-relevant this cycle is official and lives in skill-official-best-practices.md / skill-quality-criteria.md. Caveats for assessors: ar-aca.tech still claims a 200-char `description` maximum (wrong; 1,536 combined listing cap / 1,024 spec cap — official wins); the 2026-07-25 `[community:mid]` "reasoned instructions over ALWAYS/NEVER" item is now `[official]` via agentskills.io. last_updated bumped to 2026-09-16.
 - 2026-08-12: Freshness re-run (18 days stale). Community sources re-checked (Totalum "Claude Code Skills in 2026", agensi.io "SKILL.md Format Specification", mcp.directory best-practices roundup, SmartScope advanced-practices article; `[community:mid]` or better). **No new practices worth adopting.** Surveyed guidance restates what is already recorded: specific over generic descriptions ("Check for SQL injection" beats "check for security issues"), one concrete example over three paragraphs of prose, numbered steps for procedures, explicit negative boundaries (what the skill must *not* do), a body kept near ~1,500 words, and helper files referenced by relative path. Caveat recorded for assessors: several community posts still describe a `tools:` allowlist field on SKILL.md - the correct field names are `allowed-tools` / `disallowed-tools`; official wins. last_updated bumped to 2026-08-12.

@@ -1,6 +1,6 @@
 # Modularization Guide
 
-last_updated: 2026-09-04
+last_updated: 2026-09-16
 
 > Referenced in Phase 4 when proposing CLAUDE.md splits.
 
@@ -67,6 +67,10 @@ These rules only load when Claude reads files matching the pattern.
 - User-level rules in `~/.claude/rules/` apply to every project
 - To exclude a symlinked rules file via `claudeMdExcludes`, a pattern matching **either** the `.claude/rules/` path or the link target works (v2.1.239–v2.1.243; previously only the link target matched)
 - Cowork desktop sessions skip a symlinked `~/.claude/rules/` directory or rule file pointing outside the session's working directory (retrieved 2026-09-04)
+- **Symlinks whose target is outside the working directory are external imports (official, retrieved 2026-09-16)**: "The linked rules don't load until you approve external imports for the project, and after that only the ones without a `paths` field load. Claude Code asks for that approval only when a project memory file imports a file outside the working directory with `@path`, not for symlinks alone. To load shared rules without that approval, keep them in `~/.claude/rules/`." So a project-level symlink to a rules repo elsewhere on disk (a) silently never loads unless some CLAUDE.md in the project also `@path`-imports an outside file, and (b) never loads its path-scoped rules at all. Use `~/.claude/rules/` for personal sharing or a plugin for team sharing; a symlink to a target *inside* the working directory is unaffected
+- **Compaction**: unscoped rules are re-injected from disk after `/compact`; rules with `paths:` are summarized away and only reload when a matching file is read again. Official rule: "If a rule must persist across compaction, drop the `paths:` frontmatter or move it to the project-root CLAUDE.md." (https://code.claude.com/docs/en/context-window, retrieved 2026-09-16)
+- **Verify user-level path-scoped rules**: a closed GitHub issue (#21858) reported `paths:` rules in `~/.claude/rules/` never loading while the same file under `./.claude/rules/` did; no fix version is stated. Confirm with the `InstructionsLoaded` hook before relying on them
+- **Choose between per-directory CLAUDE.md and a path-scoped rule (official table, retrieved 2026-09-16)**: per-directory `CLAUDE.md` when "Directory owners maintain their own conventions; instructions are versioned with the code"; path-scoped rule when "You want all conventions in one place, or the same rule applies to many scattered paths" (https://code.claude.com/docs/en/large-codebases)
 
 ## Method 2: `@path/to/file.md` (Explicit Reference)
 
@@ -121,6 +125,10 @@ monorepo/
 **Caveats:**
 - Don't copy parent CLAUDE.md content into children (parent is auto-loaded too)
 - Children should contain only package-specific information
+- Starting Claude from a subdirectory loads "That directory's plus every ancestor's" CLAUDE.md; starting from the root loads "Root only; subdirectory files load on demand when Claude reads there". Confirm with `/context` under **Memory files** (https://code.claude.com/docs/en/large-codebases, retrieved 2026-09-16)
+- `.claude/settings.json` is *not* inherited from parent directories the way CLAUDE.md is — each subdirectory you start from needs its own self-contained settings file
+- A sibling package granted via the `permissions.additionalDirectories` setting never loads its CLAUDE.md, rules, or skills; only `--add-dir` / `/add-dir` plus `CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD=1` does
+- Nested CLAUDE.md files are summarized away on compaction and reload only when Claude reads a file in that directory again (same as path-scoped rules)
 
 ## Method 4: `CLAUDE.local.md` (Personal Settings) `[official]`
 
@@ -131,7 +139,7 @@ Separate settings that shouldn't be shared with the team.
 - Local-environment-specific paths (homebrew install locations, etc.)
 - Experimental configurations
 
-**Must be added to `.gitignore`.** Running `/init` and choosing the personal option does this automatically.
+**Must be added to `.gitignore`.** With `CLAUDE_CODE_NEW_INIT=1` set, running `/init` and choosing the personal option does this for you (official wording, retrieved 2026-09-16); without the flag, add the entry by hand.
 
 **Caveats (official, 2026-04-17):**
 - Loads alongside `CLAUDE.md` and is appended *after* it at each directory level, so personal notes override the shared file when they conflict
@@ -164,6 +172,7 @@ Skills only load when invoked or when Claude determines they're relevant.
 **Caveats:**
 - Skills require Claude to recognize relevance or explicit invocation
 - Not suitable for rules that must apply to every session universally
+- After `/compact`, invoked skill bodies are re-injected "capped at 5,000 tokens per skill and 25,000 tokens total; oldest dropped first", and "Truncation keeps the start of the file, so put the most important instructions near the top of `SKILL.md`" (https://code.claude.com/docs/en/context-window, retrieved 2026-09-16)
 
 ## Method 5b: `agent_docs/` with file:line pointers `[community:high]`
 
@@ -225,10 +234,11 @@ Move absolute rules to hooks instead of relying on CLAUDE.md compliance.
    - **Task-specific only** → `@` reference to a separate file or move to a skill
    - **On-demand domain knowledge** → skill (SKILL.md)
    - **Package-specific** → subdirectory CLAUDE.md
-   - **Personal settings** → `.claude.local.md`
+   - **Personal settings** → `CLAUDE.local.md` (spelling corrected 2026-09-16; was the incorrect `.claude.local.md`)
    - **Must execute 100% of the time** → hook in `.claude/settings.json`
+   - **Must survive `/compact` unchanged** → project-root CLAUDE.md or an *unscoped* rule (path-scoped rules and nested CLAUDE.md are summarized away)
 
-2. Target under 100 lines for the post-split CLAUDE.md (official: under 200; Boris's reference: ~100)
+2. Target under 100 lines for the post-split CLAUDE.md (official: under 200; Boris's reference: ~100). Remember every non-Explore/Plan subagent re-loads the full hierarchy into its own context, so the always-on portion is paid once per subagent as well (sub-agents doc, retrieved 2026-09-16; a subagent that needs none of it can set `omitClaudeMd: true`, v2.1.271+)
 
 3. Verify each split file is self-contained (no prerequisite knowledge from other files)
 
@@ -247,4 +257,5 @@ Move absolute rules to hooks instead of relying on CLAUDE.md compliance.
 - 2026-06-26: Freshness re-run (2 days stale). All six methods re-verified against memory + skills docs (retrieved 2026-06-26). One clarification worth noting in Method 2 (`@path`): the official docs now state explicitly that **import parsing skips Markdown code spans and fenced code blocks** — wrap paths in backticks (`` `@path` ``) to mention them without importing. No structural change to the methods. last_updated bumped to 2026-06-26.
 - 2026-07-25: Freshness re-run (29 days stale) against code.claude.com/docs/en/memory (retrieved 2026-07-25). All six methods re-verified current. **Method 1 (`.claude/rules/`) gains four operational caveats**: path-scoped rules now also match when Claude reaches a file through a **symlinked path** into the project (v2.1.198) - previously such rules appeared not to fire, which matters for symlink-based dotfiles and symlinked checkouts; a rule's whole `paths` list shares a budget of **1,000 expanded brace patterns and 4 MiB**, and an over-budget pattern is used unexpanded so its literal braces match nothing (v2.1.217); an unparseable `[` makes that single pattern match nothing while the rule's other patterns keep working, and a literal `[` must be escaped as `\[` (v2.1.207); project rules are skipped when `project` is excluded from `--setting-sources`, including on-demand and nested rules, as of v2.1.211. **New method note**: `CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD=1` makes `--add-dir` also load that directory's `CLAUDE.md`, `.claude/CLAUDE.md`, `.claude/rules/*.md`, and `CLAUDE.local.md` - a way to share one rules tree across sibling repos without symlinks. No structural change to the six methods. last_updated bumped to 2026-07-25.
 - 2026-08-12: Freshness re-run against code.claude.com/docs/en/memory (retrieved 2026-08-12) + changelog v2.1.219-v2.1.228. Decision table (`.claude/rules/*.md` vs `@path` import vs subdirectory CLAUDE.md) re-verified unchanged, including the rule that imports do not reduce context because they load at launch. No content changes. last_updated bumped to 2026-08-12.
+- 2026-09-16: Refreshed against memory docs plus the new context-window, large-codebases and sub-agents pages (retrieved 2026-09-16) + changelog v2.1.261–v2.1.273. All six methods structurally unchanged. **Method 1 gains three caveats**: (1) a symlink whose target is outside the working directory is now officially an external import — it never loads without `@path`-triggered approval and its path-scoped rules never load at all; use `~/.claude/rules/` or a plugin instead; (2) unscoped rules survive `/compact` but `paths:` rules do not ("drop the `paths:` frontmatter" to persist); (3) GitHub #21858 (user-level `paths:` rules ignored) recorded as verify-with-`InstructionsLoaded`. Added the official per-directory-CLAUDE.md-vs-path-scoped-rule decision table. **Method 3** gains subdirectory-start loading rules, non-inheritance of `.claude/settings.json`, and the `additionalDirectories`-never-loads-memory-files distinction. **Method 4**: `/init` personal-option gitignore now conditional on `CLAUDE_CODE_NEW_INIT=1`. **Method 5**: post-compaction skill-body caps (5,000/skill, 25,000 total, keep important lines at top). **Splitting procedure**: fixed the lingering `.claude.local.md` misspelling, added a "must survive compaction" routing row, and noted the per-subagent cost of always-on content (`omitClaudeMd` opt-out, v2.1.271). last_updated bumped to 2026-09-16.
 - 2026-09-04: Refreshed against memory docs (retrieved 2026-09-04) + changelog v2.1.229–v2.1.260. All six methods structurally unchanged. **Method 1 gains two symlink caveats**: `claudeMdExcludes` now excludes a symlinked rules file when the pattern matches either the rules path or the link target (v2.1.239–v2.1.243), and Cowork desktop sessions skip symlinked user-scope rules pointing outside the working directory. Related but out of scope here: the new `/import` command (v2.1.213+) copies another agent's config (AGENTS.md, MCP, commands, subagents, skills) into Claude Code one-time — an onboarding tool, not a modularization method; details in official-best-practices. last_updated bumped to 2026-09-04.

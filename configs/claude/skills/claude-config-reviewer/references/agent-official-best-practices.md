@@ -11,11 +11,14 @@
 > - `[community:mid]` = GitHub 10-50 stars, verified in a tech blog
 > - `[custom]` = Derived from this repo's own practice
 
-last_updated: 2026-09-04
+last_updated: 2026-09-16
 sources:
   - https://code.claude.com/docs/en/sub-agents
   - https://code.claude.com/docs/en/best-practices
   - https://code.claude.com/docs/en/changelog
+  - https://code.claude.com/docs/en/errors
+  - https://code.claude.com/docs/en/agent-teams
+  - https://code.claude.com/docs/en/tools-reference
   - https://claude.com/blog/subagents-in-claude-code
   - https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices
 
@@ -27,6 +30,7 @@ Summary from Official Documentation:
 - What Subagents Are
 - Subagent File Structure
 - Frontmatter Reference
+- Subagent Files Claude Code Skips
 - Where Subagents Live
 - Description & Triggering
 - Model Selection
@@ -40,6 +44,9 @@ Summary from Official Documentation:
 - Invocation Patterns
 - Hooks in Subagents
 - Plugin Subagent Restrictions
+- Permission Modes
+- Subagent Definitions as Agent-Team Teammates
+- Headless: --append-subagent-system-prompt
 - Auto-Compaction
 - Nesting Limit
 - Forked Subagents (experimental)
@@ -77,18 +84,19 @@ Key benefits:
 
 | Field | Required | Description |
 |-------|----------|-------------|
-| `name` | Yes | Unique identifier using lowercase letters and hyphens. Hooks receive this as `agent_type`. **The filename does not have to match the `name`.** Identity comes only from the `name` field; the subdirectory path does not affect invocation. **`:` is forbidden (added 2026-09-04)**: "Names can't contain `:`, which is reserved for plugin-scoped identifiers such as `my-plugin:reviewer`. Claude Code doesn't load a file whose name contains one and logs an error to the debug log. Before v2.1.218, such names were accepted" (retrieved 2026-09-04) |
-| `description` | Yes | When Claude should delegate to this subagent |
-| `tools` | No | Tools the subagent can use. Inherits all if omitted |
-| `disallowedTools` | No | Tools to deny, removed from inherited or specified list |
+| `name` | Yes | Unique identifier using lowercase letters and hyphens. Hooks receive this as `agent_type`. **The filename does not have to match the `name`.** Identity comes only from the `name` field; the subdirectory path does not affect invocation. **`:` is forbidden (added 2026-09-04)**: "Names can't contain `:`, which is reserved for plugin-scoped identifiers such as `my-plugin:reviewer`. Claude Code doesn't load a file whose name contains one and logs an error to the debug log. Before v2.1.218, such names were accepted" (retrieved 2026-09-04). **Leading `-` is also forbidden (added 2026-09-16)**: "A `name` that starts with `-` or contains `:`: Claude Code skips the file and writes an error to the debug log" (retrieved 2026-09-16; see *Subagent Files Claude Code Skips*) |
+| `description` | Yes | When Claude should delegate to this subagent. **A file with `name` but no `description` is skipped entirely** (retrieved 2026-09-16; see *Subagent Files Claude Code Skips*) |
+| `tools` | No | Tools the subagent can use. "Inherits every tool available to subagents if omitted. If no entry in the list resolves to a tool, the subagent usually fails to launch with an error naming the entries. To preload Skills into context, use the `skills` field rather than listing `Skill` here" (retrieved 2026-09-16). The "usually" is precise: an **empty** `tools` list, or one that `disallowedTools` empties, launches tool-less without the refusal (see *Tool Restriction*) |
+| `disallowedTools` | No | Tools to deny, removed from inherited or specified list. **Specifiers are not honored (added 2026-09-16)**: "An entry with a specifier, such as `Bash(git push *)`, still removes the whole tool" (retrieved 2026-09-16; see *Tool Restriction*) |
 | `model` | No | `sonnet`, `opus`, `haiku`, `fable`, full model ID (e.g., `claude-opus-4-8`, `claude-sonnet-4-6`), or `inherit`. Default: `inherit`. **`fable` added to the official alias list (retrieved 2026-06-10)** |
-| `permissionMode` | No | `default`, `acceptEdits`, `auto`, `dontAsk`, `bypassPermissions`, `plan`, or `manual` (alias for `default`, v2.1.200+). `auto` = background classifier reviews commands; `dontAsk` = auto-deny prompts (explicitly allowed tools still work). Parent `bypassPermissions`/`acceptEdits` take precedence and cannot be overridden; a parent in auto mode forces auto mode (frontmatter ignored). **As of v2.1.223, an agent definition's `bypassPermissions` no longer overrides org policy** ("Fixed permission gap where agent definition's `bypassPermissions` mode ignored org policy") |
+| `permissionMode` | No | `default`, `acceptEdits`, `auto`, `dontAsk`, `bypassPermissions`, `plan`, or `manual` (alias for `default`, v2.1.200+). `auto` = background classifier reviews commands; `dontAsk` = auto-deny prompts (explicitly allowed tools still work). Parent `bypassPermissions`/`acceptEdits` take precedence and cannot be overridden; a parent in auto mode forces auto mode (frontmatter ignored). **As of v2.1.223, an agent definition's `bypassPermissions` no longer overrides org policy** ("Fixed permission gap where agent definition's `bypassPermissions` mode ignored org policy"). **As of v2.1.267 (added 2026-09-16) a subagent's `bypassPermissions` is honored only when the main conversation is already in that mode** — see *Permission Modes* |
 | `maxTurns` | No | Maximum agentic turns before stopping. **Updated 2026-09-04:** "When the subagent reaches the limit, Claude Code returns its output marked as partial, and Claude can resume it to continue. The partial marking requires Claude Code v2.1.246 or later" |
 | `skills` | No | Skills to preload into context at startup |
 | `mcpServers` | No | MCP servers available to subagent |
 | `hooks` | No | Lifecycle hooks scoped to this subagent |
 | `memory` | No | Persistent memory scope: `user`, `project`, or `local` |
-| `background` | No | **Semantics clarified 2026-09-04:** "Set to `true` to keep this subagent in the background even when Claude asks to run it in the foreground." Default: `false` |
+| `background` | No | **Semantics clarified 2026-09-04:** "Set to `true` to keep this subagent in the background even when Claude asks to run it in the foreground." Default: `false`. An in-process agent-team teammate **refuses with an error** to spawn a subagent whose definition sets `background: true` (retrieved 2026-09-16) |
+| `omitClaudeMd` | No | **NEW (v2.1.271, added 2026-09-16):** "Set to `true` to launch this subagent without the user, project, and local CLAUDE.md files; managed policy files still load, except for managed subagents. Use it for subagents that take everything they need from the delegation prompt. Ignored when the agent runs as the main session agent via `--agent` or the `agent` setting. Requires Claude Code v2.1.271 or later" (retrieved 2026-09-16). Also accepted in `--agents` JSON. Changelog v2.1.271: "Added `omitClaudeMd` to agent frontmatter and `--agents` JSON, letting custom and plugin subagents run without user, project and local CLAUDE.md files; managed policy files still load" |
 | `effort` | No | `low`, `medium`, `high`, `xhigh`, `max` (levels depend on model) |
 | `isolation` | No | `worktree` for temporary git worktree isolation. **Semantics detailed 2026-09-04:** "giving it an isolated copy of the repository branched by default from your default branch rather than the parent session's `HEAD`. The worktree is automatically cleaned up if the subagent makes no changes." |
 | `color` | No | Display color. Accepts `red`, `blue`, `green`, `yellow`, `purple`, `orange`, `pink`, or `cyan` |
@@ -97,6 +105,20 @@ Key benefits:
 
 **Note on `color` values `[official]`:** Updated 2026-04-17. The official palette is `red | blue | green | yellow | purple | orange | pink | cyan`. Prior references to `magenta` are not part of the documented set.
 — https://code.claude.com/docs/en/sub-agents (retrieved 2026-04-17)
+
+### Subagent Files Claude Code Skips `[official]` (NEW 2026-09-16)
+
+The docs now enumerate every frontmatter defect that makes a file silently not exist. None of these is reported in the session; most go only to the debug log (`--debug`).
+
+> "Claude Code skips a file in a project, user, or managed `agents` directory, or in one under a directory you add with `--add-dir`, without reporting it in the session, when the frontmatter has any of these problems:
+> - **No `name`**: Claude Code treats the file as documentation kept beside your agents.
+> - **An opening `---` that isn't the file's first line**: Claude Code reads the file as having no frontmatter and treats it as documentation.
+> - **A `name` that starts with `-` or contains `:`**: Claude Code skips the file and writes an error to the debug log.
+> - **A `name` but no `description`**: Claude Code skips the file and writes the reason to the debug log.
+> - **YAML that doesn't parse**: Claude Code reads no fields from the file, skips it, and writes the parse error to the debug log."
+> — https://code.claude.com/docs/en/sub-agents (retrieved 2026-09-16)
+
+Scoring implication: all five are Critical for criterion A — the agent is not misconfigured, it is absent. The "`---` not on line 1" case covers a leading blank line, a comment, or a stray character before the frontmatter (the UTF-8 BOM case, fixed in v2.1.239, is the historical instance of it). "No `name`" is the one *intentional* use: a README-style `.md` kept inside `agents/` is fine as long as it has no `name:` frontmatter.
 
 ### Where Subagents Live `[official]`
 
@@ -111,9 +133,11 @@ Key benefits:
 > "Project subagents (.claude/agents/) are ideal for subagents specific to a codebase. Check them into version control so your team can use and improve them collaboratively."
 > — https://code.claude.com/docs/en/sub-agents (retrieved 2026-04-17)
 
-**Recursive scanning & name uniqueness `[official]` (2026-06):**
+**Recursive scanning & name uniqueness `[official]` (2026-06; wording updated 2026-09-16):**
 > "Claude Code scans `.claude/agents/` and `~/.claude/agents/` recursively, so you can organize definitions into subfolders such as `agents/review/` or `agents/research/`. The subdirectory path does not affect how a subagent is identified or invoked, because identity comes only from the `name` frontmatter field. Keep `name` values unique across the whole tree: if two files within one scope declare the same name, Claude Code keeps one and discards the other without warning."
 > — https://code.claude.com/docs/en/sub-agents (retrieved 2026-06-10)
+
+Current wording makes the tie-break explicitly undefined: "if two files under the same `.claude/agents/` directory, including its subfolders, declare the same name, Claude Code loads only one of them, chosen by filesystem read order rather than a documented precedence." (retrieved 2026-09-16) — i.e. which one wins can differ between machines.
 
 Plugin `agents/` subfolders, unlike project/user scopes, DO become part of the scoped identifier: `agents/review/security.md` in plugin `my-plugin` registers as `my-plugin:review:security`.
 
@@ -123,7 +147,15 @@ Plugin `agents/` subfolders, unlike project/user scopes, DO become part of the s
 
 This is a *different* rule from the within-one-scope "duplicates silently discarded" behavior: nested project `.claude/agents/` directories along the cwd walk now have a deterministic tie-break (closest wins), rather than silent loss.
 
-**Load timing `[official]` (2026-06):** "Subagents are loaded at session start. If you add or edit a subagent file directly on disk, restart your session to load it. Subagents created through the `/agents` interface take effect immediately without a restart." (No live change detection for agents, unlike skills.)
+**Load timing — hot reload `[official]` (CORRECTED 2026-09-16; supersedes the 2026-06 "restart your session" note):**
+> "Claude Code watches `~/.claude/agents/` and `.claude/agents/`. When you add or edit a subagent file on disk, or ask Claude to write one for you, Claude Code detects the change within a few seconds and the next delegation uses the updated definition, with no restart needed.
+> Three cases still need a restart:
+> - The watcher covers only directories that existed when the session started, so after creating a scope's first agent file in a new `agents` directory, restart to load it.
+> - Claude Code doesn't watch `.claude/agents/` inside directories added with `--add-dir` or `/add-dir`, so after adding or editing a subagent there, restart to load the change.
+> - Sessions started with `--disable-slash-commands` don't watch these directories at all."
+> — https://code.claude.com/docs/en/sub-agents (retrieved 2026-09-16)
+
+The 2026-06 text ("Subagents are loaded at session start… restart your session to load it") is gone from the docs. Agent files or READMEs that tell users to restart after every edit now carry stale guidance (advisory only; the three exceptions above are still real).
 
 **UTF-8 BOM makes the file invisible `[official]` (added 2026-09-04, changelog v2.1.239):**
 > "Fixed agents, skills, and commands whose `.md` file starts with a UTF-8 BOM being silently ignored"
@@ -153,6 +185,12 @@ Before v2.1.239, an agent file saved with a UTF-8 BOM (common with some Windows 
 > — https://code.claude.com/docs/en/sub-agents (retrieved 2026-09-04)
 
 This is the first official, quantified pressure toward **short descriptions**: every subagent's description is always-loaded context, and the budget is shared across the whole pool. Scoring implication: very long descriptions (e.g. many `<example>` blocks) now have a documented cost, not just a style preference — behavior detail belongs in the body, which loads only when the agent runs.
+
+**Budget mechanics (added 2026-09-16)** — the errors reference clarifies what is counted and that nothing is dropped:
+> "Claude Code shows this warning as a startup notice in the conversation view rather than on stderr. The combined descriptions of your subagents, except the built-in ones, exceed 15,000 tokens as Claude Code estimates them. Each agent counts its name plus its `description` frontmatter. Claude Code loads every agent whether or not the total is over the limit, so the warning doesn't change what loads."
+> — https://code.claude.com/docs/en/errors (retrieved 2026-09-16)
+
+Sample notice text: `Agent descriptions are over the 15.0k-token limit (~16.2k tokens) · ask Claude to trim agent descriptions in .claude/agents/`. The sub-agents page adds the same reassurance in its best-practices list: "Keep descriptions brief: Claude Code shows a startup warning when your subagents' combined descriptions pass the 15,000-token limit, and still loads every subagent." (retrieved 2026-09-16)
 
 **Official description example patterns (no `<example>` blocks):**
 > "Expert code review specialist. Proactively reviews code for quality, security, and maintainability. Use immediately after writing or modifying code."
@@ -189,6 +227,12 @@ The env var is now a *default*, not an override (changelog v2.1.251: "Fixed `CLA
 > "To apply one model to every subagent, also set `CLAUDE_CODE_SUBAGENT_MODEL_FORCE` to `1`. Requires Claude Code v2.1.257 or later. If you set both variables, subagents run on the model in `CLAUDE_CODE_SUBAGENT_MODEL`. If you set only `CLAUDE_CODE_SUBAGENT_MODEL_FORCE`, subagents run on the main conversation's model."
 > — https://code.claude.com/docs/en/sub-agents (retrieved 2026-09-04)
 
+Details added 2026-09-16 (retrieved 2026-09-16):
+- "Setting `CLAUDE_CODE_SUBAGENT_MODEL` by itself doesn't change the model the built-in Explore and Plan subagents run on." The env var applies to *custom* and general-purpose subagents; Explore/Plan keep their own resolution.
+- "While `CLAUDE_CODE_SUBAGENT_MODEL_FORCE` is on, Claude Code ignores the `model` field of every subagent definition, including the built-in Explore and Plan subagents, and Claude can't pass a model when it starts a subagent." The force switch also reaches agent-team teammates and workflow agents.
+- "When you set only `CLAUDE_CODE_SUBAGENT_MODEL_FORCE`, the built-in Explore subagent keeps its model cap."
+- Observability: "To check which model a subagent is running on, run `/tasks`. Claude Code names the model on the subagent's row, and adds the effort level when the subagent's definition, or the skill it forked from, sets `effort`. Requires Claude Code v2.1.242 or later."
+
 **`availableModels` allowlist interaction (added 2026-08-12) `[official]`:**
 > "Claude Code checks the environment variable, per-invocation parameter, and frontmatter values against your organization's `availableModels` allowlist. For a blocked value, it substitutes another model: When the blocked value is a family alias such as `opus`, Claude Code runs the subagent on the newest version of that family the allowlist permits… For any other blocked value, on providers where that substitution doesn't operate, or when the allowlist permits no version of the family, Claude Code runs the subagent on the inherited model instead."
 > — https://code.claude.com/docs/en/sub-agents (retrieved 2026-08-12)
@@ -212,11 +256,40 @@ Before v2.1.222, a blocked family alias also fell back to the inherited model ra
 
 Changes vs the 2026-05-30 list: `EndConversation`, `TaskOutput`, and `Workflow` added; `Agent` is now removed **only at the depth limit** (below the limit a subagent keeps it and can nest). Listing filtered tools is a no-op (flag in cross-reference checks); "The removal reports no error unless it leaves the `tools` list resolving to nothing."
 
-**Background subagent built-in tool set `[official]` (enumerated 2026-09-04):**
-> "Apart from `Agent` and `ExitPlanMode`, which follow the first filter's conditions wherever the subagent runs, a background subagent keeps every MCP tool but only these built-in tools: `Read`, `Grep`, `Glob`, `Bash`, `PowerShell`, `Edit`, `Write`, `NotebookEdit`, `WebFetch`, `WebSearch`, `TodoWrite`, `Skill`, `ToolSearch`, `EnterWorktree`, `ExitWorktree`, `Monitor`, `TaskStop`, `SendMessage`, and `Artifact`. Claude Code removes every other built-in tool from a background subagent, whether inherited or listed in the `tools` field, so the same definition can resolve to different tools in the foreground and the background."
-> — https://code.claude.com/docs/en/sub-agents (retrieved 2026-09-04)
+**Background subagent built-in tool set `[official]` (enumerated 2026-09-04; `SubagentHandback` added 2026-09-16):**
+> "Apart from `Agent` and `ExitPlanMode`, which follow the first filter's conditions wherever the subagent runs, a background subagent keeps every MCP tool but only these built-in tools: `Read`, `Grep`, `Glob`, `Bash`, `PowerShell`, `Edit`, `Write`, `NotebookEdit`, `WebFetch`, `WebSearch`, `TodoWrite`, `Skill`, `ToolSearch`, `EnterWorktree`, `ExitWorktree`, `Monitor`, `TaskStop`, `SendMessage`, and `Artifact`, plus `SubagentHandback` for a subagent that reports through it. Claude Code removes every other built-in tool from a background subagent, whether inherited or listed in the `tools` field, so the same definition can resolve to different tools in the foreground and the background. The removal reports no error unless it leaves the `tools` list resolving to nothing."
+> — https://code.claude.com/docs/en/sub-agents (retrieved 2026-09-16)
 
 Forks skip both filters and receive the main conversation's exact tool pool. Agent-team teammates additionally keep `TaskCreate`, `TaskGet`, `TaskList`, `TaskUpdate`, `CronCreate`, `CronDelete`, `CronList`.
+
+**`SubagentHandback` `[official]` (NEW v2.1.271, added 2026-09-16):** an auto-mode-only report channel that Claude Code injects regardless of the `tools` list:
+> "Delivers a subagent's final report to whichever conversation receives that subagent's result. Provided only in auto mode, to subagents that the Agent tool runs locally other than forks, and available in the terminal CLI, IDE extensions, cloud sessions, and the Agent SDK; the classifier reviews the report before it's delivered. Requires Claude Code v2.1.271 or later"
+> "Where the conditions in the `SubagentHandback` tools-table entry hold, Claude Code also gives the subagent that tool, even if you leave it out of `tools` or list it in `disallowedTools`."
+> — https://code.claude.com/docs/en/tools-reference (retrieved 2026-09-16)
+
+Changelog v2.1.273: "Changed auto mode so a subagent reports back to its caller through a dedicated hand-back call that the safety classifier reviews, instead of its last message being reviewed after the fact". Reviewer implication: listing or denying `SubagentHandback` in frontmatter is a no-op; a body that tells the agent to "end with a final report" is fine — that report is what the classifier reviews.
+
+**Zero-resolvable-tools refusal — exact rules `[official]` (errors reference, added 2026-09-16):**
+> "Every entry in the subagent's `tools` list failed to match a usable tool, so Claude Code refused to launch the subagent: with no tools, it couldn't act. The message groups your entries by what went wrong:
+> - **Unrecognized**: the entry matches no tool name, usually a typo such as `Grpe` for `Grep`.
+> - **Not available to subagents**: the entry names a real tool that subagents can't use. Background subagents keep a smaller built-in tool set, so an entry that only a foreground subagent can use lands here when the subagent would run in the background, which is the default. If you list `Agent`, the message reports it under the next group instead.
+> - **Matched no tools in this session**: the entry is valid but no tool in the current session matches it right now, such as `mcp__github__*` with no GitHub MCP server connected, or `Agent` for a subagent at the depth limit.
+> Omitting the `tools` field never triggers this refusal. If you leave the `tools` list empty, or `disallowedTools` removes every entry in it, Claude Code also skips the refusal and launches the subagent without tools."
+> — https://code.claude.com/docs/en/errors (retrieved 2026-09-16)
+
+Sample error: `Agent 'code-reviewer' would be spawned with zero tools — refusing. Its tools list resolved to nothing: unrecognized [Grpe]. Fix the agent's tools frontmatter or pass a different subagent_type.` Two reviewer consequences: (1) a `tools` list made only of foreground-only built-ins (the docs' example is `LSP`) refuses in the default background case; (2) an **empty** `tools:` list is *worse* than a wrong one — it launches a tool-less agent with no error at all.
+
+**Task-tracking tools are model-gated `[official]` (changelog v2.1.268–v2.1.271 — two retrievals placed the entry under different versions; added 2026-09-16):**
+> "The task-tracking tools, `TaskCreate`, `TaskGet`, `TaskUpdate`, `TaskList`, and `TodoWrite`, are available by default only on Claude 3.x models, Opus 4 through 4.7, Sonnet 4 through 4.6, and Haiku 4.5."
+> — https://code.claude.com/docs/en/tools-reference (retrieved 2026-09-16)
+
+Changelog (Sep 2026): "Changed the task-tracking tools (TaskCreate/Get/Update/List, TodoWrite) to be offered only on Claude 3.x, Opus 4.0–4.7, Sonnet 4.0–4.6, Haiku 4.5; set `CLAUDE_CODE_ENABLE_TODO_TOOLS=1` elsewhere". On a Claude 5-family model (`opus`, `sonnet`, `fable` aliases, `claude-opus-5`, `claude-fable-5-1`) a `tools: TodoWrite` entry resolves to "matched no tools in this session" unless the env var is set — harmless alongside other tools, but a refusal if it is the only entry.
+
+**`disallowedTools` specifiers remove the whole tool `[official]` (added 2026-09-16):**
+> "A `disallowedTools` entry with a specifier, such as `Bash(git push *)`, still removes the whole tool from the subagent, not only the matching commands. To keep Bash and block specific commands, add a Bash deny rule such as `Bash(git push *)` to `permissions.deny` in your settings. The rule applies to the main conversation and to subagents."
+> — https://code.claude.com/docs/en/sub-agents (retrieved 2026-09-16)
+
+An author who writes `disallowedTools: Bash(git push *)` intending "Bash minus git push" gets "no Bash". The command-level lever lives in `settings.json` `permissions.deny`, not in agent frontmatter.
 
 **Official guidance for read-only/reviewer agents `[official]`:**
 > "For a read-only reviewer, deselect everything except Read-only tools."
@@ -253,6 +326,15 @@ To prevent a subagent from invoking skills entirely, omit `Skill` from `tools` o
 > "project is the recommended default scope."
 > — https://code.claude.com/docs/en/sub-agents (retrieved 2026-04-17)
 
+**What `memory` injects and enables `[official]` (added 2026-09-16):**
+> "When memory is enabled:
+> - The subagent's system prompt includes instructions for reading and writing to the memory directory.
+> - The subagent's system prompt also includes the first 200 lines or 25KB of `MEMORY.md` in the memory directory, whichever comes first, with instructions to curate `MEMORY.md` if it exceeds that limit.
+> - Read, Write, and Edit tools are automatically enabled so the subagent can manage its memory files."
+> — https://code.claude.com/docs/en/sub-agents (retrieved 2026-09-16)
+
+Reviewer implication: `memory:` silently widens the tool pool. A "read-only" reviewer with `tools: Read, Grep, Glob` plus `memory: project` *does* have `Write` and `Edit` at runtime; the least-privilege intent in `tools` is not what runs. Not a defect on its own (the docs define it), but worth an advisory note on read-only agents.
+
 ### Built-in Subagents `[official]`
 
 | Agent | Model | Tools | Purpose |
@@ -274,6 +356,16 @@ A non-fork subagent's initial context contains: system prompt (agent's own promp
 > — https://code.claude.com/docs/en/sub-agents (retrieved 2026-06-10)
 
 Implication: if a CLAUDE.md rule must reach an Explore/Plan delegation (e.g. "ignore `vendor/`"), restate it in the delegation prompt.
+
+**Correction (2026-09-16) — CLAUDE.md now has a per-agent opt-out; git status still does not.** The 2026-06 "no frontmatter field" sentence is superseded for CLAUDE.md by `omitClaudeMd` (v2.1.271):
+> "**CLAUDE.md files**: every level of the CLAUDE.md hierarchy the main conversation loads, including `~/.claude/CLAUDE.md`, project rules, `CLAUDE.local.md`, and managed policy files. The built-in Explore and Plan agents skip this. A subagent whose definition sets `omitClaudeMd` loads only the managed policy files, or none at all when the definition comes from managed settings."
+> "You can't change which subagents receive git status. Only Explore and Plan skip it."
+> "The main conversation still has your full CLAUDE.md when it reads these subagents' results, so most rules don't need to reach the subagent itself. If a rule must, such as 'ignore the `vendor/` directory,' restate it in the prompt you give Claude when delegating."
+> — https://code.claude.com/docs/en/sub-agents (retrieved 2026-09-16)
+
+Additional startup facts recorded 2026-09-16 (same page): the **sibling roster** is "a snapshot taken when the subagent starts, so agents named later don't appear"; and three things never reach a non-fork subagent — "**Output style**: a subagent runs its own system prompt, so your output style doesn't shape its responses, except in a fork"; "**Auto memory**: the main conversation's auto memory isn't loaded. To give a subagent persistent memory of its own, use the `memory` field"; "**Context window size**: a subagent's context window is sized by its own model, not the parent's. Delegating to a model with a smaller window gives that subagent the smaller window."
+
+Reviewer implication of `omitClaudeMd: true`: the body must be self-sufficient. A body that says "follow the conventions in CLAUDE.md" or relies on project rules it never restates contradicts its own frontmatter.
 
 ### Resuming Subagents `[official]` (NEW 2026-06; updated 2026-09-04)
 
@@ -368,6 +460,38 @@ Project-level hooks in `settings.json`:
 > "For security reasons, plugin subagents do not support the hooks, mcpServers, or permissionMode frontmatter fields."
 > — https://code.claude.com/docs/en/sub-agents (retrieved 2026-04-17)
 
+`omitClaudeMd` (v2.1.271) is explicitly supported for plugin subagents ("letting custom and plugin subagents run without…").
+
+### Permission Modes `[official]` (NEW section 2026-09-16)
+
+The full section is now on the sub-agents page (retrieved 2026-09-16):
+> "Set `permissionMode` to choose the permission mode a subagent runs in. Use the modes' config values, so Manual mode is `default`. If you leave it unset, the subagent inherits the main conversation's mode, which starts as auto mode on Pro, Max, and Team plans unless your settings or your organization change it."
+> "When the main conversation is in `bypassPermissions`, `acceptEdits`, or auto mode, the subagent runs in that same mode and Claude Code ignores the `permissionMode` you set. Under auto mode, the classifier evaluates the subagent's tool calls with the main conversation's block and allow rules. When the subagent finishes, the classifier also reviews its work and its final report before the report is delivered"
+> "When the main conversation is in `default`, `dontAsk`, or `plan` mode, the subagent runs in the permission mode you set, except `bypassPermissions`. A subagent that declares `bypassPermissions` keeps the main conversation's mode instead. The `bypassPermissions` exception requires Claude Code v2.1.267 or later."
+> `bypassPermissions` table row: "Skip permission prompts. A subagent runs in this mode only when the main conversation does"
+> `dontAsk` table row: "Auto-deny permission prompts. Explicitly allowed tools still work; `AskUserQuestion`, MCP tools marked `requiresUserInteraction`, and connector tools your organization set to `ask` in sessions where that setting reaches Claude Code are denied even if you've allowed them"
+
+Net effect for reviewers: **`permissionMode: bypassPermissions` in a subagent definition is never an escalation.** If the parent is in bypass it is redundant; otherwise it is ignored (v2.1.267+). This generalizes the v2.1.223 org-policy fix. Since Pro/Max/Team sessions start in auto mode, in the common case the frontmatter `permissionMode` is ignored entirely and the classifier governs the subagent. `permissionMode` only takes effect when the parent is in `default`/`dontAsk`/`plan`.
+
+### Subagent Definitions as Agent-Team Teammates `[official]` (NEW section 2026-09-16)
+
+Agent teams (still experimental, `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`) can spawn a teammate from a subagent definition, but only *parts* of the file apply — and which parts depends on display mode:
+> "- **`tools`**: Claude Code limits the teammate to the tools in the definition's `tools` list. For an in-process teammate, Claude Code adds `SendMessage` to that list, and in a session that has the Task tools it adds `TaskCreate`, `TaskGet`, `TaskList`, and `TaskUpdate` too.
+> - **`model`**: Claude Code uses the definition's `model` in either display mode when your spawn prompt doesn't name one.
+> - **Body**: for an in-process teammate, Claude Code appends the definition's body to its default system prompt as additional instructions. For a split-pane teammate, Claude Code uses the body in place of its default system prompt.
+> - **`skills`**: Claude Code doesn't apply the definition's `skills` to a teammate in either display mode. The teammate loads skills from your project and user settings.
+> - **`mcpServers`**: for a split-pane teammate, Claude Code applies the definition's `mcpServers` under the rules for that field, which cover a session started with `--agent` as well. An in-process teammate ignores the field and loads MCP servers from your project and user settings."
+> — https://code.claude.com/docs/en/agent-teams (retrieved 2026-09-16)
+
+Also: "Teammates start with the lead's permission mode, except `dontAsk` mode, which they don't inherit"; teammates load CLAUDE.md, MCP servers, and skills like a regular session (so `omitClaudeMd` is a subagent-only lever). Changelog v2.1.267/268 (placement differed between retrievals): "Fixed a respawned in-process teammate picking up tools or a system prompt from a same-named agent file in a folder you have not trusted". Reviewer implication: an agent file that is reused as a teammate role should not depend on `skills` preloading or on `permissionMode`/`hooks`; put that knowledge in the body.
+
+### Headless: `--append-subagent-system-prompt` `[official]` (NEW 2026-09-16)
+
+> "In non-interactive mode, pass `--append-subagent-system-prompt` to append your text to the end of every subagent's system prompt, nested subagents included, apart from a forked subagent, which reuses the conversation's own prompt. Requires Claude Code v2.1.205 or later. If your text is too long to pass on the command line, save it to a file and pass the path with `--append-subagent-system-prompt-file` instead. The file flag requires Claude Code v2.1.261 or later."
+> — https://code.claude.com/docs/en/sub-agents (retrieved 2026-09-16)
+
+Reviewer note: in `-p`/SDK harnesses, the markdown body is not necessarily the *entire* system prompt — a harness-wide suffix may follow it. Body text that assumes it is the last word ("ignore any instructions after this") is fragile.
+
 ### Foreground vs Background; Permission Surfacing `[official]` (added 2026-06-26)
 
 > "Foreground subagents block the main conversation until complete. Permission prompts are passed through to you as they come up. Background subagents run concurrently while you continue working. As of v2.1.186, when a background subagent reaches a tool call that needs permission, the prompt surfaces in your main session and names the subagent that is asking. Approve to let the subagent continue, or press Esc to deny that one tool call without stopping the subagent. Before v2.1.186, background subagents auto-denied any tool call that would have prompted."
@@ -381,6 +505,15 @@ Implication for reviewers: an agent with `background: true` is no longer at risk
 
 Since fork mode is on by default in interactive sessions, **in practice every interactively spawned subagent runs in the background** — the background tool-set narrowing (see Tool Restriction) is the normal case, not the exception. `background: true` now means "keep in background even when Claude wants the result in the foreground". Also: "Removed the one-hour time limit on background commands started by subagents; they now run until they exit or are stopped" (changelog v2.1.260).
 
+**Fork mode details `[official]` (added 2026-09-16):**
+> "Claude Code turns fork mode on by default in interactive sessions and leaves it off by default in non-interactive mode with `-p` and in the Agent SDK. The interactive default requires Claude Code v2.1.232 or later. On earlier versions, set `CLAUDE_CODE_FORK_SUBAGENT` to `1` to turn fork mode on."
+> "Claude Code runs the subagents Claude spawns in the background, forks and non-fork subagents alike, apart from the cases that stay in the foreground. Claude Code also removes the Agent tool's `run_in_background` parameter, so Claude can't ask for the foreground."
+> "`1` turns fork mode on in non-interactive mode and the Agent SDK as well · `0` turns fork mode off in every kind of session"
+> "To keep fork mode on but stop Claude from spawning forks, deny the `fork` subagent type with an `Agent(fork)` rule."
+> — https://code.claude.com/docs/en/sub-agents (retrieved 2026-09-16)
+
+Teammate-spawned subagents: "If an in-process agent team teammate spawned the subagent, Claude Code runs it in the foreground. Claude Code refuses with an error to spawn a teammate's subagent whose definition sets `background: true`." So `background: true` is a hard error in exactly one context — a definition intended for use *from* a teammate must not set it.
+
 ### MCP Server Restrictions on Subagent-Inline Servers `[official]` (added 2026-06-26)
 
 As of v2.1.153, the MCP restrictions that apply to the main session also cover servers declared in subagent `mcpServers` frontmatter:
@@ -391,6 +524,15 @@ As of v2.1.153, the MCP restrictions that apply to the main session also cover s
 When one of these blocks a server, Claude Code skips it and shows a warning naming the blocked servers. Note: `--strict-mcp-config` does **not** filter servers passed inline via `--agents` JSON or the SDK `agents` option (those are explicit caller input).
 
 > — https://code.claude.com/docs/en/sub-agents (retrieved 2026-06-26)
+
+### Working Directory and `isolation: worktree` Enforcement `[official]` (consolidated 2026-09-16)
+
+> "A subagent starts in the main conversation's current working directory. Within a subagent, `cd` commands don't persist between Bash or PowerShell tool calls and don't affect the main conversation's working directory."
+> "A subagent with `isolation: worktree` runs its Bash and PowerShell commands inside its worktree. A command whose working directory resolves to your main checkout instead, for example because the worktree directory was removed while the subagent was running, fails with an error. Before v2.1.203, such a command could run in the main checkout."
+> "For Bash commands, Claude Code also checks the command itself in two ways: It blocks a command that redirects git into the main checkout. It refuses a command when it can't verify from the command text that any git the command runs stays inside the worktree, for example when the command name is computed at runtime… PowerShell commands get only the working-directory check."
+> — https://code.claude.com/docs/en/sub-agents (retrieved 2026-09-16)
+
+Two reviewer facts: (1) a body that chains `cd somewhere` in one Bash call and expects it to persist in the next call is wrong for *every* subagent, not only worktree ones; (2) in a worktree agent, dynamically constructed git invocations (`$CMD status`, `eval`, `xargs git …` in some shapes) are refused outright, not merely checked. Also: "An `isolation` value in the subagent's frontmatter doesn't prevent" a named spawn from becoming a teammate when agent teams are on, "and the teammate then runs in the main session's working directory".
 
 ### Auto-Compaction `[official]`
 
@@ -422,7 +564,7 @@ Version history per the docs: v2.1.172–v2.1.216 defaulted to 5 (not configurab
 > "By default, when 20 subagents are running in a session, spawning another with the Agent tool fails with `Concurrent subagent limit reached`, and the error tells Claude not to retry. To change the limit, set `CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS` to any positive whole number."
 > — https://code.claude.com/docs/en/sub-agents (retrieved 2026-09-04)
 
-Note the distinction: the per-session *total* spawn cap (200) was removed in v2.1.224, but a *concurrent* cap of 20 exists — relevant only to orchestrators that fan out very wide in parallel.
+Note the distinction: the per-session *total* spawn cap (200) was removed in v2.1.224, but a *concurrent* cap of 20 exists — relevant only to orchestrators that fan out very wide in parallel. Added 2026-09-16: "Sessions with ultracode active are exempt: the limit isn't enforced there." (retrieved 2026-09-16). Changelog v2.1.269: "Improved nested background subagent results to be saved in the parent subagent's transcript, so resumed subagents keep them and shared transcripts show the delivery".
 
 **Per-session spawn cap removed (changelog v2.1.224, 2026-08):**
 > "Removed 200-subagent-per-session spawn cap; long-running sessions no longer refuse agents"
@@ -460,3 +602,4 @@ Subagents can be passed as JSON at launch via `--agents`, session-only and never
 - 2026-07-25: Refreshed against code.claude.com/docs/en/sub-agents (retrieved 2026-07-25) + changelog v2.1.196-v2.1.218. **Material additions**: (1) **Background is now the default** (v2.1.198) - Claude runs a subagent in the foreground only when it needs the result before continuing, and background subagents get a **smaller built-in tool set** than foreground ones; forks are exempt from both filters. (2) **Zero-resolvable-tools now refuses to launch** (v2.1.208), returning an error naming the unresolved entries. (3) **`/agents` wizard removed** (v2.1.198) - the command prints a reminder to ask Claude or edit `.claude/agents/` directly; files, frontmatter, and locations unchanged. (4) **`permissionMode: manual`** added as an alias for `default` (v2.1.200). (5) **Subagents inherit extended thinking** from the main conversation (v2.1.198); no per-subagent field. (6) **Explore inherits the main model** instead of always Haiku (v2.1.198), capped at Opus on the Claude API; `CLAUDE_CODE_DISABLE_EXPLORE_PLAN_AGENTS=1` removes the built-in Explore/Plan agents. (7) **`isolation: worktree` hardening** - the working-directory check now covers the whole containing repository (v2.1.210) and, for Bash, the command text itself is checked for git redirects into the main checkout (v2.1.216). (8) **`/doctor` reports duplicate agent names** in the same directory and proposes renaming or removing all but one (v2.1.205). (9) **`skills` preload exclusion extended** to the bundled `/verify` and `/code-review`, which only the user can run (v2.1.215). (10) Per-invocation `model` now survives resume/follow-up (v2.1.211); `CLAUDE_CODE_SUBAGENT_MODEL=inherit` is equivalent to unset (v2.1.196). (11) `SendMessage` name-reuse guard (v2.1.199) and sibling-roster system reminder (v2.1.206). (12) Forked-subagent command is now `/subtask` (v2.1.212); `/fork` copies the session into a background session. Frontmatter field table re-verified in full - `initialPrompt`, `isolation`, `effort`, `memory`, `maxTurns`, `mcpServers`, `hooks`, `background`, `disallowedTools`, `skills` all current. last_updated bumped to 2026-07-25.
 - 2026-08-12: Refreshed against code.claude.com/docs/en/sub-agents (retrieved 2026-08-12) + changelog v2.1.219-v2.1.228. **Material corrections**: (1) **Nesting depth is now 3 by default** (v2.1.219: "Subagents can spawn nested subagents up to depth 3 by default") - supersedes the depth-5 figure recorded 2026-06-26. (2) **200-subagent-per-session spawn cap removed** (v2.1.224). (3) **`availableModels` allowlist substitution documented**: a blocked family alias steps down to the newest permitted version of that family (v2.1.222 fixed it dropping to the parent model instead); any other blocked value falls back to the inherited model. Blocked `model:` values are substituted silently, never an error. (4) **Claude Opus 5 (`claude-opus-5`) is the default Opus model** (v2.1.219); prior `claude-opus-4-8` / `claude-sonnet-4-6` examples remain valid but are not newest. (5) **`permissionMode: bypassPermissions` in an agent definition no longer overrides org policy** (v2.1.223). (6) `permissionMode: manual` alias added to the frontmatter table. (7) v2.1.223 adds a warning when a workflow agent's requested subagent model is org-restricted and the parent model runs instead. (8) v2.1.222 fixed worktree-isolated subagents running destructive git against the main checkout, and fixed the spinner showing the session's effort label instead of the subagent's own. (9) v2.1.225 adds a workspace-trust prompt to `claude agents` for untrusted directories. Frontmatter field table, scope/priority table, tool-filter rules, skills preload, memory scopes, hooks, and plugin restrictions all re-verified unchanged. last_updated bumped to 2026-08-12.
 - 2026-09-04: Refreshed against code.claude.com/docs/en/sub-agents (retrieved 2026-09-04) + changelog v2.1.229-v2.1.260. **Material additions**: (1) **`name` cannot contain `:`** (reserved for plugin scopes) — the file is not loaded and an error goes to the debug log (behavior since v2.1.218, now documented). (2) **New `experimental` frontmatter field** with `cacheTtl: 5m|1h` per-agent prompt-cache TTL (v2.1.248). (3) **Combined description budget: 15,000 tokens** — startup warning when custom subagent descriptions together exceed it; official guidance to keep descriptions short and move detail into the body. (4) **Model resolution order changed** (v2.1.251): per-invocation > frontmatter > `CLAUDE_CODE_SUBAGENT_MODEL` > main model — the env var is now a default, not an override; new `CLAUDE_CODE_SUBAGENT_MODEL_FORCE` (v2.1.257) restores force semantics. (5) **Tools-unavailable list updated**: `EndConversation`, `TaskOutput`, `Workflow` added; `Agent` removed only at the depth limit; background built-in tool set now explicitly enumerated (19 tools; forks exempt; teammates keep task/cron tools). (6) **Nesting depth configurable** via `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH` (default 3; `1` disables nesting); **concurrent subagent limit 20** via `CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS` (v2.1.217+). (7) **SendMessage no longer requires agent teams** for resume/messaging (supersedes 2026-06 note); auto-resume on message; name-identity guard (v2.1.199); sibling roster (v2.1.206); named spawns become teammates when teams are on. (8) **`maxTurns` output marked partial + resumable** (v2.1.246). (9) **UTF-8 BOM agent files were silently ignored before v2.1.239** — flag BOMs in checked-in files. (10) `isolation: worktree` branches from the **default branch**, not parent HEAD; auto-cleanup when unchanged; v2.1.257 reduced false Bash refusals (loops/xargs/wrappers). (11) Fork-mode background default: interactively spawned subagents effectively always run in the background; background command 1-hour limit removed (v2.1.260). (12) Claude Fable 5.1 (`claude-fable-5-1`) default Fable model (v2.1.257); `/cd` now hot-reloads the new directory's agents (v2.1.243). last_updated bumped to 2026-09-04.
+- 2026-09-16: Refreshed against code.claude.com/docs/en/sub-agents, /errors, /agent-teams, /tools-reference (all retrieved 2026-09-16) + changelog v2.1.261-v2.1.273 (newest 2.1.273, 2026-09-15). **Material additions/corrections**: (1) **Hot reload — CORRECTION**: Claude Code now watches `~/.claude/agents/` and `.claude/agents/` and picks up edits within seconds; the 2026-06 "restart your session" note is superseded. Three cases still need a restart (first file in a new `agents` dir, `--add-dir`/`/add-dir` dirs, `--disable-slash-commands`). (2) **New `omitClaudeMd` frontmatter field** (v2.1.271): subagent skips user/project/local CLAUDE.md (managed policy still loads); works for plugin subagents and `--agents` JSON; ignored for `--agent` main-session use. Supersedes the 2026-06 "no frontmatter field" sentence for CLAUDE.md (git status still has no opt-out). (3) **New "Subagent files Claude Code skips" list**: no `name` (treated as docs), `---` not on line 1, `name` starting with `-` or containing `:`, `name` without `description`, unparseable YAML — all silent, debug log only. (4) **`disallowedTools` specifiers** (`Bash(git push *)`) remove the whole tool; command-level denies belong in `settings.json` `permissions.deny`. (5) **Zero-tools refusal exact rules** (errors page): three failure groups (unrecognized / not available to subagents incl. background-dropped tools / matched nothing this session incl. disconnected MCP and `Agent` at depth limit); an **empty** `tools` list launches tool-less with no refusal. (6) **Task-tracking tools model-gated** (changelog v2.1.268–271): `TodoWrite`/`TaskCreate`… offered only on Claude 3.x, Opus 4.0–4.7, Sonnet 4.0–4.6, Haiku 4.5 unless `CLAUDE_CODE_ENABLE_TODO_TOOLS=1`. (7) **`SubagentHandback`** (v2.1.271): auto-mode-only report tool injected regardless of `tools`/`disallowedTools`; added to the background set; v2.1.273 routes auto-mode subagent reports through it for classifier review. (8) **Permission modes**: parent auto/bypass/acceptEdits override frontmatter; a subagent's `bypassPermissions` is honored only when the parent already is (v2.1.267); main sessions start in auto mode on Pro/Max/Team; under auto mode the classifier reviews the subagent's tool calls and its final report. (9) **`memory` injects MEMORY.md (200 lines / 25KB) and auto-enables Read/Write/Edit** even when omitted from `tools`. (10) **Agent-team teammates from subagent definitions**: `tools` (+SendMessage/Task tools) and `model` apply; body is appended (in-process) or replaces (split-pane); `skills` never applies; `mcpServers` split-pane only; v2.1.267/268 untrusted-folder fix. (11) 15,000-token budget counts `name` + `description`, is a startup notice, and drops nothing. (12) Duplicate-name tie-break within a scope is "filesystem read order rather than a documented precedence". (13) Fork mode: interactive default since v2.1.232, `run_in_background` removed while on, `CLAUDE_CODE_FORK_SUBAGENT` 0/1, `Agent(fork)` deny; teammate-spawned subagents run foreground and `background: true` definitions error there. (14) Worktree/cwd: `cd` doesn't persist across Bash calls in any subagent; worktree commands resolving to the main checkout fail (v2.1.203); unverifiable git invocations refused. (15) `CLAUDE_CODE_SUBAGENT_MODEL` alone doesn't touch Explore/Plan; `_FORCE` ignores every definition's `model` and blocks per-call model; `/tasks` shows model + effort (v2.1.242); concurrent cap exempt under ultracode; nested background results persisted to parent transcript (v2.1.269); headless `--append-subagent-system-prompt-file` (v2.1.261). last_updated bumped to 2026-09-16.

@@ -1,6 +1,6 @@
 # Anti-Pattern Catalog
 
-last_updated: 2026-09-04
+last_updated: 2026-09-16
 
 > Referenced during Phase 2, criterion F (Anti-patterns).
 > Each pattern has a severity: Critical / Major / Minor.
@@ -85,17 +85,21 @@ Repeatedly stating things Claude already knows.
 
 **Fix:** Delete. Keep only project-specific deltas.
 
-### Stale Information `[custom]`
+### Stale Information `[custom]` `[official]`
 
-Content that has drifted from the actual codebase.
+Content that has drifted from the actual codebase, or from the current model's capabilities.
+
+> "Revisit after major model releases: instructions that worked around an older model's limitation may become overhead once a newer model handles the case on its own. For example, a rule that forces single-file refactors can be deleted once the limitation is gone."
+> — https://code.claude.com/docs/en/large-codebases (retrieved 2026-09-16)
 
 **Detection patterns:**
 - References to nonexistent file paths
 - Commands that no longer work
 - Mentions of deprecated tools or versions
 - Time-dependent expressions: "as of [date]", "currently", "recently"
+- **Model-era workarounds (added 2026-09-16)**: rules that only compensate for behavior current models no longer show — forced single-file edits, "always summarize after every tool call", "if in doubt use [tool]", enumerated lists of every case a one-line instruction already covers, anti-markdown blocks copied from older setups (Fable 5.1 "already formats less than earlier models, so … a block like this can suppress structure the content needs")
 
-**Fix:** Cross-reference with codebase and update or remove. "Treat CLAUDE.md like code: review it when things go wrong, prune it regularly."
+**Fix:** Cross-reference with codebase and update or remove. "Treat CLAUDE.md like code: review it when things go wrong, prune it regularly." For model-era rules, re-test in a fresh session without the rule; official Fable 5 guidance: "Review and consider removing older instructions if default performance is better." Scored under criterion A's inferable-content deduction when the line is obsolete; do not double-count here.
 
 ### Conflicting Instructions `[official]`
 
@@ -116,7 +120,10 @@ Rules that contradict each other across CLAUDE.md files, nested files, or `.clau
 > "An instruction in your CLAUDE.md saying 'never use rm -rf' can be forgotten or overridden by context pressure. A PreToolUse hook that blocks rm -rf fires every single time."
 > — https://github.com/trailofbits/claude-code-config (retrieved 2026-03-29)
 
-Hard rules that must be enforced 100% of the time placed in CLAUDE.md instead of hooks.
+> "Claude treats them as context, not enforced configuration. To block an action regardless of what Claude decides, use a PreToolUse hook instead."
+> — https://code.claude.com/docs/en/memory (retrieved 2026-09-16) — the memory page itself now names the hook as the enforcement path
+
+Hard rules that must be enforced 100% of the time placed in CLAUDE.md instead of hooks. Community framing (eesel.ai, 2026-09-09): "CLAUDE.md is context, not access control."
 
 **Detection patterns:**
 - "NEVER", "ALWAYS", "MUST NOT" language for tool-use restrictions
@@ -133,8 +140,11 @@ Hard rules that must be enforced 100% of the time placed in CLAUDE.md instead of
 
 Using a paragraph for what fits in one line.
 
-> "Concise bullet-point instructions are more likely to be followed than long paragraphs."
-> — https://institute.sfeir.com/en/claude-code/claude-code-memory-system-claude-md/tips/ (retrieved 2026-03-29)
+> "Structure: use markdown headers and bullets to group related instructions. Claude scans structure the same way readers do: organized sections are easier to follow than dense paragraphs."
+> — https://code.claude.com/docs/en/memory (retrieved 2026-09-16)
+
+> Good practice "Bullet points" vs bad practice "Long paragraphs" — impact: "Better compliance".
+> — https://institute.sfeir.com/en/claude-code/claude-code-memory-system-claude-md/tips/ (page updated 2026-06-05, re-read 2026-09-16; the earlier "40% more likely" wording is gone)
 
 **Detection patterns:**
 - Repeated information
@@ -195,6 +205,9 @@ Emphasis markers ("IMPORTANT", "YOU MUST", "NEVER") applied to many lines, so no
 > "If Claude keeps skipping one instruction, add emphasis such as 'IMPORTANT' to that line alone. If you emphasize many lines, none of them stands out."
 > — https://code.claude.com/docs/en/best-practices (retrieved 2026-09-04)
 
+> "The fix is to dial back any aggressive language. Where you might have said 'CRITICAL: You MUST use this tool when...', you can use more normal prompting like 'Use this tool when...'."
+> — https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices (retrieved 2026-09-16) — newer models over-trigger on emphasis that older ones needed
+
 **Detection patterns:**
 - "IMPORTANT" / "YOU MUST" / all-caps directives on a large share of instructions (rough heuristic: 5+ occurrences, or >10% of lines)
 - Every section opening with an emphasis marker
@@ -229,4 +242,5 @@ Content that only applies to a specific task or session.
 - 2026-06-26: Freshness re-run (2 days stale). No new anti-patterns; catalog re-verified against memory docs (retrieved 2026-06-26). One related detail surfaced in the official docs that does not change the catalog but worth noting for assessors: **`@path` imports inside fenced code blocks or backtick-wrapped spans are NOT parsed**, so previously-flagged "accidental imports in code examples" are not actually a problem if the path is properly fenced. Existing Major/Minor/Critical patterns all current. last_updated bumped to 2026-06-26.
 - 2026-07-25: Freshness re-run (29 days stale) against code.claude.com/docs/en/memory (retrieved 2026-07-25). No new authoring anti-patterns; the Critical/Major/Minor catalog is re-verified current. **Two assessor notes added from this window**: (1) the `/doctor` trim checkup (v2.1.206) now codifies the Over-Specified pattern in official tooling - it cuts directory layouts, dependency lists, and architecture overviews and keeps pitfalls, rationale, and non-default conventions, so those three content types are officially inferable content, not merely community opinion. (2) Path-scoped `.claude/rules/` gotchas that read as authoring bugs but are platform behavior: an over-budget brace pattern (1,000 expanded patterns / 4 MiB per rule) is used **unexpanded** so its literal braces match nothing (v2.1.217), and an unparseable `[` bracket expression makes that one pattern match nothing while the rule's other patterns keep working (v2.1.207). Flag these as rule-authoring defects, not CLAUDE.md anti-patterns. last_updated bumped to 2026-07-25.
 - 2026-08-12: Freshness re-run against code.claude.com/docs/en/memory (retrieved 2026-08-12) + changelog v2.1.219-v2.1.228. No new anti-patterns; catalog re-verified current. No de-flags. last_updated bumped to 2026-08-12.
+- 2026-09-16: Refreshed against memory + best-practices docs, the new large-codebases / context-window / sub-agents pages, the platform prompting guide (retrieved 2026-09-16), and changelog v2.1.261–v2.1.273. **No new anti-pattern; one detection pattern added and two entries re-sourced.** (1) **Stale Information** gains a **Model-era workarounds** detection pattern backed by official text (large-codebases: "instructions that worked around an older model's limitation may become overhead"; Fable 5: "Review and consider removing older instructions if default performance is better"; Fable 5.1: anti-markdown blocks can now "suppress structure the content needs") — tag widened to `[custom]` `[official]`, deduction routed through criterion A's inferable-content schedule. (2) **Emphasis Overuse** gains the platform-guide quote "dial back any aggressive language … 'CRITICAL: You MUST' → 'Use this tool when'". (3) **Guidance That Should Be a Hook** gains the memory page's own line "To block an action regardless of what Claude decides, use a PreToolUse hook instead." (4) **Verbose Writing**: the SFEIR "40%" quote is gone from its source (page updated 2026-06-05); replaced with the official "Structure" quote plus SFEIR's current "Bullet points → Better compliance" table wording. Assessor notes: a symlinked rule whose target is outside the working directory is now officially an external import (never loads without `@path` approval; path-scoped ones never load) — flag as a rules-authoring defect, not a CLAUDE.md anti-pattern; path-scoped rules and nested CLAUDE.md are summarized away on compaction, so a "must always hold" rule with `paths:` is a scoping defect. No de-flags. last_updated bumped to 2026-09-16.
 - 2026-09-04: Refreshed against memory + best-practices docs (retrieved 2026-09-04) and changelog v2.1.229–v2.1.260. **One new Minor anti-pattern added: Emphasis Overuse `[official]`** — the best-practices page now explicitly says to emphasize only the one skipped line ("If you emphasize many lines, none of them stands out"); previously the docs only said emphasis improves adherence, so blanket IMPORTANT/YOU MUST usage was not flaggable. Community had long advised this (`use only for genuine hard constraints`); now official. Assessor note: a CLAUDE.md over **4 MiB is skipped entirely** (not truncated) — treat as an extreme instance of Over-Specified. All other patterns re-verified current; no de-flags. last_updated bumped to 2026-09-04.

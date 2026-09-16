@@ -9,7 +9,7 @@
 > - `[community:mid]` = GitHub 10-50 stars, verified in a tech blog
 > - `[community:low]` = Individual report, unverified but reasonable (reference only)
 
-last_updated: 2026-09-04
+last_updated: 2026-09-16
 
 ---
 
@@ -20,10 +20,12 @@ last_updated: 2026-09-04
 - `<example>` Blocks in Descriptions
 - Tool Scoping — Role-Based Allowlists
 - System Prompt Structure
+- Role-Separation Pattern — Planner / Generator / Evaluator
 - Second-Person Voice
 - Session Budget Heuristics
 - Invocation in 2026
 - Japanese Community Notes
+- Stale Community Claims to Ignore (2026-09)
 
 ## Description Field — Voice
 
@@ -78,6 +80,15 @@ Description should state **trigger conditions**, not just capabilities.
 > — https://nimbalyst.com/blog/claude-code-subagents-guide/ (retrieved 2026-09-04)
 
 The "[output shape]" clause is a genuine addition over the existing trigger-condition guidance: telling the router what comes back helps the parent decide whether delegation is worth it. Now that descriptions have an official token budget (15,000 tokens combined — see official-best-practices), this one-sentence template is also the budget-friendly style.
+
+### "Trigger condition in the first sentence" `[community:mid]` (added 2026-09-16)
+
+Japanese practitioner reports converge on the same fix for agents that never fire: put the *when* clause first.
+
+> 「最初はdescriptionを「コードをレビューする」のように短く書いてしまい、Claudeが自動で呼んでくれないことがよくありました。今は「〜の変更があったときに必ず使う」というように、トリガーとなる条件を一文目に書くよう意識しています。」
+> — Qiita practitioner report surfaced via search (retrieved 2026-09-16); corroborated by https://uravation.com/media/claude-code-sub-agents-parallel-task-delegation-2026/ (updated 2026-09-13): "「いつ使うか」を具体的に書くこと … 例:「コード変更後、プルリクエスト作成前に自動的に使用する」"
+
+A related one-line heuristic from an editorial JA guide `[community:low]` (https://ai-heartland.com/explain/claude-code-subagents-guide/, 2026-08-12): *if you can hand the task to a colleague in one sentence, that sentence is your `description`.* Reference only.
 
 ---
 
@@ -158,12 +169,35 @@ Prefer feature-specific subagents (e.g., `payments-api-reviewer` with `skills: [
 > Source: https://github.com/shanraisshan/claude-code-best-practice (retrieved 2026-06-10)
 > Aligns with the official `skills` preload mechanism (full skill content injected at subagent startup) and the "one specialty per agent" rule above.
 
+### Four-slot compact body template `[community:mid]` (added 2026-09-16)
+
+For small agents that do not need the full five-layer blueprint, the Uravation guide (updated 2026-09-13) recommends a one-paragraph body in four fixed slots — **[Role]. [Specific analysis focus]. [Output format]. [Important constraints]** — e.g. 「あなたはシニアコードレビュアーです。品質・セキュリティ・ベストプラクティスに集中してレビューします。」 followed by the output shape and constraints. This is the same skeleton as the official examples minus the "When invoked:" step list; acceptable for agents whose workflow is a single pass. Same source lists four anti-patterns: vague description (agent never invoked), parallel writes to the same file (corruption), over-parallelization (>7 concurrent — note the official concurrent cap is 20, so this is a cost heuristic, not a limit), and confusing subagents with agent teams (teams for real-time collaboration; subagents for fire-and-forget).
+> — https://uravation.com/media/claude-code-sub-agents-parallel-task-delegation-2026/ (retrieved 2026-09-16)
+
 ### Don't mix behavioral instructions into the description `[community:high]`
 
 > "Never mix behavioural instructions meant for the agent into the description block."
 > — https://github.com/vijaythecoder/awesome-claude-agents/blob/main/docs/best-practices.md (retrieved 2026-04-17)
 
 Description = routing signal. System prompt = behavior. Keep them separated.
+
+---
+
+## Role-Separation Pattern — Planner / Generator / Evaluator (added 2026-09-16)
+
+### Separate the judge from the worker `[semi-official]`
+
+Anthropic's engineering post on long-running app harnesses (2026-03-24) is the primary source for the three-agent split that Japanese guides now reproduce as subagent files:
+
+> "Separating the agent doing the work from the agent judging it proves to be a strong lever to address this issue."
+> "tuning a standalone evaluator to be skeptical turns out to be far more tractable than making a generator critical of its own work."
+> — https://www.anthropic.com/engineering/harness-design-long-running-apps (retrieved 2026-09-16)
+
+The planner was told "to be ambitious about scope and to stay focused on product context and high level technical design rather than detailed technical implementation" (over-specified plans cascade errors); the evaluator used criteria with "hard thresholds" — one failing criterion fails the sprint and the generator gets detailed feedback.
+
+### Concrete subagent mapping `[community:low]` (reference only)
+
+A Qiita write-up (https://qiita.com/nogataka/items/efe8eb9df612d2211221, 2026-04-13) turns the pattern into three definitions: planner `tools: Read, Grep, Glob` / `model: inherit`; generator `tools: Read, Write, Edit, Bash` / `permissionMode: acceptEdits` (commit after each feature); evaluator `tools: Read, Grep, Glob, Bash` with a skeptical stance, evidence with file:line, and a "never retract findings" rule. Lessons: cap generate→evaluate loops at 3 and restart from the planner if not converging; don't put the planner on Haiku. Reviewer relevance: an evaluator/reviewer agent whose body lacks an explicit "do not soften or retract findings" clause is a known weak spot in this pattern — an F (Behavioral Impact) *High* item when present. Note the `permissionMode: acceptEdits` is only honored when the parent is in `default`/`dontAsk`/`plan` (see official-best-practices, Permission Modes).
 
 ---
 
@@ -227,6 +261,23 @@ Sources:
 - https://zenn.dev/cureapp/articles/claude-code-skills-vs-subagents
 - https://zenn.dev/katsuhisa_/articles/claude-code-subagents-guide
 
+**2026-09 survey (added 2026-09-16):** no Zenn or Qiita article dated September 2026 surfaced; the newest Zenn piece is June 2026 (https://zenn.dev/genda_jp/articles/16d35ffa464d65, on nested subagents finally honoring `.claude/agents/` definitions). The only September-dated JA source is the Uravation corporate guide (updated 2026-09-13), which is notable mainly for *correcting* stale claims (no nesting → depth 3; `/agents` wizard → removed v2.1.198; Explore always Haiku → inherits since v2.1.198; "max 7 concurrent" → default 20). It also reports the 15,000-token budget as counting `name` + `description`, which matches the official errors page.
+
+---
+
+## Stale Community Claims to Ignore (2026-09) `[custom]`
+
+Claims still circulating in otherwise-reputable 2026 sources that official docs have superseded. Treat as stale when a reviewed agent file or its README repeats them:
+
+| Stale claim | Where seen | Current official fact |
+|-------------|------------|-----------------------|
+| "Subagents cannot spawn other subagents (by design)" | thepromptshelf.dev 2026-05-15; ai-revolution.co.jp 2026-05; Zenn 2026-03 | Nested to depth 3 by default (`CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH`) |
+| "No hot reload on disk edits; restart required" | thepromptshelf.dev 2026-05-15 | `~/.claude/agents/` and `.claude/agents/` are watched; edits apply within seconds (three restart exceptions) |
+| "`CLAUDE_CODE_SUBAGENT_MODEL` takes highest precedence / forces every subagent" | thepromptshelf.dev 2026-05-15; pubnub | Since v2.1.251 it is a default below frontmatter; `_FORCE=1` restores force semantics |
+| "`/agents` opens an interactive creation wizard (Generate with Claude)" | Qiita 2025-12, 2026-06 | Wizard removed in v2.1.198 |
+| "Simultaneous subagent count is undocumented" | ai-heartland 2026-08-12 | Concurrent cap 20 (`CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS`), documented |
+| "Tool allowlists: a missing entry means the subagent fails the call" | developersdigest.tech (undated) | A missing tool is simply absent from the pool; only a list that resolves to *nothing* refuses to launch |
+
 ---
 
 ## Changelog
@@ -241,3 +292,4 @@ Sources:
 - 2026-07-25: Freshness re-run (29 days stale). Surveyed 2026-07 subagent guidance (pubnub, tembo.io, nimbalyst, agentkit.best, computingforgeeks). Existing items re-verified: description-drives-delegation, one job + clear definition of done, explicit output format (parent sees only the final result), tools-as-security-lever, model-as-cost-lever, body-is-the-verbatim-system-prompt. **Correction recorded**: several 2026-07 community articles still describe `/agents` as an interactive creation wizard - that was removed in v2.1.198; official wins, treat the community claim as stale. One new `[community:mid]` datapoint: subagent-heavy workflows can run ~7x the tokens of a single-thread session because each subagent carries its own context - supports existing guidance to reserve subagents for genuinely context-heavy side tasks. No scoring-criteria changes. last_updated bumped to 2026-07-25.
 - 2026-08-12: Freshness re-run (18 days stale). Community sources re-checked (SmartScope "Claude Code Advanced Best Practices [2026]", Tembo "Claude Code Subagents: A 2026 Practical Guide", shanraisshan/claude-code-best-practice, mcp.directory best-practices roundup; all `[community:mid]` or better). **No new practices worth adopting** - the surveyed articles restate practices already recorded here: third-person `description` with `PROACTIVELY`/`MUST BE USED` triggers, comma-separated `tools` allowlist with `Agent(agent_type)` restriction syntax, `model` routing including `inherit` as default, `skills` preload injecting full content, per-subagent `hooks`, and `effort` overrides. One framing worth noting: the 2026 community consensus now leads with a **surface-selection decision tree** ("enforcement -> hooks/permissions; contextual knowledge -> skills; delegation boundary -> subagents; always-on guidance -> short CLAUDE.md") rather than agent-specific tips - consistent with the cross-artifact checks already in this skill. Official-only changes in this window (nesting depth 3, spawn-cap removal, `availableModels` substitution, `bypassPermissions` org-policy fix) are recorded in official-best-practices, not here. last_updated bumped to 2026-08-12.
 - 2026-09-04: Freshness re-run (23 days stale). Community sources surveyed (Nimbalyst 2026 practical guide, pubnub, ComputingForGeeks, shanraisshan repo, Zenn 2026 subagent articles, Qiita "Subagentの作り方 完全ガイド 2026年版"). Mostly restatements of recorded practices (single responsibility, detailed trigger-focused description, minimal tool allowlists, VCS sharing, context-isolation framing). **Two additions**: (1) `[community:mid]` "triage rule" description template — "Use this subagent when [condition]. It returns [output shape]" — the output-shape clause is new and pairs well with the new official 15,000-token combined description budget. (2) `[semi-official]` Anthropic commerce-agents guide (2026-08-28): a single agent with skills consistently outperformed subagent designs in enterprise comparisons; subagents earn their place only for narrow, self-contained tasks needing their own context window. **Stale community claims to ignore**: older Zenn/Qiita articles still say subagents cannot nest (superseded by official depth-3 nesting) and still recommend the `/agents` creation wizard (removed v2.1.198). Official-window changes (name `:` ban, `experimental.cacheTtl`, model resolution order, background tool-set enumeration, SendMessage-without-teams) are recorded in official-best-practices, not here. last_updated bumped to 2026-09-04.
+- 2026-09-16: Freshness re-run (12 days stale). Sources surveyed: thepromptshelf.dev "Complete 2026 Reference" (2026-05-15), developersdigest.tech subagent-frontmatter guide, pubnub/tembo/shanraisshan (re-check), Uravation JA guide (updated 2026-09-13), ai-heartland JA frontmatter guide (2026-08-12), Qiita nogataka planner/generator/evaluator write-up (2026-04-13) and its Anthropic engineering source (2026-03-24), Zenn 2026 subagent articles. No Zenn/Qiita article dated September 2026 exists. **Additions**: (1) `[semi-official]` **Planner / Generator / Evaluator role separation** from Anthropic's harness-design post ("tuning a standalone evaluator to be skeptical turns out to be far more tractable than making a generator critical of its own work"), with the Qiita subagent mapping as `[community:low]` reference — reviewer hook: evaluator bodies should carry an explicit "never retract findings" rule. (2) `[community:mid]` **trigger-condition-first description** rule from JA practitioner reports, plus the ai-heartland one-sentence heuristic `[community:low]`. (3) `[community:mid]` **four-slot compact body template** and four anti-patterns from Uravation (vague description, same-file parallel writes, over-parallelization, subagents-vs-teams confusion). (4) New **Stale Community Claims to Ignore** table (no nesting, no hot reload, env-var-first model precedence, `/agents` wizard, undocumented concurrency, "missing tool fails the call"). No scoring-criteria changes originate here; official-window changes (hot reload, `omitClaudeMd`, skipped-file list, `disallowedTools` specifiers, `SubagentHandback`, permission-mode precedence, task-tool model gating) are recorded in official-best-practices. last_updated bumped to 2026-09-16.
