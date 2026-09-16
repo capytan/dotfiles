@@ -35,4 +35,4 @@ CI (`.github/workflows/hooks-test.yml`) runs the validator suite on both bash 5 
 - `configs/nvim/` and `configs/vim/` are legacy (vim-plug era) — do not modify
 - `configs/herdr/config.toml` keeps herdr's default `ctrl+b` prefix by omitting `[keys]` entirely. Validate edits with `herdr config check`; the full key list is `herdr --default-config`
 - `configs/claude/CLAUDE.md` is symlinked to `~/.claude/CLAUDE.md` (global rules for all projects) — separate scope from this repo's `./CLAUDE.md`, not duplication
-- Claude Code hook conventions live in `.claude/rules/claude-config.md` (path-scoped to `configs/claude/**`)
+- Claude Code config conventions live in `.claude/rules/claude-config.md` (path-scoped to `configs/claude/**`); the PreToolUse validator's stripping algorithm and bypass history live in `.claude/rules/pretooluse-validator.md` (path-scoped to `configs/claude/hooks/**` and `.github/workflows/hooks-test.yml`)
