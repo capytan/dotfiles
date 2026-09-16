@@ -31,7 +31,7 @@ description: |
   </commentary>
   </example>
 tools: ["Read", "Grep", "Glob"]
-model: opus
+model: fable
 ---
 
 You are a senior software architect specializing in scalable, maintainable system design.

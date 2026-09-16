@@ -31,7 +31,7 @@ description: |
   </commentary>
   </example>
 tools: ["Read", "Grep", "Glob"]
-model: opus
+model: fable
 ---
 
 You are an expert planning specialist focused on creating comprehensive, actionable implementation plans.

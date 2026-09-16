@@ -4,13 +4,17 @@
 > Manual edits are fine but may be overwritten on next research run.
 > Items tagged `[custom]` are protected from overwrite.
 
-last_updated: 2026-09-04
+last_updated: 2026-09-16
 sources:
   - https://code.claude.com/docs/en/memory
   - https://code.claude.com/docs/en/best-practices
+  - https://code.claude.com/docs/en/context-window
+  - https://code.claude.com/docs/en/large-codebases
+  - https://code.claude.com/docs/en/sub-agents
   - https://code.claude.com/docs/en/settings
   - https://code.claude.com/docs/en/changelog
-  - https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/claude-4-best-practices
+  - https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices (formerly docs.anthropic.com/.../claude-4-best-practices, which now 301-redirects here)
+  - https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5
   - https://www.anthropic.com/research/long-running-Claude
 
 ---
@@ -40,9 +44,10 @@ Summary from Official Documentation:
 - claudeMd Key in Managed Settings
 - Managed CLAUDE.md vs Managed Settings
 - Auto Memory Settings
+- Subagents and CLAUDE.md
 - Self-Editing CLAUDE.md in Long-Running Sessions
 - Troubleshooting
-- Claude 4 Prompting Practices
+- Claude 5 Prompting Practices
 
 ## Summary from Official Documentation
 
@@ -57,6 +62,11 @@ Summary from Official Documentation:
 > "Claude treats them as context, not enforced configuration. The more specific and concise your instructions, the more consistently Claude follows them."
 > — https://code.claude.com/docs/en/memory (retrieved 2026-03-29)
 
+**Updated wording (retrieved 2026-09-16)** — the memory page now inserts the hook pointer directly into that sentence:
+
+> "Both are loaded at the start of every conversation. Claude treats them as context, not enforced configuration. To block an action regardless of what Claude decides, use a PreToolUse hook instead. The more specific and concise your instructions, the more consistently Claude follows them."
+> — https://code.claude.com/docs/en/memory (retrieved 2026-09-16)
+
 - Loaded into the context window at the start of every session, consuming tokens alongside conversation
 - CLAUDE.md content is delivered as a user message after the system prompt, not as part of the system prompt itself
 
@@ -68,27 +78,31 @@ Summary from Official Documentation:
 | What it contains | Instructions and rules | Learnings and patterns |
 | Scope | Project, user, or org | Per repository, shared across worktrees |
 | Loaded into | Every session | Every session (first 200 lines or 25KB) |
-| Use for | Coding standards, workflows, project architecture | Build commands, debugging insights, preferences Claude discovers |
+| Use for | Coding standards, workflows, project architecture | Your preferences, corrections you give Claude, project context Claude can't derive from the code |
 
-> — https://code.claude.com/docs/en/memory (retrieved 2026-03-29)
+> — https://code.claude.com/docs/en/memory (retrieved 2026-03-29; "Use for" column re-worded as above per retrieval 2026-09-16 — previously "Build commands, debugging insights, preferences Claude discovers")
 
 - Auto memory stored in `~/.claude/projects/<project>/memory/` with `MEMORY.md` as index
 - "The first 200 lines of MEMORY.md, or the first 25KB, whichever comes first, are loaded at the start of every conversation."
 - All worktrees and subdirectories within the same git repository share one auto memory directory
 - Subagents can also maintain their own auto memory
+- **Subagents do not receive the main session's auto memory (retrieved 2026-09-16)**: "The main conversation's auto memory isn't loaded into subagents; the exception is a fork, which inherits the parent conversation and system prompt. A subagent's own auto memory, enabled with the subagent `memory` field, is a separate directory." — https://code.claude.com/docs/en/memory
 
 ### File Locations and Hierarchy `[official]`
 
-| Scope | Location | Purpose | Shared with |
-|-------|----------|---------|-------------|
-| Managed policy | macOS: `/Library/Application Support/ClaudeCode/CLAUDE.md`; Linux/WSL: `/etc/claude-code/CLAUDE.md`; Windows: `C:\Program Files\ClaudeCode\CLAUDE.md` | Organization-wide instructions managed by IT/DevOps | All users in organization |
-| Project instructions | `./CLAUDE.md` or `./.claude/CLAUDE.md` | Team-shared instructions for the project | Team members via source control |
-| User instructions | `~/.claude/CLAUDE.md` | Personal preferences for all projects | Just you (all projects) |
-| Local instructions | `./CLAUDE.local.md` | Personal project-specific preferences; add to `.gitignore` | Just you (current project) |
+| Scope | Location | Purpose | Use case examples | Shared with |
+|-------|----------|---------|-------------------|-------------|
+| Managed policy | macOS: `/Library/Application Support/ClaudeCode/CLAUDE.md`; Linux/WSL: `/etc/claude-code/CLAUDE.md`; Windows: `C:\Program Files\ClaudeCode\CLAUDE.md` | Organization-wide instructions managed by IT/DevOps | Company coding standards, security policies, compliance requirements | All users in organization |
+| User instructions | `~/.claude/CLAUDE.md` | Personal preferences for all projects | Code styling preferences, personal tooling shortcuts | Just you (all projects) |
+| Project instructions | `./CLAUDE.md` or `./.claude/CLAUDE.md` | Team-shared instructions for the project | Project architecture, coding standards, common workflows | Team members via source control |
+| Local instructions | `./CLAUDE.local.md` | Personal project-specific preferences; add to `.gitignore` | Your sandbox URLs, preferred test data | Just you (current project) |
 
-> — https://code.claude.com/docs/en/memory (retrieved 2026-04-17)
+> — https://code.claude.com/docs/en/memory (retrieved 2026-09-16)
 
+- **Row order corrected 2026-09-16 (User now before Project)**: "The table below lists them in load order, from broadest scope to most specific, so a project instruction appears in context after a user instruction." Earlier versions of this file listed Project above User; since later-read content wins on conflict, a project CLAUDE.md rule overrides a conflicting `~/.claude/CLAUDE.md` rule, not the reverse. — https://code.claude.com/docs/en/memory (retrieved 2026-09-16)
 - "CLAUDE.md and CLAUDE.local.md files in the directory hierarchy above the working directory are loaded in full at launch. Files in subdirectories load on demand when Claude reads files in those directories."
+- **Starting directory determines what loads (retrieved 2026-09-16)**: starting from the repository root loads "Root only; subdirectory files load on demand when Claude reads there"; starting from a subdirectory loads "That directory's plus every ancestor's". Also: "Project settings in `.claude/settings.json` aren't inherited from parent directories the way CLAUDE.md files are." — https://code.claude.com/docs/en/large-codebases
+- **`additionalDirectories` vs `--add-dir` (retrieved 2026-09-16)**: a directory listed in the `permissions.additionalDirectories` setting *never* loads its CLAUDE.md, rules, or skills; a directory added with `--add-dir` / `/add-dir` loads skills, and loads CLAUDE.md + rules only with `CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD=1`. "The environment variable has no effect on directories listed in the `additionalDirectories` setting." — https://code.claude.com/docs/en/large-codebases
 - "Within each directory, `CLAUDE.local.md` is appended after `CLAUDE.md`, so when instructions conflict, your personal notes are the last thing Claude reads at that level."
 - "All discovered files are concatenated into context rather than overriding each other."
 - "Managed policy CLAUDE.md files cannot be excluded."
@@ -115,6 +129,7 @@ Quoted directly from https://code.claude.com/docs/en/memory (retrieved 2026-03-2
    - Troubleshooting echoes this: "Splitting into @path imports helps organization but does not reduce context, since imported files load at launch."
    - **New in 2026-06 (changelog v2.1.169, 2026-06-08)**: the in-product "CLAUDE.md is too long" warning threshold now **scales with the model's context window** — the 200-line *target* is unchanged, but the surfaced warning is no longer a fixed line count. Treat under-200 as the authoring target regardless; the dynamic warning only governs when Claude Code nags about it.
    - **Hard limit (retrieved 2026-09-04)**: "Claude Code loads a CLAUDE.md file of up to 4 MiB in full and skips a larger file. Shorter files produce better adherence." — a CLAUDE.md over 4 MiB is skipped *entirely*, not truncated. — https://code.claude.com/docs/en/memory
+   - **Illustrative startup cost (new official page, retrieved 2026-09-16)**: the interactive context-window walkthrough puts representative numbers on what loads before the first prompt — system prompt ~4,200 tokens, `~/.claude/CLAUDE.md` ~320, project `CLAUDE.md` ~1,800, `MEMORY.md` ~680, skill descriptions ~450, environment info ~280, deferred MCP tool names ~120 — and labels the project file "The most important file you can create", with the tip: "Keep it under 200 lines. Move reference content to skills or path-scoped rules so it only loads when needed." Numbers are explicitly "illustrative"; the page also shows a subagent paying for its own copy of the project CLAUDE.md (~1,800 again) — https://code.claude.com/docs/en/context-window
 
 2. **Structure**: "Use markdown headers and bullets to group related instructions. Claude scans structure the same way readers do: organized sections are easier to follow than dense paragraphs."
 
@@ -169,6 +184,7 @@ From https://code.claude.com/docs/en/best-practices (retrieved 2026-03-29):
 > — https://code.claude.com/docs/en/memory (retrieved 2026-03-29)
 
 - `CLAUDE_CODE_NEW_INIT=1` enables an interactive multi-phase flow (docs now show `=1`; `=true` previously documented): asks which artifacts to set up (CLAUDE.md files, skills, hooks), explores with a subagent, fills gaps via follow-up questions, presents a reviewable proposal before writing
+- **`.gitignore` for `CLAUDE.local.md` is only automated under the new flow (retrieved 2026-09-16)**: "With `CLAUDE_CODE_NEW_INIT=1` set, running `/init` and choosing the personal option does this for you." Without the flag, add the entry yourself. — https://code.claude.com/docs/en/memory
 
 ### Import Syntax (`@path`) `[official]`
 
@@ -202,6 +218,13 @@ From https://code.claude.com/docs/en/best-practices (retrieved 2026-03-29):
 - Rules without `paths` frontmatter loaded at launch with same priority as `.claude/CLAUDE.md`
 - `.claude/rules/` supports symlinks for sharing rules across projects
 - User-level rules in `~/.claude/rules/` apply to every project (loaded before project rules)
+- **Symlinks pointing outside the working directory are external imports (new, retrieved 2026-09-16)**:
+
+  > "Claude Code treats a symlink whose target is outside your working directory like an external import. The linked rules don't load until you approve external imports for the project, and after that only the ones without a `paths` field load. Claude Code asks for that approval only when a project memory file imports a file outside the working directory with `@path`, not for symlinks alone. To load shared rules without that approval, keep them in `~/.claude/rules/`, where they apply to every project on your machine."
+  > — https://code.claude.com/docs/en/memory (retrieved 2026-09-16)
+
+  Two consequences for symlink-based sharing: (1) a project whose only outside-the-tree reference is a symlink never triggers the approval dialog, so those linked rules silently never load; (2) even after approval, a linked rule *with* `paths:` frontmatter never loads. The official fix is `~/.claude/rules/` for personal sharing, or a plugin for team sharing (https://code.claude.com/docs/en/large-codebases, "Centralize conventions when layering stops scaling").
+- **Per-directory CLAUDE.md vs path-scoped rule decision table (retrieved 2026-09-16)**: per-directory `CLAUDE.md` lives "Inside the directory, alongside its code", loads "At launch when started from that directory, or on demand when Claude reads a file there", and suits "Directory owners maintain their own conventions; instructions are versioned with the code". A path-scoped rule lives in the "Central `.claude/` at the repo root", loads "When Claude works with a file matching the rule's `paths:` glob", and suits "You want all conventions in one place, or the same rule applies to many scattered paths". — https://code.claude.com/docs/en/large-codebases
 
 ### Path-Specific Rules `[official]`
 
@@ -228,6 +251,7 @@ paths:
 - Can be configured at any settings layer; arrays merge across layers
 - Managed policy CLAUDE.md files cannot be excluded
 - **Symlinked rules exclusion (fix landed v2.1.239–v2.1.243, retrieved 2026-09-04)**: "To exclude a rules file you reach through a symlink, whether the file or its directory is the link, write the pattern against either path: the file's path under `.claude/rules/` or its link target. A pattern that matches either path excludes the file." Previously only a pattern matching the link *target* worked — relevant to symlink-based dotfiles setups. (Memory doc cites v2.1.239; changelog lists the symlinked-rules-file case under v2.1.243.)
+- **Pattern recipes (retrieved 2026-09-16)**: "Patterns use glob syntax matched against absolute file paths, so start relative-style patterns with `**/` to match anywhere in the tree." Examples: `"**/packages/web/**"` (skips every CLAUDE.md and rules file under that package), `"**/packages/*/CLAUDE.md"` (every package's CLAUDE.md, keeping the root), `"**/packages/legacy-*/**"`, or an absolute path to one file. "The exclusion list is static, not a per-task switch" — to focus on a different package, start Claude from that directory instead. — https://code.claude.com/docs/en/large-codebases
 
 ### HTML Comments `[official]`
 
@@ -269,6 +293,9 @@ paths:
 - "If an instruction disappeared after compaction, it was either given only in conversation or lives in a nested CLAUDE.md that hasn't reloaded yet."
 - **Updated wording (retrieved 2026-09-04)**: rules with `paths:` frontmatter behave like nested CLAUDE.md — "Nested CLAUDE.md files in subdirectories and rules with `paths:` frontmatter reload as Claude reads files they apply to." A lost instruction may also be "a path-scoped rule that hasn't matched a file since" compaction.
 - Can customize: add "When compacting, always preserve the full list of modified files and any test commands" to CLAUDE.md
+- **"What survives compaction" table (new official page, retrieved 2026-09-16)**: "Project-root CLAUDE.md and unscoped rules" → "Re-injected from disk"; "Auto memory" → "Re-injected from disk"; the plan written in plan mode → "Re-injected from disk"; "Rules with `paths:` frontmatter" → "Claude Code reloads them as Claude reads files they match"; "Nested CLAUDE.md in subdirectories" → reloaded as Claude reads files there; "Files Claude read or edited" → "re-reads up to five, most recently modified first" (a file over 5,000 tokens comes back as a path reference only); "Invoked skill bodies" → "Re-injected, capped at 5,000 tokens per skill and 25,000 tokens total; oldest dropped first"; "Context that hooks added earlier" → "Summarized with the rest of the conversation". Authoring rule stated explicitly: "Path-scoped rules and nested CLAUDE.md files load into message history when their trigger file is read, so compaction summarizes them away with everything else. If a rule must persist across compaction, drop the `paths:` frontmatter or move it to the project-root CLAUDE.md." — https://code.claude.com/docs/en/context-window
+- **v2.1.269 (2026-09-11)**: "Fixed the git status Claude is told after a compaction: it is now the current status, not the one from the start of the session." — https://code.claude.com/docs/en/changelog
+- **v2.1.273 (2026-09-15)**: fixed the context meter and auto-compact "counting advisor-tool turns at roughly twice their real context size, which made auto-compact fire at about half the real window" — https://code.claude.com/docs/en/changelog
 
 ### `claudeMd` Key in Managed Settings `[official]`
 
@@ -311,8 +338,19 @@ paths:
 - **New: `CLAUDE_CODE_PROJECT_DIR_NAME` (v2.1.234+, retrieved 2026-09-04)**: set beside `CLAUDE_CONFIG_DIR` to force the `<project>` directory name under `<config dir>/projects/`, so projects launched with that config dir share one auto memory directory
 - `MEMORY.md` acts as an index; topic files (`debugging.md` etc.) are not loaded at startup, read on demand
 - **New in 2026-06 (changelog)**: v2.1.181 (2026-06-17) — the agent is now reminded to compact its `MEMORY.md` index when nearing the size limit, keeping the auto-loaded portion within the 200-line/25KB budget. v2.1.176 (2026-06-12) — fixed memory recall not finding mounted team memory stores (`CLAUDE_MEMORY_STORES`) in remote sessions (shared/team auto-memory mounts).
+- **v2.1.273 (2026-09-15)**: "Fixed `permissions.blockReadsOutsideWorkingDirectories`: a memory directory chosen by a repository's settings is no longer loaded into the prompt, recalled, indexed, or used by memory extraction" — i.e. under that permission setting, an `autoMemoryDirectory` set in a repo's `.claude/settings*.json` is ignored entirely. — https://code.claude.com/docs/en/changelog
+- "Claude doesn't save something every session. It decides what's worth remembering based on whether the information would be useful in a future conversation." (retrieved 2026-09-16)
 
-> — https://code.claude.com/docs/en/memory + changelog (retrieved 2026-06-24)
+> — https://code.claude.com/docs/en/memory + changelog (retrieved 2026-09-16)
+
+### Subagents and CLAUDE.md `[official]`
+
+> "A non-fork subagent's initial context contains: … **CLAUDE.md files**: every level of the CLAUDE.md hierarchy the main conversation loads, including `~/.claude/CLAUDE.md`, project rules, `CLAUDE.local.md`, and managed policy files. The built-in Explore and Plan agents skip this. A subagent whose definition sets `omitClaudeMd` loads only the managed policy files, or none at all when the definition comes from managed settings."
+> — https://code.claude.com/docs/en/sub-agents (retrieved 2026-09-16)
+
+- **`omitClaudeMd` frontmatter (v2.1.271, 2026-09-14)**: "Set to `true` to launch this subagent without the user, project, and local CLAUDE.md files; managed policy files still load, except for managed subagents. Use it for subagents that take everything they need from the delegation prompt. Ignored when the agent runs as the main session agent via `--agent` or the `agent` setting. Requires Claude Code v2.1.271 or later." Changelog wording: "Added `omitClaudeMd` to agent frontmatter and `--agents` JSON, letting custom and plugin subagents run without user, project and local CLAUDE.md files; managed policy files still load" — https://code.claude.com/docs/en/sub-agents, https://code.claude.com/docs/en/changelog
+- Every CLAUDE.md line is therefore paid again in each non-Explore/Plan subagent's context (the context-window page illustrates ~1,800 tokens for the project file per subagent) — another reason to keep the file lean
+- Subagents also get "Git status: a snapshot taken at the start of the parent session" and, with `memory:` set, "the first 200 lines or 25KB of `MEMORY.md` in the memory directory" of their own agent-memory folder — the main session's auto memory is not included
 
 ### Self-Editing CLAUDE.md in Long-Running Sessions `[official]`
 
@@ -337,14 +375,42 @@ For autonomous/long-running Claude sessions:
 - **New in 2026-06 (changelog v2.1.169, 2026-06-08)**: `--safe-mode` flag (and `CLAUDE_CODE_SAFE_MODE` env var) starts Claude Code with **all customizations disabled** — CLAUDE.md, plugins, skills, hooks, and MCP servers — to isolate whether a problem comes from your config. Useful for confirming a misbehavior is caused by a CLAUDE.md instruction rather than the model itself.
 - **New in 2026-06 (changelog v2.1.191, 2026-06-24)**: `/rewind` resumes the conversation from before `/clear` was run. Lets you recover a session (and the CLAUDE.md/instruction state in it) if you accidentally cleared it.
 - **New in 2026-06 (changelog v2.1.181, 2026-06-17)**: CLAUDE.md Write/Edit now work on network drives and cloud-synced folders (previously failed silently in some sync clients).
+- **v2.1.261 (2026-09-04)**: "Changed `/context` token counting to use a local estimate when the token-counting API is unavailable, instead of extra small-model requests" — `/context` numbers may be estimates offline. Same release added `/skill-doctor` (unused skills and their context cost). — https://code.claude.com/docs/en/changelog
+- **v2.1.269 (2026-09-11)**: "Fixed the attribution reminder overriding a CLAUDE.md or memory rule against commit and pull request attribution; lines set by managed settings still apply" — a CLAUDE.md rule such as "no Co-Authored-By trailer" is now honored unless managed settings force attribution. — https://code.claude.com/docs/en/changelog
+- **Maintenance practices (new official page, retrieved 2026-09-16)** — https://code.claude.com/docs/en/large-codebases: "Review in pull requests: treat CLAUDE.md edits like any other documentation change so conventions track the code"; "Revisit after major model releases: instructions that worked around an older model's limitation may become overhead once a newer model handles the case on its own. For example, a rule that forces single-file refactors can be deleted once the limitation is gone"; "Add a Stop hook that proposes updates: a `Stop` hook receives the path to the session transcript when Claude finishes responding, so a script can review the session and propose CLAUDE.md updates while the gap it exposed is fresh". The best-practices page now also says: "Run `/context` to confirm Claude loaded the file." and "For a checked-in CLAUDE.md, run `/doctor` and Claude proposes cuts for content it can derive from the codebase." (retrieved 2026-09-16)
 
-### Claude 4 Prompting Practices `[official]`
+### Claude 5 Prompting Practices `[official]`
 
-> "Be explicit with instructions: Claude 4 models respond well to clear, explicit instructions."
-> — https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/claude-4-best-practices (retrieved 2026-03-29)
+The former "Claude 4 best practices" page has been replaced by a model-family-wide "Prompting best practices" page (the old docs.anthropic.com URL 301-redirects to platform.claude.com). It is "the reference for prompt engineering with current Claude models, including Claude Fable 5.1, Claude Mythos 5.1, Claude Fable 5, Claude Mythos 5, Claude Opus 5, Claude Opus 4.8, Claude Opus 4.7, Claude Opus 4.6, Claude Sonnet 5, Claude Sonnet 4.6, and Claude Haiku 4.5." (retrieved 2026-09-16)
 
-> "Providing context or motivation behind your instructions, such as explaining to Claude why such behavior is important, can help Claude 4 better understand your goals and deliver more targeted responses."
-> — same source (retrieved 2026-03-29)
+> "Claude responds well to clear, explicit instructions. Being specific about your desired output can help enhance results."
+> — https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices (retrieved 2026-09-16; was "Claude 4 models respond well to…" on the old page, retrieved 2026-03-29)
+
+> "Providing context or motivation behind your instructions, such as explaining to Claude why such behavior is important, can help Claude better understand your goals and deliver more targeted responses."
+> — same source (retrieved 2026-09-16)
+
+**Dial back emphasis on newer models** — official, and directly relevant to CLAUDE.md emphasis markers:
+
+> "Claude Opus 4.5 and Claude Opus 4.6 are also more responsive to the system prompt than previous models. If your prompts were designed to reduce undertriggering on tools or skills, these models may now overtrigger. The fix is to dial back any aggressive language. Where you might have said 'CRITICAL: You MUST use this tool when...', you can use more normal prompting like 'Use this tool when...'."
+> — same source (retrieved 2026-09-16)
+
+> "Tune anti-laziness prompting: If your prompts previously encouraged the model to be more thorough or use tools more aggressively, dial back that guidance. Claude 4.6 models are more proactive and may overtrigger on instructions that were needed for previous models."
+> — same source, Migration considerations (retrieved 2026-09-16)
+
+**Fable 5 / 5.1 specifics** — https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5 (retrieved 2026-09-16):
+
+> "Instruction-following is improved enough that you can steer most behaviors with a brief instruction rather than enumerating each behavior by name."
+
+> "Capability improvements at this level are also a good prompt to re-evaluate which instructions, tools, and guardrails are still needed."
+
+> "Refactor existing prompts and skills. Skills developed for prior models are often too prescriptive for Claude Fable 5 and can degrade output quality. Review and consider removing older instructions if default performance is better."
+
+> "Give the reason, not only the request. Claude Fable 5 tends to perform better when it understands the intent behind a request"
+
+> "Construct a memory system … Store one lesson per file with a one-line summary at the top. Record corrections and confirmed approaches alike, including why they mattered. Don't save what the repo or chat history already records; update an existing note rather than creating a duplicate; delete notes that turn out to be wrong."
+
+- The Fable 5.1 page adds that the model "already formats less than earlier models, so on that model a block like this [an anti-markdown instruction] can suppress structure the content needs" — formatting-suppression rules copied from older CLAUDE.md files may now over-correct. — https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-1 (retrieved 2026-09-16)
+- Implication for CLAUDE.md review: enumerated behavior lists, blanket "IMPORTANT/MUST" markers, and workaround rules written for older models are now flagged by *official* guidance, not just community consensus (see the Emphasis Overuse and Stale Information entries in the anti-pattern catalog)
 
 ---
 
@@ -359,4 +425,5 @@ For autonomous/long-running Claude sessions:
 - 2026-06-26: Freshness re-run (2 days stale). Re-read memory docs (https://code.claude.com/docs/en/memory, retrieved 2026-06-26) and cross-checked changelog through v2.1.193 (2026-06-25). **Material additions**: (1) **Import parsing skips fenced code blocks and code spans** — to mention an `@path` without importing, wrap in backticks (added to Import Syntax). (2) v2.1.181: CLAUDE.md Write/Edit fixed for network drives and cloud-synced folders (added to Troubleshooting). (3) v2.1.191: `/rewind` recovers conversation state after `/clear` (added to Troubleshooting). All other content re-verified unchanged: under-200-line authoring target (warning threshold still scales with context window per v2.1.169), four-hop import depth, `/cd`, `--safe-mode`, MEMORY.md compaction reminder, `claudeMd` managed key, `claudeMdExcludes`, compaction re-injection, auto-memory storage and trust-gate. last_updated bumped to 2026-06-26.
 - 2026-07-25: Refreshed against code.claude.com/docs/en/memory (retrieved 2026-07-25) + changelog v2.1.196-v2.1.218. **Material additions**: (1) **`/doctor` CLAUDE.md trim proposal** (v2.1.206) - cuts content derivable from the codebase (directory layouts, dependency lists, architecture overviews), keeps pitfalls, rationale, and conventions that differ from tool defaults. (2) **`.claude/rules/` path matching through symlinks** (v2.1.198). (3) **`paths` brace-expansion budget**: 1,000 expanded patterns and 4 MiB per rule; over-budget patterns are used unexpanded and match nothing (v2.1.217, which also fixed a startup stall/crash from many brace groups). (4) **Glob bracket handling**: an unreadable `[` bracket expression matches nothing and no longer breaks Read for every file the rule is evaluated against (v2.1.207); escape a literal `[` as `\[`. (5) **`--setting-sources` now also skips on-demand and nested project rules** when `project` is excluded (v2.1.211). (6) **MEMORY.md limit accounting** now strips YAML frontmatter and block-level HTML comments before measuring against the 200-line / 25KB read limit (v2.1.211), with a shorten-reminder near the limit and a rewrite error over it (v2.1.210). (7) **`modified` frontmatter timestamp** stamped on memory files that already have frontmatter (v2.1.214); Claude Code never adds frontmatter to a file that has none. (8) **`CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD=1`** loads memory files from `--add-dir` directories. (9) **`InstructionsLoaded` hook** for logging exactly which instruction files load, when, and why - the recommended tool for debugging path-scoped and lazy-loaded rules. (10) `/memory` no longer blocks the session while a GUI editor is open (v2.1.216). Under-200-line target, four-hop import depth, code-span/fenced-block import skipping, `claudeMd` managed key, `claudeMdExcludes`, and compaction re-injection all re-verified unchanged. last_updated bumped to 2026-07-25.
 - 2026-09-04: Refreshed against code.claude.com/docs/en/memory + best-practices (retrieved 2026-09-04) and changelog v2.1.229–v2.1.260 (newest v2.1.260, 2026-09-03). **Material additions**: (1) **Emphasis dilution warning** — best-practices now says add "IMPORTANT" to the one skipped line *alone*; "If you emphasize many lines, none of them stands out" (added to Emphasis for Adherence). (2) **4 MiB hard limit** — a CLAUDE.md over 4 MiB is skipped entirely, not truncated (added to Size). (3) **`/import` command** (v2.1.213+) — one-time copy of another agent's instruction files (AGENTS.md etc.) plus MCP servers/commands/subagents/skills (added to AGENTS.md Compatibility). (4) **`/init` reading list restructured** — Cursor (`.cursor/rules/` or `.cursorrules`) + Copilot (`.github/copilot-instructions.md`) by default; AGENTS.md/`.devin/rules/`/`.windsurf/rules/`/`.clinerules` only with `CLAUDE_CODE_NEW_INIT=1`. (5) **User-scope import trust** — imports in `~/.claude/CLAUDE.md` / `~/.claude/rules/` load without the approval dialog except in Cowork desktop sessions, which also skip symlinked user-scope memory files pointing outside the working dir (added to Import Syntax). (6) **`claudeMdExcludes` symlink matching** (v2.1.239–v2.1.243) — a pattern matching either the rules path or the link target now excludes the file (added to claudeMdExcludes). (7) **`CLAUDE_CODE_PROJECT_DIR_NAME`** (v2.1.234) shares one auto-memory dir across projects; **four auto-memory `type` kinds** (`user`/`feedback`/`project`/`reference`) documented (added to Auto Memory). (8) **`/context` supersedes `/memory` as the load-verification command**; compaction wording now covers path-scoped rules reloading lazily (added to Troubleshooting/Compaction). (9) v2.1.260: managed `claudeMd` no longer triggers the security approval dialog; v2.1.257: `.claude/` folder created after startup is now picked up without restart. Under-200-line target, four-hop import depth, imports-load-at-launch, `/doctor` trim, and MEMORY.md limits all re-verified unchanged. last_updated bumped to 2026-09-04.
+- 2026-09-16: Refreshed against code.claude.com/docs/en/memory + best-practices (retrieved 2026-09-16), three newly-cited official pages (context-window, large-codebases, sub-agents), the platform prompting docs, and changelog v2.1.261–v2.1.273 (newest v2.1.273, 2026-09-15). **Material additions/corrections**: (1) **Load-order correction** — the file-locations table is now ordered Managed → User → Project → Local per "a project instruction appears in context after a user instruction"; this file previously listed Project above User (File Locations). (2) **Symlinked rules outside the working directory are external imports** — they don't load until external-import approval, which symlinks alone never trigger, and path-scoped ones never load even after approval; official fix is `~/.claude/rules/` (Modularization). (3) **`omitClaudeMd` subagent frontmatter** (v2.1.271) + what a subagent loads: full CLAUDE.md hierarchy incl. user file, rules, CLAUDE.local.md; Explore/Plan skip it; main-session auto memory never reaches subagents except forks (new "Subagents and CLAUDE.md" section, Auto Memory). (4) **"What survives compaction" table** — unscoped rules and the plan file re-inject from disk; path-scoped rules and nested CLAUDE.md are summarized away ("drop the `paths:` frontmatter" to persist); skill bodies capped 5,000/skill, 25,000 total; v2.1.269 git-status-after-compaction fix; v2.1.273 context-meter fix (Compaction). (5) **Illustrative startup token costs** from the context-window page (project CLAUDE.md ~1,800, user ~320, MEMORY.md ~680) (Size). (6) **large-codebases page**: per-directory CLAUDE.md vs path-scoped rule decision table, `claudeMdExcludes` pattern recipes, `additionalDirectories` never loads memory files vs `--add-dir`, settings not inherited from parent dirs, and three maintenance practices — review in PRs, revisit after major model releases, Stop hook proposing updates (Modularization, claudeMdExcludes, File Locations, Troubleshooting). (7) **Claude 4 → Claude 5 prompting section** — old URL 301s to platform.claude.com "Prompting best practices"; new official quotes: dial back aggressive "CRITICAL: You MUST" language, brief instructions suffice on Fable 5, re-evaluate old instructions after capability jumps, give the reason. (8) Minor: memory-page intro now names PreToolUse hooks as the enforcement path; auto-memory "Use for" column re-worded; `/init` personal-option gitignore requires `CLAUDE_CODE_NEW_INIT=1`; v2.1.261 `/context` local-estimate fallback + `/skill-doctor`; v2.1.269 attribution reminder no longer overrides a CLAUDE.md rule; v2.1.273 `blockReadsOutsideWorkingDirectories` ignores repo-chosen memory dirs. Under-200-line target, 4 MiB skip, four-hop import depth, imports-load-at-launch, `/doctor` trim, `/import`, and MEMORY.md limits all re-verified unchanged. last_updated bumped to 2026-09-16.
 - 2026-08-12: Refreshed against code.claude.com/docs/en/memory (retrieved 2026-08-12) + changelog v2.1.219-v2.1.228. **Doc page re-verified with no authoring-rule changes**: under-200-line target, four-hop import depth, imports-load-at-launch, specificity/structure/consistency guidance, `.claude/rules/` (recursive, symlink-friendly, user-level loaded before project), `paths` glob format and brace budget, `claudeMd` / `claudeMdExcludes` managed keys, HTML-comment stripping, compaction re-injection (project-root only), MEMORY.md 200-line/25KB load limit, `modified` frontmatter timestamp, `InstructionsLoaded` hook, and the `/doctor` trim proposal all unchanged. **Changelog additions**: (1) **Auto-compact now keeps sessions within the assumed context window** (v2.1.223) and `CLAUDE_CODE_DISABLE_1M_CONTEXT` holds every Claude 1M model to 200K - the effective budget CLAUDE.md competes for can be smaller than the model's nominal window, reinforcing the under-200-line target. (2) **Session cleanup no longer deletes contents inside a project's memory folder** (v2.1.228) - a prior cause of vanished auto-memory files. (3) **Claude Opus 5 (`claude-opus-5`) is the default Opus model** (v2.1.219); the in-product "CLAUDE.md is too long" threshold still scales with the active model's context window. (4) `/cd` mid-session resume fixed (v2.1.223). last_updated bumped to 2026-08-12.

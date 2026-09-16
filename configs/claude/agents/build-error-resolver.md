@@ -51,7 +51,7 @@ You are an expert build error resolution specialist. Your mission is to get buil
 ```bash
 npx tsc --noEmit --pretty
 npm run build
-npx eslint . --ext .ts,.tsx,.js,.jsx
+npm run lint --if-present || npx eslint .
 ```
 
 ### Rust
