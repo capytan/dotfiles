@@ -3,7 +3,7 @@ name: claude-config-reviewer
 description: |
   Reviews individual Claude Code config files (CLAUDE.md, SKILL.md, agent definitions) against researched best practices, producing per-file quality reports with 100-point scoring.
   Use when the user asks to review or improve the quality of specific config files. For diagnosing runtime symptoms (rules ignored, hooks misfire, MCP fails, skills don't trigger), use the `auditing-claude-config` skill instead.
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch, WebFetch
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent, WebSearch, WebFetch
 ---
 
 # Claude Code Config Reviewer
@@ -210,19 +210,7 @@ Always include when reviewing multiple artifact types (even when scope is limite
 - Cross-cutting issues: ...
 ```
 
-Run all checks defined in `references/cross-artifact-checks.md`:
-
-- Reference existence (referenced skills/agents exist on disk)
-- Description consistency (CLAUDE.md ↔ skill/agent claims)
-- Circular references (skill→agent→skill)
-- Tool consistency (frontmatter `tools:` ↔ actual usage)
-- Stale references (deleted/renamed artifacts)
-- Subagent skill-preload validity `[official 2026-06]`
-- Duplicate agent names within a scope `[official 2026-06]`
-- Unresolvable agent `tools` list — **Critical** if no entry resolves `[official 2026-07]`
-- Non-preloadable bundled skills in `skills:` `[official 2026-07]`
-- Stale `/agents` wizard guidance `[official 2026-07]`
-- Skill name vs bundled-skill collision `[official 2026-06]`
+Run every check listed in the Contents line of `references/cross-artifact-checks.md` — the reference is the single source of truth; do not enumerate checks here (they drift on every Phase 0 run).
 
 ### Grading Scale
 
