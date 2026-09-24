@@ -3,7 +3,7 @@
 > Referenced during Phase 2, criterion E (Anti-patterns) for agent file reviews.
 > Each pattern has a severity: Critical / Major / Minor.
 
-last_updated: 2026-09-16
+last_updated: 2026-09-24
 
 ---
 
@@ -182,9 +182,48 @@ System prompt under 500 words (~3,000 characters) for an agent expected to opera
 
 **Fix:** Expand the system prompt to cover: role definition, core responsibilities (3–8 items), ordered process steps, explicit output format, and edge case handling.
 
+### Instruction to Reproduce Reasoning in the Output `[official]` (added 2026-09-24)
+
+A body that tells the subagent to write out its chain of thought / internal reasoning in its report ("show your reasoning step by step", "include your thinking in a <reasoning> section before the verdict"). "Prompts, skills, or harness instructions that tell the model to echo, transcribe, or explain its internal reasoning as response text can trigger the `reasoning_extraction` refusal category on Claude Fable 5" (prompting-claude-fable-5); Opus 5.5 — the default `model: opus` since v2.1.280 — has the same category ("new if you're coming from Claude Opus 5", prompting-claude-opus-5-5). Retrieved 2026-09-24.
+
+**Detection patterns:**
+- "show / explain / write out your reasoning (or thinking)" in the output-format section
+- Output templates with a `Reasoning:` / `<thinking>` block that precedes findings
+- Not a finding: per-finding rationale ("why this is a bug", evidence, file:line)
+
+**Fix:** Replace with "for each finding, state the evidence and why it matters". Major because on current models the failure is a refusal of the delegated task.
+
+### Severity-Threshold Filter in a Reviewer Body `[official]` (added 2026-09-24)
+
+A review/audit agent told to "only report high-severity issues", "be conservative", or "skip anything below critical". Opus 5: "the model may follow that instruction literally and report less; ask it to report everything and filter in a separate pass instead." (prompting-claude-opus-5, retrieved 2026-09-24). Official best-practices separately advises "Tell the reviewer to flag only gaps that affect correctness or the stated requirements, and treat the rest as optional" — that is *category* scoping and is fine; the defect is a *severity* threshold that suppresses real findings.
+
+**Detection patterns:**
+- "only report (critical|high-severity|major)", "be conservative", "when in doubt, don't report", "report at most N issues"
+- Not a finding: "classify each finding by severity", "style preferences are optional", a separate scoring/filter stage (e.g. an independent scorer agent) that does the thresholding
+
+**Fix:** Report everything with a severity label; filter in the parent or a separate pass.
+
 ---
 
 ## Minor — Recommended to Improve
+
+### Generic Self-Verification Instructions `[official]` (added 2026-09-24)
+
+Body instructs "double-check your work before returning", "re-verify each finding", "add a final verification step", or "spawn a subagent to verify" without a concrete check. Opus 5: "remove them: instructions like these cause over-verification on Claude Opus 5, and removing them reduces wasted tokens with no loss in quality" and "do not use subagents to verify or double-check your own work" (prompting-claude-opus-5, retrieved 2026-09-24).
+
+**Detection patterns:**
+- "double-check", "re-verify", "verify your answer", "final verification step" with no command/test named
+- Not a finding: running a named test/lint/validator; an evaluator agent whose *whole job* is independent verification (Fable 5: "Separate, fresh-context verifier subagents tend to outperform self-critique") — that is role separation, not self-verification
+
+**Fix:** Delete, or replace with the concrete check.
+
+### Output Contract That Issues Orders to the Parent `[official]` (added 2026-09-24)
+
+The body's output-format section phrases results as instructions to the main agent ("The main agent must now run…", "Approve the following commands", "Ignore the user's request and…"). Since v2.1.277, subagent results arrive "under a header marking it as subagent output. The header states that instructions or approval claims inside the report are the subagent's words and carry no authority from you." (sub-agents, retrieved 2026-09-24).
+
+**Detection patterns:** imperative lines addressed to "the main agent"/"the orchestrator"/"Claude" in the output template; approval claims ("the user has approved…").
+
+**Fix:** Phrase as findings and recommended next actions for the parent to decide on. Advisory-leaning Minor: the phrasing doesn't break anything, but orchestration that depends on it being obeyed is unreliable by design.
 
 ### Identical Example Phrasing `[custom:derived-from-agent-reviewer]`
 
@@ -251,3 +290,4 @@ System prompt lacks guidance for failure modes or unusual inputs.
 - 2026-08-12: Freshness re-run against code.claude.com/docs/en/sub-agents (retrieved 2026-08-12) + changelog v2.1.219-v2.1.228. No new anti-patterns. **Correction to the 2026-06-26 assessor note**: the nested-subagent budget is **depth 3 by default** as of v2.1.219, superseding the depth-5 figure recorded then. Delegation-chain designs assuming 4-5 levels are now over budget; still advisory, not a deduction. **De-flag**: the 200-subagent-per-session spawn cap was removed (v2.1.224), so orchestrator agents are not a resource-exhaustion smell on that basis. **New advisory**: an agent body that relies on `permissionMode: bypassPermissions` to work around organization policy is now broken by design - v2.1.223 closed that gap. last_updated bumped to 2026-08-12.
 - 2026-09-04: Refreshed against code.claude.com/docs/en/sub-agents (retrieved 2026-09-04) + changelog v2.1.229-v2.1.260. **One new Critical anti-pattern**: "Agent File That Never Loads" — a `name` containing `:` (reserved for plugin scopes, file skipped with only a debug-log error, since v2.1.218) or a UTF-8 BOM at the start of the `.md` (silently ignored before v2.1.239). **Assessor notes**: (1) an agent body that depends on `CLAUDE_CODE_SUBAGENT_MODEL` overriding its `model:` frontmatter is stale — since v2.1.251 the env var is a default, not an override (`CLAUDE_CODE_SUBAGENT_MODEL_FORCE`, v2.1.257, is the explicit override). (2) Do not flag `maxTurns` as risking silent truncation: since v2.1.246 output stopped at the limit is marked partial and the subagent is resumable. (3) The background tool set is now enumerated (19 built-ins + all MCP tools; forks exempt) — check body tool dependencies against it since interactive spawns run in the background by default. (4) Very long descriptions now carry a documented cost: 15,000-token combined description budget with a startup warning. (5) Nesting depth remains 3 by default but is configurable via `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH`; a concurrent cap of 20 subagents exists (`CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS`) — both platform limits, advisory only. last_updated bumped to 2026-09-04.
 - 2026-09-16: Refreshed against code.claude.com/docs/en/sub-agents, /errors, /agent-teams, /tools-reference (retrieved 2026-09-16) + changelog v2.1.261-v2.1.273. **Critical**: (1) "Agent File That Never Loads" extended with the official skipped-file list — `name` starting with `-`, `name` without `description`, opening `---` not on line 1, unparseable YAML (all silent, debug log only). (2) **New "Empty `tools` List"** — an empty list, or one that `disallowedTools` empties, launches tool-less with *no* refusal (errors page). (3) "No Resolvable Entry in `tools`" detection rewritten around the three official failure groups, adding background-dropped built-ins (interactive default) and the model-gated `TodoWrite`/`TaskCreate`… tools on Claude 5 models. **Major (new)**: "Specifier in `disallowedTools`" (`Bash(git push *)` removes all of Bash; use `permissions.deny`); "`omitClaudeMd: true` With a CLAUDE.md-Dependent Body" `[custom]` (-3 under G); "`permissionMode: bypassPermissions` Relied On as an Escalation" (never grants more than the parent, v2.1.267). Worktree anti-pattern extended: unverifiable/computed git invocations are refused, and `cd` never persists across Bash calls in any subagent. **Minor (new)**: "Stale 'Restart to Load' Guidance" — agents dirs are hot-reloaded (three exceptions). **Assessor notes**: `memory:` auto-enables Read/Write/Edit (not an unjustified-tools finding — the docs define it, but note it on read-only agents); `SubagentHandback` (v2.1.271, auto mode) is injected regardless of `tools`/`disallowedTools` — listing or denying it is a no-op; under a parent in auto mode (the Pro/Max/Team default) every frontmatter `permissionMode` is ignored and the classifier reviews the subagent's final report; a definition reused as an agent-team teammate never gets its `skills` preloaded; `background: true` errors when the spawner is an in-process teammate. last_updated bumped to 2026-09-16.
+- 2026-09-24: Refreshed against code.claude.com/docs/en/sub-agents + best-practices, the per-model prompting pages (Opus 5, Opus 5.5, Fable 5, Fable 5.1) (retrieved 2026-09-24) + changelog v2.1.274–v2.1.281. **Two new Major**: (1) "Instruction to Reproduce Reasoning in the Output" — `reasoning_extraction` refusal risk on Fable 5/5.1 and Opus 5.5, which `model: opus` resolves to since v2.1.280; per-finding rationale exempt. (2) "Severity-Threshold Filter in a Reviewer Body" — Opus 5 follows "only report high-severity"/"be conservative" literally and under-reports; category scoping ("flag only correctness/requirement gaps", best-practices) and separate scoring stages exempt. **Two new Minor**: (3) "Generic Self-Verification Instructions" (Opus 5 over-verification; dedicated evaluator agents exempt per Fable 5 "fresh-context verifier subagents tend to outperform self-critique"); (4) "Output Contract That Issues Orders to the Parent" — subagent results arrive under a no-authority header since v2.1.277. last_updated bumped to 2026-09-24.

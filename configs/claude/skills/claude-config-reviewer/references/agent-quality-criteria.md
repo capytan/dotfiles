@@ -13,7 +13,7 @@
 >
 > **Note:** Phase 0 research (2026-04-17) cross-checked against code.claude.com/docs/en/sub-agents.
 
-last_updated: 2026-09-16
+last_updated: 2026-09-24
 
 ---
 
@@ -117,6 +117,7 @@ Both are valid. Score the style the author chose against its own rubric below.
 - Missing any trigger clause → -4 pts
 - Proactive trigger word (`proactively`, `immediately`, `PROACTIVELY`, `MUST BE USED`) present when auto-delegation is desired → +0 (expected)
 - Note: `"use proactively"` is the only trigger phrase in official docs; `MUST BE USED` is a community convention `[community:high]`
+- Advisory (added 2026-09-24) `[official]`: the platform prompting guide warns that prompts written to fix undertriggering "may now overtrigger" and to "dial back any aggressive language" ("CRITICAL: You MUST use this tool when…" → "Use this tool when…"), and Opus 5 "delegates to subagents more readily than prior models". Treat all-caps `MUST BE USED` as a NOTE suggesting lowercase "Use proactively when <condition>"; no deduction, and no extra credit over the plain form
 
 **Action-verb specificity `[community:high]`:**
 - Description contains a concrete action verb (`review`, `analyze`, `optimize`, `audit`, `debug`, `generate`, `refactor`) → PASS
@@ -179,6 +180,8 @@ Based on the 5-part pattern shared by all four documented official example agent
 
 The official examples omit a separate "Edge Cases" section and substitute a closing focus statement (e.g., "Focus on fixing the underlying issue, not the symptoms."). Either is acceptable.
 
+**C3 note (added 2026-09-24)** `[official]`: an Output Format that is a `Reasoning:`/"show your thinking" block before findings does **not** earn the Output Format 2 pts' worth of credit on its own merits — score the rest of the contract, and route the reasoning block to E (Major). Per-finding evidence/rationale fields are good output design and earn full credit.
+
 ### D. Tool Restriction (10 points)
 
 Principle of least privilege for the `tools` array. Official guidance: "Limit tool access: grant only necessary permissions for security and focus." `[official]`
@@ -221,6 +224,8 @@ See [agent-anti-patterns.md](agent-anti-patterns.md) for the full catalog.
 **4 pts**: 1 Major anti-pattern present
 **2 pts**: Multiple Major anti-patterns
 **0 pts**: Any Critical anti-pattern present
+
+**Claude 5-generation body checks (added 2026-09-24)** `[official]` — scored here via the catalog, not under C: reasoning-reproduction instruction in the output format (**Major**, `reasoning_extraction` refusal risk on Fable 5/5.1 and Opus 5.5 — the default `model: opus` since v2.1.280); severity-threshold filter in a reviewer ("only report high-severity", "be conservative") (**Major**, Opus 5 follows it literally and under-reports; category scoping to correctness/requirements is fine); generic self-verification instructions (Minor; dedicated evaluator agents exempt); output contract issuing orders to the parent (Minor; subagent results carry "no authority" since v2.1.277).
 
 ### F. Behavioral Impact (10 points)
 
@@ -310,3 +315,5 @@ Verify the agent file is consistent with its environment.
   last_updated bumped to 2026-08-12.
 - 2026-09-04: Refreshed against code.claude.com/docs/en/sub-agents (retrieved 2026-09-04) and changelog v2.1.229-v2.1.260. **One material scoring change**: **A. Frontmatter (`name`)** — a `name` containing `:` makes Claude Code skip the file entirely (error only in the debug log; behavior since v2.1.218, now documented) → Critical, 0 pts for the category, same treatment as zero-resolvable-tools. **Other updates**: `experimental` (`cacheTtl: 5m|1h`, v2.1.248) added to recognized fields — unknown `experimental` sub-keys are advisory only (the field ignores them by definition); background tool narrowing note updated with the officially enumerated 19-builtin background tool set and the fork-mode-default reality (interactive spawns are effectively always background); **B**: description over-length deduction now has official backing — 15,000-token combined description budget with startup warning; **G**: new -2 pt check for a UTF-8 BOM at the start of the file (silently ignored before v2.1.239, breaks older clients), and advisory NOTE for text assuming `CLAUDE_CODE_SUBAGENT_MODEL` overrides frontmatter `model:` (resolution order changed in v2.1.251; `CLAUDE_CODE_SUBAGENT_MODEL_FORCE` is the override switch since v2.1.257). Nesting-depth advisories unchanged (still 3 by default, now configurable via `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH`); concurrent-spawn cap of 20 (`CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS`) noted for orchestrator reviews — advisory only. last_updated bumped to 2026-09-04.
 - 2026-09-16: Refreshed against code.claude.com/docs/en/sub-agents, /errors, /agent-teams, /tools-reference (retrieved 2026-09-16) and changelog v2.1.261-v2.1.273. **Material scoring changes**: **A. Frontmatter** — (1) `name` starting with `-` → Critical, 0 pts (file skipped, debug log only); (2) new *frontmatter block integrity* rule: opening `---` not on line 1, or unparseable YAML → Critical, 0 pts (file silently treated as documentation / skipped); `name` without `description` is now also an officially skipped file; (3) **empty `tools` list → Critical, 0 pts** (launches tool-less with no error — errors page); the zero-resolvable rule now lists the three official failure groups, including background-dropped built-ins (interactive default) and the newly model-gated `TodoWrite`/`TaskCreate`… tools on Claude 5 models; (4) `omitClaudeMd` (v2.1.271) added to recognized fields (boolean); (5) `permissionMode: bypassPermissions` downgraded to advisory NOTE — never an escalation (v2.1.267), and all frontmatter `permissionMode` values are ignored under a parent in auto mode, which is the plan default. **D. Tool restriction** — `disallowedTools` specifiers remove the whole tool (Major anti-pattern under E, not a D deduction); `memory:` auto-enables Read/Write/Edit (advisory on read-only agents; no deduction either way); `SubagentHandback` is injected regardless of the list (no-op if listed/denied). **G. Cross-reference** — new -3 pt check: `omitClaudeMd: true` with a body that depends on CLAUDE.md content `[custom]`; advisory NOTEs for stale "restart to load" guidance (agents dirs are now hot-reloaded, three exceptions), for definitions reused as agent-team teammates (`skills` never applied; body appended in-process), and the unavailable-tools list extended with `TaskOutput`/`Workflow` and the background-set narrowing; duplicate-name tie-break wording updated ("filesystem read order"). Weights and bands unchanged. last_updated bumped to 2026-09-16.
+- 2026-09-24: Refreshed against code.claude.com/docs/en/sub-agents + best-practices, the per-model prompting pages (Opus 5, Opus 5.5, Fable 5, Fable 5.1) (retrieved 2026-09-24) and changelog v2.1.274–v2.1.281. **No weight or band changes.** **E. Anti-patterns** gains four catalog entries routed here: reasoning-reproduction instruction (Major), severity-threshold filter in a reviewer (Major; category scoping exempt), generic self-verification (Minor; evaluator agents exempt), output contract issuing orders to the parent (Minor). **C3 note**: a show-your-thinking block is not credited as output design; per-finding rationale is. Advisory: `model: opus` now resolves to Opus 5.5 (v2.1.280); natively-read AGENTS.md (v2.1.277) is part of the CLAUDE.md-hierarchy load that `omitClaudeMd` skips — extend the G `omitClaudeMd` check to AGENTS.md-dependent bodies. last_updated bumped to 2026-09-24.
+  - Also 2026-09-24 (B. Description): advisory NOTE for all-caps `MUST BE USED` — official overtriggering guidance + Opus 5's readier delegation; suggest lowercase "Use proactively when <condition>". No deduction.

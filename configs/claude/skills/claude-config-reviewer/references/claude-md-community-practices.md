@@ -9,8 +9,16 @@
 > - `[community:mid]` = GitHub 10-50 stars, verified in a tech blog
 > - `[community:low]` = Individual report, unverified but reasonable (reference only, not in scoring)
 
-last_updated: 2026-09-16
+last_updated: 2026-09-24
 sources:
+  - https://wmedia.es/en/tips/claude-code-opus-5-prompting-tips
+  - https://www.mindstudio.ai/blog/claude-fable-5-1-prompting-rules-changed
+  - https://charlesjones.dev/blog/claude-opus-5-context-engineering-what-to-delete
+  - https://explainx.ai/blog/claude-opus-5-5-prompting-guide-2026
+  - https://note.com/gaku_tachibana/n/n46a0dfd9ee1e
+  - https://gihyo.jp/article/2026/09/claude-code-support-agents-md
+  - https://www.theregister.com/ai-and-ml/2026/09/18/anthropic-decides-to-support-openais-markdown-instructions-spec/5297588
+  - https://gist.github.com/yurukusa/d36197848911f025add142abefcde685
   - https://www.eesel.ai/blog/claude-code-best-practices
   - https://dev.to/nishilbhave/claudemd-best-practices-the-complete-2026-guide-435j
   - https://qiita.com/suwa_nobu/items/b465ef863f8d8608f497
@@ -295,6 +303,41 @@ Strengthens the "move on-demand knowledge to skills, not CLAUDE.md" recommendati
 
 > Source: https://qiita.com/shimo4228/items/1513ae9a3a11769df170 (retrieved 2026-03-29)
 
+### Claude 5-Generation Pruning (added 2026-09-24)
+
+#### Grep your config for leftover verification instructions `[community:mid]`
+
+> "grep -rns -i "verify\|double-check\|re-check" ~/.claude/CLAUDE.md ./CLAUDE.md ./.claude/agents/ ./.claude/skills/" — the article notes custom agents and skills are where such lines hide ("written once, working fine, never opened again").
+
+> Source: https://wmedia.es/en/tips/claude-code-opus-5-prompting-tips (2026-07-25, tip #145; retrieved 2026-09-24). Operationalizes the official Opus 5 "remove verification instructions" guidance; Charles Jones (https://charlesjones.dev/blog/claude-opus-5-context-engineering-what-to-delete, 2026-07-24, `[community:low]`) gives the same advice: "Pull every 'verify,' 'double-check,' and 're-verify' instruction out of your prompts. Trim CLAUDE.md to the things Claude can't derive from the repository."
+> Scoring: the official source already carries the deduction (criterion A model-era workarounds); this entry supplies the *detection method* and the reminder to sweep agents/skills too (see cross-artifact check 23).
+
+#### All-caps CRITICAL/MUST/ALWAYS now over-trigger `[community:mid]`
+
+> MindStudio (2026-09-11): words like "critical," "must," or "always" in all caps now cause over-triggering rather than compliance; leave default reasoning alone and use the effort setting to manage cost rather than adding verification language.
+
+> Source: https://www.mindstudio.ai/blog/claude-fable-5-1-prompting-rules-changed (retrieved 2026-09-24). Corroborates the official Emphasis Overuse entry; no separate scoring.
+
+#### Remove leftover "think carefully" lines `[community:low]`
+
+> explainx.ai: the most useful immediate step for Opus 5.5 is deleting leftover "think carefully" instructions from CLAUDE.md, system prompts and templates built for prior models.
+
+> Source: https://explainx.ai/blog/claude-opus-5-5-prompting-guide-2026 (retrieved 2026-09-24). Restates the official Opus 5.5 page; reference only.
+
+#### Model-routing rules in CLAUDE.md `[community:low]`
+
+> Gaku Tachibana's Fable 5.1 CLAUDE.md example (2026-09-02, JA): use Fable 5.1 only for hard reasoning / large refactors / deep debugging / long implementations; don't spawn Fable 5.1 subagents for research or routine edits; batch independent reads in one turn; propose rather than implement unrequested refactors/tests; when an instruction has two readings, list both and pick one with a reason.
+
+> Source: https://note.com/gaku_tachibana/n/n46a0dfd9ee1e (retrieved 2026-09-24 via search snippet). Reference only. **Partial conflict with official**: "list both readings and pick one" vs official Fable 5.1 scope block "implement the reading its wording and the surrounding code most directly support, state that assumption in your summary, and don't build for the other readings as well" — official wins; both agree on stating the assumption.
+
+### AGENTS.md Native Support Coverage (added 2026-09-24)
+
+#### "Claude Code now reads AGENTS.md" — news coverage `[community:mid]`
+
+> gihyo.jp (2026-09-19), Publickey, InfoWorld, The Register (2026-09-18), DevOps.com: v2.1.277 reads AGENTS.md when no CLAUDE.md exists; CLAUDE.md wins by default; `/config` → Project instructions → `claude-md-and-agents-md` loads both. Thariq Shihipar (Anthropic, `[semi-official]`): "Starting today in version 2.1.277, if there is no CLAUDE.md in a folder, Claude will check for and use AGENTS.md" and it is "built off of Claude Code mods, our upcoming way to customize the Claude Code harness."
+
+> Sources: https://gihyo.jp/article/2026/09/claude-code-support-agents-md, https://www.theregister.com/ai-and-ml/2026/09/18/anthropic-decides-to-support-openais-markdown-instructions-spec/5297588, https://devops.com/claude-code-adds-agents-md-fallback-cutting-instruction-file-sprawl/ (retrieved 2026-09-24). All consistent with the official memory page; official-best-practices carries the scoring-relevant detail.
+
 ---
 
 ## Incorporation into Scoring Criteria
@@ -313,6 +356,8 @@ When a community insight is reflected in `claude-md-quality-criteria.md`, record
 | 2026-04-17 | Progressive disclosure via agent_docs/ with file:line pointers | A. Token Efficiency / D. Non-Obvious Patterns | `[community:high]` |
 | 2026-09-16 | Prune model-era workarounds after major model releases (community cadence → now official on large-codebases + Fable 5 pages) | A. Token Efficiency adjudication note; F via Stale Information detection pattern | `[official]` (was `[community:mid]`) |
 | 2026-09-16 | Exact test command is the highest-ROI line; imperative phrasing | B. Commands & Workflows (tie-breaker note) | `[community:mid]` |
+| 2026-09-24 | Grep CLAUDE.md + agents + skills for verify/double-check leftovers (detection method for official Opus 5 guidance) | A. model-era workarounds (detection); cross-artifact check 23 | `[community:mid]` (deduction itself is `[official]`) |
+| 2026-09-24 | All-caps CRITICAL/MUST/ALWAYS over-trigger on Claude 5 models | F. Emphasis Overuse (corroboration only) | `[community:mid]` |
 
 ---
 
@@ -328,6 +373,8 @@ Insights found during research but not adopted, for reasons such as:
 | 2026-03-29 | Global CLAUDE.md for cross-tool workflows (send diffs to Gemini/Codex) | Too environment-specific; niche workflow | Reddit via dev.to |
 | 2026-03-29 | "40% more likely to be followed" stat for bullet points | Exact number unverifiable; principle is sound but stat deferred. 2026-09-16: the number has since been removed from the source page | SFEIR Institute |
 | 2026-09-16 | Symlink a canonical rules repo into every project's `.claude/rules/` to share security/coding standards | **Conflicts with official docs (retrieved 2026-09-16)**: a symlink whose target is outside the working directory is treated as an external import — it does not load until external-import approval (which symlinks alone never trigger), and path-scoped linked rules never load even after approval. Official alternatives: `~/.claude/rules/` for personal sharing, a plugin for team sharing | https://rahuulmiishra.medium.com/your-claude-md-is-doing-too-much-heres-how-to-fix-it-2cc495ed3599 (2026-04) |
+| 2026-09-24 | "Claude Code reads CLAUDE.md, not AGENTS.md — the 'reads it as a fallback' claim is wrong" (yurukusa gist, #6235 cluster); older Zenn articles saying AGENTS.md is unsupported | **Stale since v2.1.277** — official memory page now documents native AGENTS.md reading. Do not cite as a reason to require a CLAUDE.md/symlink, except on Bedrock/Vertex/Foundry or flag-fetch-disabled sessions | https://gist.github.com/yurukusa/d36197848911f025add142abefcde685 |
+| 2026-09-24 | "When an instruction has two readings, list both and pick one" as a CLAUDE.md rule | Conflicts with official Fable 5.1 scope block ("implement the reading … most directly support, state that assumption … don't build for the other readings") — the official form wins | https://note.com/gaku_tachibana/n/n46a0dfd9ee1e |
 | 2026-09-16 | Rules with `paths:` in `~/.claude/rules/` are ignored (GitHub #21858) | Issue is closed with no fix version stated; the memory page documents user-level rules without a `paths` restriction, so treat as "verify with `InstructionsLoaded`" rather than a rule. Recorded as a caveat in the modularization guide, not adopted for scoring | https://github.com/anthropics/claude-code/issues/21858 |
 
 ---
@@ -347,3 +394,4 @@ Insights found during research but not adopted, for reasons such as:
 - 2026-09-04: Freshness re-run (23 days stale). Surveyed Aug–Sep 2026 EN sources (Medium "Complete Guide to CLAUDE.md", iwoszapar, productbuilder, claudecode101, maketocreate) and JA sources (Zenn farstep "効果的なCLAUDE.mdの書き方", Qiita kirozero updated 2026-08-02, izanami). **No new community practices worth adopting** — under-200 / ~300-hard-ceiling / 150–200-instruction-budget consensus, "correct twice → write it down", hooks-for-enforcement, monthly-to-quarterly maintenance cadence, and lost-in-the-middle rationale all already captured. Two notes: (1) the community guidance "use IMPORTANT / YOU MUST only for genuine hard constraints — overusing them dilutes impact" is now **official** (best-practices page, retrieved 2026-09-04: emphasize the one skipped line alone) — promoted to official-best-practices and the anti-pattern catalog. (2) JA community (kirozero) correctly attributes the 300-line figure to HumanLayer, not Anthropic — matches our sourcing. last_updated bumped to 2026-09-04.
 - 2026-09-16: Freshness re-run (12 days stale). Surveyed Sep 2026 EN sources (eesel.ai 2026-09-09, dev.to nishilbhave, preporato, techsy, buildcamp) and JA sources (Qiita suwa_nobu 2026-09-15, DevelopersIO 2026-09-15, kirozero updated 2026-08-02, tamashiro_nobuyuki 2026-08-14; no Zenn articles dated Sep 2026 surfaced). **Adopted**: "CLAUDE.md is context, not access control" (eesel, `[community:mid]`, corroborates the official PreToolUse line); "exact test command is the highest-ROI line" (nishilbhave, `[community:mid]`, tie-breaker for criterion B); subagents inherit the whole CLAUDE.md hierarchy + `omitClaudeMd` verification (suwa_nobu/DevelopersIO, now official). **Promoted to official**: prune-after-model-updates cadence (large-codebases + Fable 5 prompting pages). **Source drift**: the SFEIR page (updated 2026-06-05) dropped the "40%" stat, the "leave formatting to linters" tip (re-sourced to nishilbhave), and the "stable CLAUDE.md on main" tip (downgraded to `[community:low]`). **Rejected**: symlinking a canonical rules repo into `.claude/rules/` (Medium) — conflicts with the new official external-import semantics for symlinks; GitHub #21858 (user-level path-scoped rules ignored) recorded as a verify-don't-assume caveat. last_updated bumped to 2026-09-16.
 - 2026-08-12: Freshness re-run (18 days stale). Community sources re-checked (mcp.directory "Claude Code Best Practices: From Vibe Coding to Agentic Engineering (2026)", SmartScope advanced-practices article, Totalum skills-vs-hooks-vs-subagents guide; `[community:mid]` or better). **No new practices worth adopting.** The dominant 2026 framing is a surface-selection decision tree - "if a rule must be enforced, use hooks or permissions; if it's contextual knowledge, use skills; if it's a delegation boundary, use subagents; if it's always-on project guidance, keep it short in CLAUDE.md" - which matches guidance already recorded here and in the modularization guide. last_updated bumped to 2026-08-12.
+- 2026-09-24: Freshness re-run (8 days stale). Surveyed Sep 2026 EN/JA sources on Claude 5-generation CLAUDE.md pruning and the v2.1.277 AGENTS.md support (wmedia.es, MindStudio 2026-09-11, charlesjones.dev, explainx.ai, Gaku Tachibana note 2026-09-02, gihyo.jp 2026-09-19, The Register / InfoWorld / DevOps.com / Publickey, yurukusa gist, Uravation/Serverworks JA guides). No Zenn article dated late September 2026 on CLAUDE.md authoring surfaced; no Opus 5.5-specific CLAUDE.md article found (model released 2026-09-22). **Added** a "Claude 5-Generation Pruning" subsection: grep-based verify/double-check sweep over CLAUDE.md + agents + skills (`[community:mid]`, detection method for the official Opus 5 deduction); all-caps emphasis over-triggers (`[community:mid]`, corroborates official Emphasis Overuse); "think carefully" removal (`[community:low]`, restates official Opus 5.5); model-routing rules example (`[community:low]`). **Added** AGENTS.md news-coverage entry (`[community:mid]`, Thariq Shihipar quote `[semi-official]`). **Rejected**: the "Claude Code does not read AGENTS.md" claim (stale since v2.1.277) and "list both readings" (conflicts with official Fable 5.1 scope block). The Anthropic "new rules of context engineering" blog is official and lives in official-best-practices. last_updated bumped to 2026-09-24.
