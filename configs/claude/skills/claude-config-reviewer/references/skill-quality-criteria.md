@@ -10,7 +10,7 @@
 > - `[custom]` = Derived from this repo's own practice
 > - `[custom:derived-from-skill-reviewer]` = Extracted from skill-reviewer agent
 
-last_updated: 2026-09-16
+last_updated: 2026-09-24
 
 ---
 
@@ -89,6 +89,8 @@ High freedom for creative tasks, medium for technical, low for safety-critical/e
 - **4 pts**: Noticeably mismatched (creative locked down, or safety task left open)
 - **0 pts**: Severely mismatched, likely to produce wrong behavior
 
+**Claude 5-generation calibration (added 2026-09-24)** `[official]`: official guidance now leans the default toward *less* constraint — "Avoid making them overconstrained, except in highly important areas" (Anthropic blog, claude.dev/blog/the-new-rules-of-context-engineering-for-claude-5-generation-models) and "Skills developed for prior models are often too prescriptive for Claude Fable 5 and can degrade output quality" (prompting-claude-fable-5). When deciding between 7 and 10 for a non-fragile task, micro-step scripting of what Claude would do anyway (tactical choices, enumerated cases a one-line goal covers) counts as over-constraint. Fragile/safety/exact-format tasks keep low freedom — the blog's "except in highly important areas" is the carve-out. Scoring bands unchanged.
+
 ### D. Structure & Progressive Disclosure (15 points)
 
 `[official]` Large skills must split content into referenced files.
@@ -130,6 +132,7 @@ High freedom for creative tasks, medium for technical, low for safety-critical/e
 `[custom:derived-from-skill-reviewer]` Multi-step tasks need checklists; errors need concrete solutions.
 
 **Workflows**: checklist-style for complex tasks, validation/verification for quality-critical tasks, feedback loops, recoverable on failure.
+**Verification must be concrete (clarified 2026-09-24)** `[official]`: award the "validation" credit for a runnable check (script, test, validator, diff against fixture). Generic prose ("double-check your work", "add a final verification step", "use a subagent to verify") earns no credit and is the Minor anti-pattern "Generic Self-Verification Steps" under G — Opus 5 guidance says such instructions "cause over-verification … with no loss in quality" when removed. Do not deduct under F for its *absence*.
 
 **Error handling**: concrete solutions required (not "handle errors gracefully"). All bundled resources (scripts/, references/, assets/) must be explicitly referenced with paths.
 
@@ -144,7 +147,7 @@ High freedom for creative tasks, medium for technical, low for safety-critical/e
 
 `[custom:derived-from-skill-reviewer]` See [skill-anti-patterns.md](skill-anti-patterns.md) for the full catalog.
 
-Check for: Windows-style paths, option listing without defaults, critical instructions past line 200, hedging language for required actions, >500 lines without splitting, >3,000 words unstructured prose, ambiguous instructions.
+Check for: Windows-style paths, option listing without defaults, critical instructions past line 200, hedging language for required actions, >500 lines without splitting, >3,000 words unstructured prose, ambiguous instructions. Added 2026-09-24: reasoning-reproduction instructions (**Major** — `reasoning_extraction` refusal risk on Fable 5/5.1 and Opus 5.5) and generic self-verification steps (Minor).
 
 - **10 pts**: No anti-patterns
 - **7 pts**: 1-2 Minor
@@ -172,7 +175,7 @@ Per section: **High** = changes decisions, **Medium** = clarifies ambiguity, **L
 
 **Testing** `[official]`: test across model tiers (Haiku, Sonnet, Opus) — what works for Opus may need more detail for Haiku. Build ≥3 evals BEFORE writing extensive content (evaluation-driven development). skill-creator's eval pipeline uses 20 realistic trigger/non-trigger queries × up to 5 rounds of description optimization `[semi-official]`.
 
-**"Pushy" descriptions** `[semi-official]`: combat undertriggering by making descriptions slightly assertive — include explicit trigger phrases beyond the bare "what" statement.
+**"Pushy" descriptions** `[semi-official]`: combat undertriggering by making descriptions slightly assertive — include explicit trigger phrases beyond the bare "what" statement. **Tempered 2026-09-24 (official conflict):** the platform prompting guide says current models "may now overtrigger" on prompts written to fix undertriggering and that "Instructions like 'If in doubt, use [tool]' will cause overtriggering". Advisory reading: explicit *trigger contexts* remain a positive signal; blanket pushiness ("use whenever…", "even if they don't ask", "if in doubt") is not — flag it only when it widens the trigger beyond the skill's real domain. Never deduct for its absence.
 
 **"Use when..." phrasing + examples (measured)** `[community:mid]`: a 200+ prompt benchmark reports optimized descriptions lift activation ~20%→50%, and adding concrete examples lifts it ~72%→90%; "Use when..." is the recommended trigger-clause template (https://gist.github.com/mellanon/50816550ecb5f3b239aa77eef7b8ed8d, retrieved 2026-06-10). Directional evidence supporting the existing trigger-clause requirement in criterion A — no scoring-band change.
 
@@ -235,3 +238,5 @@ Per section: **High** = changes decisions, **Medium** = clarifies ambiguity, **L
   - **F. Workflows & Error Handling**: injected `` !`command` `` failure aborts the whole invocation — expect `|| true` on commands that can exit non-zero (exit-1 search/comparison carveout aside) and `allowed-tools` pre-approval, since ask/deny rules abort regardless = Major.
   - **Supplementary**: substitution list extended (`${CLAUDE_PROJECT_DIR}`, `${CLAUDE_PLUGIN_ROOT}`, `${CLAUDE_PLUGIN_DATA}`); bundled-skill override doesn't capture aliases (`/review` vs local `code-review`); Cowork/cloud/routines don't read `~/.claude/skills/`. Note: frontmatter `model:` was ignored in interactive sessions until fixed in v2.1.248 — not an authoring defect.
   last_updated bumped to 2026-09-04.
+- 2026-09-24: Refreshed against code.claude.com/docs/en/skills, the per-model prompting pages (Fable 5, Opus 5, Opus 5.5) and the Anthropic "new rules of context engineering for Claude 5" blog (retrieved 2026-09-24) + changelog v2.1.274–v2.1.281. **No weight or band changes.** (1) **C. Degrees of Freedom** — calibration note: official guidance now defaults toward less constraint ("Avoid making them overconstrained, except in highly important areas"; Fable 5 "often too prescriptive"); micro-scripting of non-fragile tasks counts as mismatch at the 7-vs-10 boundary. (2) **F. Workflows** — validation credit requires a runnable check; generic "double-check / verify" prose earns nothing and is a G Minor. (3) **G. Anti-patterns** — new Major (reasoning-reproduction instruction, `reasoning_extraction` refusal risk) and new Minor (generic self-verification steps) added to the check list. Advisory: synced claude.ai skills now also sync into signed-in terminal sessions (docs v2.1.273 / changelog v2.1.275); edits under `~/.claude/skills/synced/` don't persist. last_updated bumped to 2026-09-24.
+  - Also 2026-09-24 (Supplementary): "Pushy" descriptions note tempered by the official overtriggering warning — trigger contexts stay a positive signal, blanket pushiness is flagged only when it widens scope; never deducted for absence.
