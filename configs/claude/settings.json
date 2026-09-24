@@ -514,7 +514,6 @@
     ]
   },
   "alwaysThinkingEnabled": true,
-  "effortLevel": "high",
   "showClearContextOnPlanAccept": true,
   "tui": "fullscreen",
   "autoMemoryEnabled": true,
