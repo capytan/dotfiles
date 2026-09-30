@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "configs/claude/hooks/**"
+      - "configs/claude/settings.json"
       - ".github/workflows/hooks-test.yml"
   workflow_dispatch:
 

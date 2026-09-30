@@ -26,7 +26,7 @@ bash configs/claude/hooks/test-pretooluse-validate-command.sh          # Hook va
 HOOK_BASH=/bin/bash bash configs/claude/hooks/test-pretooluse-validate-command.sh   # Same, under macOS bash 3.2
 ```
 
-CI (`.github/workflows/hooks-test.yml`) runs the validator suite on both bash 5 and bash 3.2, but only for same-repo PRs that touch `configs/claude/hooks/**` or the workflow file itself (fork PRs are skipped by design). Hook-adjacent changes outside that path — `configs/claude/settings.json` wiring, `setup-claude.sh`, `.claude/rules/claude-config.md` — get no CI run, so run the suite locally for those.
+CI (`.github/workflows/hooks-test.yml`) runs the validator suite on both bash 5 and bash 3.2, but only for same-repo PRs that touch `configs/claude/hooks/**`, `configs/claude/settings.json` (the suite checks its `Read()`/`Edit()` rules against the sensitive-path table), or the workflow file itself (fork PRs are skipped by design). Hook-adjacent changes outside those paths — `setup-claude.sh`, `.claude/rules/claude-config.md` — get no CI run, so run the suite locally for those.
 
 ## Non-Obvious Patterns
 

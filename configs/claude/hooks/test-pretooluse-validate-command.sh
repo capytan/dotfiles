@@ -11,6 +11,8 @@
 set -uo pipefail
 
 HOOK="$(cd "$(dirname "$0")" && pwd)/pretooluse-validate-command.sh"
+# 機密パスの表と照合する settings.json。検証用に差し替えられるよう env で上書き可能にする
+SETTINGS="${SETTINGS:-$(cd "$(dirname "$0")/.." && pwd)/settings.json}"
 
 # hook を起動する bash。settings.json は `bash ~/.claude/hooks/...` で呼ぶので既定は PATH の bash。
 # macOS の /bin/bash は 3.2 なので、bash 4/5 専用構文が混入していないか
@@ -130,6 +132,152 @@ check ask 'cat envs/prod/terraform.tfvars'
 check ask 'ls ~/.aws'
 check allow 'cat .env.example'
 check allow 'git log --oneline -- .env'
+
+# --- rules 8/9 と settings.json: 機密パス方針の表 ---
+# 機密パス方針の唯一の情報源。validator (rules 8/9 の regex とメッセージ) と settings.json の
+# Read()/Edit() deny/ask は手書きのまま、この表と照合する。生成にしないのは、fail-open の
+# validator に runtime 依存を増やさず、symlink 先の settings.json を生成物にしないため。
+# kind ごとの展開と意図的な非対称の理由は .claude/rules/pretooluse-validator.md の「機密パス方針」
+#
+# 行: tier|kind|name|表示トークン (空白区切り。validator のメッセージに全部含まれること)
+SENSITIVE_PATHS=$(cat <<'TABLE'
+deny|key|id_rsa|id_rsa
+deny|key|id_ed25519|id_ed25519
+deny|key|id_dsa|id_dsa
+deny|key|id_ecdsa|id_ecdsa
+deny|ext|pem|*.pem
+deny|ext|pfx|*.pfx
+deny|ext|p12|*.p12
+deny|ext|jks|*.jks
+ask|dotenv|.env|.env .envrc
+ask|dir|secrets|secrets
+ask|dir|credentials|credentials
+ask|home-dir|.ssh|~/.ssh
+ask|home-dir|.aws|~/.aws
+ask|home-dir|.kube|~/.kube
+ask|home-file|.docker/config.json|.docker/config.json
+ask|home-file|.netrc|.netrc
+ask|ext|tfvars|*.tfvars
+ask|file-only|token|
+ask|file-only|key|
+ask|file-only|password|
+ask|file-only|secret|
+TABLE
+)
+
+# file_globs <kind> <name> -> settings.json に並ぶべき Read()/Edit() の中身 (1 行 1 件)
+file_globs() {
+  case "$1" in
+    key) printf '%s\n' "$2*" "~/.ssh/$2*" ;;
+    ext) printf '%s\n' "**/*.$2" ;;
+    dotenv) printf '%s\n' "$2*" "**/$2*" ;;
+    dir) printf '%s\n' "**/$2/**" ;;
+    home-dir) printf '%s\n' "~/$2/**" ;;
+    home-file) printf '%s\n' "~/$2" ;;
+    file-only) printf '%s\n' "**/*$2*" ;;
+    *) printf 'unknown kind: %s\n' "$1" >&2; return 1 ;;
+  esac
+}
+
+# expected_file_rules <tier> -> 表から展開した Read()/Edit() ルール (ソート済み)
+expected_file_rules() {
+  local tier kind name tokens tool g
+  while IFS='|' read -r tier kind name tokens; do
+    [ "$tier" = "$1" ] || continue
+    for tool in Read Edit; do
+      file_globs "$kind" "$name" | while IFS= read -r g; do
+        printf '%s(%s)\n' "$tool" "$g"
+      done
+    done
+  done <<<"$SENSITIVE_PATHS" | sort
+}
+
+# actual_file_rules <tier> -> settings.json の permissions.<tier> にある Read()/Edit() (ソート済み)
+actual_file_rules() {
+  jq -r --arg t "$1" '.permissions[$t][] | select(test("^(Read|Edit)\\("))' "$SETTINGS" 2>/dev/null | sort
+}
+
+# check_file_rules <tier> — 完全一致。settings.json に直接足したルールも失敗にする
+check_file_rules() {
+  local d
+  d=$(diff <(expected_file_rules "$1") <(actual_file_rules "$1"))
+  if [ -z "$d" ]; then
+    pass=$((pass + 1))
+  else
+    fail=$((fail + 1))
+    printf 'FAIL  settings.json %s の Read()/Edit() が表と一致しない (< 表のみ / > settings.json のみ)\n%s\n' "$1" "$d"
+  fi
+}
+
+check_file_rules deny
+check_file_rules ask
+
+# reason <command> -> validator の permissionDecisionReason (判定なしなら空)
+reason() {
+  "$HOOK_BASH" "$HOOK" <<<"$(jq -nc --arg c "$1" '{tool_name: "Bash", tool_input: {command: $c}}')" |
+    jq -r '.hookSpecificOutput.permissionDecisionReason // empty' 2>/dev/null
+}
+
+# check_contains <label> <haystack> <needle>
+check_contains() {
+  case "$2" in
+    *"$3"*) pass=$((pass + 1)) ;;
+    *)
+      fail=$((fail + 1))
+      printf 'FAIL  %s に %s が含まれない\n' "$1" "$3"
+      ;;
+  esac
+}
+
+deny_reason=$(reason 'cat ~/.ssh/id_rsa')
+ask_reason=$(reason 'cat .env')
+
+# 表の各行を validator に流す。正例に加え、kind の除外と意図的な非対称も固定する
+while IFS='|' read -r tier kind name tokens; do
+  case "$kind" in
+    key)
+      check "$tier" "cat ~/.ssh/$name"
+      # 公開鍵は除外 (settings.json は N* なので .pub も deny)
+      check allow "cat ~/.ssh/$name.pub"
+      ;;
+    ext)
+      # cwd の外も拾う (settings.json の相対パターンは cwd 以下のみ)
+      check "$tier" "cat /tmp/x.$name"
+      ;;
+    dotenv)
+      check "$tier" "cat app/$name"
+      check "$tier" "cat app/${name}rc"
+      # テンプレートは除外 (settings.json は .env* なので ask)
+      check allow "cat app/$name.example"
+      ;;
+    dir)
+      check "$tier" "cat proj/$name/x"
+      ;;
+    home-dir)
+      check "$tier" "ls ~/$name"
+      # home の外も拾う (settings.json は ~/ 配下のみ)
+      check "$tier" "ls proj/$name/"
+      ;;
+    home-file)
+      check "$tier" "cat ~/$name"
+      check "$tier" "cat proj/$name"
+      ;;
+    file-only)
+      # validator は拾わない (Bash では false positive 過多)
+      check allow "cat notes/api_$name.txt"
+      ;;
+    *)
+      fail=$((fail + 1))
+      printf 'FAIL  unknown kind: %s\n' "$kind"
+      ;;
+  esac
+  [ -n "$tokens" ] || continue
+  if [ "$tier" = deny ]; then msg=$deny_reason; else msg=$ask_reason; fi
+  read -r -a toks <<<"$tokens"
+  for t in "${toks[@]}"; do
+    check_contains "rule ($tier) のメッセージ" "$msg" "$t"
+  done
+done <<<"$SENSITIVE_PATHS"
 
 # --- rule 0: 実行されないテキスト領域の除去 ---
 # 事故: PR 本文を heredoc で書き、その中で Dockerfile の `rm -rf /var/lib/apt/lists/*` を
