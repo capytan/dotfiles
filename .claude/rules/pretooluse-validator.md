@@ -33,6 +33,22 @@ bash が double quote 内 / unquoted heredoc 本文で**実行**を起こせる�
 
 `echo` / `printf` / `git commit|log|…` で始まるコマンドは rules 8/9 を飛ばすが、これも「実行されないテキスト」が前提なので `_is_inert_text` を AND する。無条件だと `echo "$(cat <秘密鍵>)"` が素通りする。
 
+## 機密パス方針 (rules 8/9 と settings.json)
+
+対象パスの正は `test-pretooluse-validate-command.sh` の `SENSITIVE_PATHS` 表 (1 行 = `tier|kind|name|表示トークン`)。テストが 3 つを照合する: settings.json の deny/ask にある `Read(`/`Edit(` エントリとの完全一致、kind ごとの代表コマンドに対する rules 8/9 の判定、deny/ask メッセージへの表示トークンの包含。パスを足すときは表に 1 行足してテストを落とし、落ちた箇所を直す。
+
+生成ではなく照合にしたのは、validator が fail-open だから。表を runtime に読ませると、読めなかったときに鍵の deny が黙って消える。settings.json は `~/.claude/` への symlink 先そのもので、生成物にすると生成忘れがそのまま食い違いになる。
+
+意図的な非対称は kind の定義に置き、テストで振る舞いを固定している:
+
+- `key`: validator は `.pub` を除外、settings.json は `N*` なので `.pub` も deny。file tool が厳しい側に倒れているだけ。negation (`Read(!...)`) は `~/.ssh/...` のような anchored ルールから除外できないので揃えきれない
+- `dotenv`: validator はテンプレート (`.example` 等) を除外、settings.json は `.env*` で ask
+- `ext` / `key`: validator は cwd の内外を問わず拾う。settings.json の相対パターンは gitignore 意味論で cwd 以下にしか効かない。home 配下の鍵は `~/.ssh/...` で個別に塞いでいる
+- `home-dir` / `home-file`: validator は場所を問わず拾い、settings.json は `~/` 配下だけ。Bash の文字列からは `~` / `$HOME` / 絶対パスを区別できないので、validator は場所を問わないしかない
+- `file-only` (`*key*` 等): settings.json だけ。Bash では false positive が多すぎるので validator は拾わない
+
+settings.json には意味の重複する行 (`.env*` と `**/.env*`、deny 側の `Edit()`) が残っており、表は現状をそのまま記述している。整理するときは kind の定義ごと変える。
+
 ## 残る既知の false positive
 
 `git` / `gh` 以外のコマンドのフラグ値に危険な literal を書くと deny される（`printf '%s' 'git push --force'` 等）。これは意図的なトレードオフ。回避は heredoc (`cat <<'EOF'`) かファイル経由。
