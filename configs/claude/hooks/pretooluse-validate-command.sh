@@ -255,6 +255,8 @@ fi
 # 秘密ファイル系の path 検知は settings.json の Read()/Edit() ルールと対称に 2 段階で扱う:
 #   鍵・証明書 (実体が必ず秘匿) は deny、機微ファイル (中身次第) は ask。
 #   Read()/Edit() permission は Bash 経由の cat/head 等に効かないため、ここで具体パスを拾う。
+#   対象パスの一覧は test-pretooluse-validate-command.sh の SENSITIVE_PATHS 表が正。
+#   ここの regex・メッセージと settings.json はテストで表と照合されるので、追加・削除は表の 1 行から始める
 #
 # 設計方針 (rules 1-7 とは異なる):
 # - パターンはコマンド全体に match させる ([^|;&`]* segment 境界を張らない)。
