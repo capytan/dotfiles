@@ -212,6 +212,73 @@ check_file_rules() {
 check_file_rules deny
 check_file_rules ask
 
+# reason <command> -> validator の permissionDecisionReason (判定なしなら空)
+reason() {
+  "$HOOK_BASH" "$HOOK" <<<"$(jq -nc --arg c "$1" '{tool_name: "Bash", tool_input: {command: $c}}')" |
+    jq -r '.hookSpecificOutput.permissionDecisionReason // empty' 2>/dev/null
+}
+
+# check_contains <label> <haystack> <needle>
+check_contains() {
+  case "$2" in
+    *"$3"*) pass=$((pass + 1)) ;;
+    *)
+      fail=$((fail + 1))
+      printf 'FAIL  %s に %s が含まれない\n' "$1" "$3"
+      ;;
+  esac
+}
+
+deny_reason=$(reason 'cat ~/.ssh/id_rsa')
+ask_reason=$(reason 'cat .env')
+
+# 表の各行を validator に流す。正例に加え、kind の除外と意図的な非対称も固定する
+while IFS='|' read -r tier kind name tokens; do
+  case "$kind" in
+    key)
+      check "$tier" "cat ~/.ssh/$name"
+      # 公開鍵は除外 (settings.json は N* なので .pub も deny)
+      check allow "cat ~/.ssh/$name.pub"
+      ;;
+    ext)
+      # cwd の外も拾う (settings.json の相対パターンは cwd 以下のみ)
+      check "$tier" "cat /tmp/x.$name"
+      ;;
+    dotenv)
+      check "$tier" "cat app/$name"
+      check "$tier" "cat app/${name}rc"
+      # テンプレートは除外 (settings.json は .env* なので ask)
+      check allow "cat app/$name.example"
+      ;;
+    dir)
+      check "$tier" "cat proj/$name/x"
+      ;;
+    home-dir)
+      check "$tier" "ls ~/$name"
+      # home の外も拾う (settings.json は ~/ 配下のみ)
+      check "$tier" "ls proj/$name/"
+      ;;
+    home-file)
+      check "$tier" "cat ~/$name"
+      check "$tier" "cat proj/$name"
+      ;;
+    file-only)
+      # validator は拾わない (Bash では false positive 過多)
+      check allow "cat notes/api_$name.txt"
+      ;;
+    *)
+      fail=$((fail + 1))
+      printf 'FAIL  unknown kind: %s\n' "$kind"
+      ;;
+  esac
+  [ -n "$tokens" ] || continue
+  if [ "$tier" = deny ]; then msg=$deny_reason; else msg=$ask_reason; fi
+  read -r -a toks <<<"$tokens"
+  for t in "${toks[@]}"; do
+    check_contains "rule ($tier) のメッセージ" "$msg" "$t"
+  done
+done <<<"$SENSITIVE_PATHS"
+
 # --- rule 0: 実行されないテキスト領域の除去 ---
 # 事故: PR 本文を heredoc で書き、その中で Dockerfile の `rm -rf /var/lib/apt/lists/*` を
 #       引用しただけで rule 5 が deny した。実害ゼロの deny はゲートへの信頼を下げ、
