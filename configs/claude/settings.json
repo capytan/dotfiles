@@ -395,13 +395,20 @@
     "hookify@claude-plugins-official": true,
     "codex@openai-codex": true,
     "claude-code-setup@claude-plugins-official": true,
-    "aws-core@claude-plugins-official": true
+    "aws-core@claude-plugins-official": true,
+    "explainer@explainer": true
   },
   "extraKnownMarketplaces": {
     "openai-codex": {
       "source": {
         "source": "github",
         "repo": "openai/codex-plugin-cc"
+      }
+    },
+    "explainer": {
+      "source": {
+        "source": "github",
+        "repo": "mizchi/explainer"
       }
     }
   },
