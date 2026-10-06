@@ -8,6 +8,7 @@
 - One model per session: the default is `opus[1m]` (Opus 5.5 at its `medium` default); for heavy design or investigation work the user starts the session on `fable` and stays on it through execution. Don't propose a mid-session `/model` switch — each model has its own prompt cache, so switching re-reads the whole conversation both ways. Suggesting `/effort` is fine: on Opus 5.5 and Fable 5.1 an effort change keeps the cache (e.g. `/effort medium` when Fable turns run longer than the task warrants)
 - Custom agents/skills live in `~/.claude/agents/` and `~/.claude/skills/` — glob before creating new ones (dotfiles source: `~/dotfiles/configs/claude/{agents,skills,hooks}/`, all symlinked into `~/.claude/`). Path-scoped rules live in the repo-local `~/dotfiles/.claude/rules/` (not symlinked into `~/.claude/`)
 - Skills with `metadata:` in their frontmatter are gh-managed; upstream is the source of truth and `gh skill update` overwrites them, so don't hand-edit them. Refresh with `gh skill update --all` (without `--all` it prompts for a source repo for each hand-crafted skill)
+- In `grilling` sessions (incl. `/grill-me`, `/grill-with-docs`), ask one question per `AskUserQuestion` call and wait for the answer — overrides the skill's "ask the whole frontier in one round"
 - Don't use `git -C <path>` when cwd already matches — use plain `git <subcommand>` so existing permission rules match and Ask prompts don't fire. `-C` only when the target path genuinely differs from cwd (submodule, sibling repo, etc.)
 
 ## Scope of changes
