@@ -18,7 +18,8 @@ Three layers — do not mix:
 
 ```bash
 ./install.sh                              # Setup (idempotent, creates symlinks)
-source ~/.zshrc                           # Reload shell
+source ~/.zshrc                           # Reload shell (not from agent Bash)
+zsh -i -c exit                            # Check zsh startup for errors (agent-safe)
 herdr server reload-config                # Reload herdr config.toml in the running server
 ./configs/claude/setup-claude.sh          # Setup Claude Code symlinks
 
