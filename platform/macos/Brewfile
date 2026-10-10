@@ -43,7 +43,6 @@ brew "zsh"
 brew "bash"
 
 # AWS & Cloud
-brew "aws/tap/copilot-cli"
 brew "circleci"
 
 # Programming Languages & Tools
