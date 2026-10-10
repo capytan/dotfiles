@@ -44,6 +44,8 @@ brew "bash"
 
 # AWS & Cloud
 brew "circleci"
+brew "fujiwara/tap/lambroll"
+brew "fujiwara/tap/tfstate-lookup"
 
 # Programming Languages & Tools
 brew "python"
@@ -70,6 +72,7 @@ brew "kind"
 brew "hugo"
 brew "mkcert"
 brew "protobuf"
+brew "supabase/tap/supabase"
 
 # Media & Audio
 brew "ffmpeg"
