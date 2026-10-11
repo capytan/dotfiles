@@ -3,9 +3,9 @@ description: A relentless interview to sharpen a plan or design.
 disable-model-invocation: true
 metadata:
     github-path: skills/productivity/grill-me
-    github-ref: refs/tags/v1.2.3
+    github-ref: refs/tags/v1.3.1
     github-repo: https://github.com/mattpocock/skills
-    github-tree-sha: c817f6f36acd483294144694a935a76d3e3eb101
+    github-tree-sha: 3df14e2d3a89459bf300614be9247e3ce74798f8
 name: grill-me
 ---
-Run a `/grilling` session.
+Call the Skill tool with "grilling".
