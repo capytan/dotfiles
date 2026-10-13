@@ -3,7 +3,6 @@
   "respectGitignore": true,
   "cleanupPeriodDays": 365,
   "env": {
-    "MAX_THINKING_TOKENS": "31999",
     "DISABLE_MICROCOMPACT": "1",
     "DISABLE_AUTOUPDATER": "1",
     "DISABLE_TELEMETRY": "1",
@@ -72,21 +71,7 @@
       "Bash(grep *)",
       "Bash(rg *)",
       "Bash(ag *)",
-      "Bash(node *)",
-      "Bash(npm install *)",
-      "Bash(npm run *)",
-      "Bash(npm test *)",
       "Bash(npm list *)",
-      "Bash(npx *)",
-      "Bash(yarn *)",
-      "Bash(pnpm *)",
-      "Bash(python *)",
-      "Bash(python3 *)",
-      "Bash(pip *)",
-      "Bash(pytest *)",
-      "Bash(uv *)",
-      "Bash(poetry *)",
-      "Bash(pipenv *)",
       "Bash(eslint *)",
       "Bash(prettier *)",
       "Bash(black *)",
@@ -94,16 +79,6 @@
       "Bash(flake8 *)",
       "Bash(mypy *)",
       "Bash(pre-commit *)",
-      "Bash(make *)",
-      "Bash(cmake *)",
-      "Bash(cargo *)",
-      "Bash(go *)",
-      "Bash(jest *)",
-      "Bash(vitest *)",
-      "Bash(mocha *)",
-      "Bash(docker build *)",
-      "Bash(docker compose *)",
-      "Bash(docker run *)",
       "Bash(docker ps *)",
       "Bash(docker images *)",
       "Bash(terraform fmt *)",
@@ -127,8 +102,6 @@
       "Bash(df *)",
       "Bash(du *)",
       "Bash(lsof *)",
-      "Bash(env)",
-      "Bash(printenv *)",
       "Bash(whoami)",
       "Bash(uname *)",
       "Bash(hostname)",
@@ -224,6 +197,16 @@
       "Bash(git -C * merge *)",
       "Bash(git -C * rebase *)",
       "Bash(git -C * reset *)",
+      "Bash(git checkout -- *)",
+      "Bash(git restore *)",
+      "Bash(git stash drop*)",
+      "Bash(git stash clear*)",
+      "Bash(git branch -D *)",
+      "Bash(git branch -d *)",
+      "Bash(git branch --delete *)",
+      "Bash(gh workflow run *)",
+      "Bash(gh workflow disable *)",
+      "Bash(dangerouslyDisableSandbox:true)",
       "Bash(npm publish *)",
       "Bash(pip upload *)",
       "Bash(cargo publish *)",
@@ -298,7 +281,46 @@
       "mcp__*__drop*",
       "mcp__*__truncate*"
     ],
-    "defaultMode": "auto"
+    "defaultMode": "auto",
+    "additionalDirectories": [
+      "~/ghq",
+      "~/dev"
+    ]
+  },
+  "sandbox": {
+    "enabled": true,
+    "excludedCommands": [
+      "docker *",
+      "gh *",
+      "terraform *",
+      "npm *",
+      "npx *",
+      "pnpm *",
+      "yarn *",
+      "git push *"
+    ],
+    "filesystem": {
+      "allowWrite": [
+        "~/Library/Caches/mise"
+      ]
+    },
+    "network": {
+      "allowLocalBinding": true,
+      "allowedDomains": [
+        "github.com",
+        "api.github.com",
+        "objects.githubusercontent.com",
+        "codeload.github.com",
+        "registry.npmjs.org",
+        "pypi.org",
+        "files.pythonhosted.org",
+        "proxy.golang.org",
+        "sum.golang.org",
+        "crates.io",
+        "static.crates.io",
+        "index.crates.io"
+      ]
+    }
   },
   "model": "opus[1m]",
   "enableAllProjectMcpServers": false,
@@ -523,7 +545,6 @@
       "意識をクラウドにアップロードしています"
     ]
   },
-  "alwaysThinkingEnabled": true,
   "advisorModel": "fable",
   "showClearContextOnPlanAccept": true,
   "tui": "fullscreen",
@@ -531,9 +552,5 @@
   "skipWorkflowUsageWarning": true,
   "showTurnDuration": true,
   "teammateMode": "auto",
-  "skipAutoPermissionPrompt": true,
-  "additionalDirectories": [
-    "~/ghq",
-    "~/dev"
-  ]
+  "skipAutoPermissionPrompt": true
 }
