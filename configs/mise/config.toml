@@ -5,12 +5,12 @@ biome = "2.5.10"
 deno = "2.9.5"
 pre-commit = "4.6.2"
 python = "3.14.6"
-ruby = "4.0.5"
-terraform = "1.15.9"
+ruby = "4.0.7"
+terraform = "1.16.5"
 tflint = "0.64.0"
-trivy = "0.74.0"
-gcloud = "582.0.0"
-azure-cli = "2.90.0"
+trivy = "0.75.0"
+gcloud = "588.0.0"
+azure-cli = { version = "2.91.0", dependency_prereleases = "allow", with = ["pip"] }
 bun = "1.4.0"
 
 [settings]
