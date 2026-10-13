@@ -288,7 +288,7 @@
     ]
   },
   "sandbox": {
-    "enabled": true,
+    "enabled": false,
     "excludedCommands": [
       "docker *",
       "gh *",
