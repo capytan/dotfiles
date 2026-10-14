@@ -185,8 +185,6 @@
       "Bash(kill *)",
       "Bash(pkill *)",
       "Bash(killall *)",
-      "Bash(rm *)",
-      "Bash(rmdir *)",
       "Bash(git push *)",
       "Bash(git push --force *)",
       "Bash(git rebase *)",
