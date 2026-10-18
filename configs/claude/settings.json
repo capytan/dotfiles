@@ -284,42 +284,7 @@
       "~/dev"
     ]
   },
-  "sandbox": {
-    "enabled": false,
-    "excludedCommands": [
-      "docker *",
-      "gh *",
-      "terraform *",
-      "npm *",
-      "npx *",
-      "pnpm *",
-      "yarn *",
-      "git push *"
-    ],
-    "filesystem": {
-      "allowWrite": [
-        "~/Library/Caches/mise"
-      ]
-    },
-    "network": {
-      "allowLocalBinding": true,
-      "allowedDomains": [
-        "github.com",
-        "api.github.com",
-        "objects.githubusercontent.com",
-        "codeload.github.com",
-        "registry.npmjs.org",
-        "pypi.org",
-        "files.pythonhosted.org",
-        "proxy.golang.org",
-        "sum.golang.org",
-        "crates.io",
-        "static.crates.io",
-        "index.crates.io"
-      ]
-    }
-  },
-  "model": "opus[1m]",
+  "model": "opus",
   "enableAllProjectMcpServers": false,
   "enabledMcpjsonServers": [],
   "hooks": {
@@ -432,6 +397,41 @@
     }
   },
   "language": "ja",
+  "sandbox": {
+    "enabled": false,
+    "network": {
+      "allowedDomains": [
+        "github.com",
+        "api.github.com",
+        "objects.githubusercontent.com",
+        "codeload.github.com",
+        "registry.npmjs.org",
+        "pypi.org",
+        "files.pythonhosted.org",
+        "proxy.golang.org",
+        "sum.golang.org",
+        "crates.io",
+        "static.crates.io",
+        "index.crates.io"
+      ],
+      "allowLocalBinding": true
+    },
+    "filesystem": {
+      "allowWrite": [
+        "~/Library/Caches/mise"
+      ]
+    },
+    "excludedCommands": [
+      "docker *",
+      "gh *",
+      "terraform *",
+      "npm *",
+      "npx *",
+      "pnpm *",
+      "yarn *",
+      "git push *"
+    ]
+  },
   "spinnerVerbs": {
     "mode": "replace",
     "verbs": [
