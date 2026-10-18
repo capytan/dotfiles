@@ -3,10 +3,9 @@ description: A relentless interview to sharpen a plan or design, which also crea
 disable-model-invocation: true
 metadata:
     github-path: skills/engineering/grill-with-docs
-    github-pinned: v1.2.3
-    github-ref: refs/tags/v1.2.3
+    github-ref: refs/tags/v1.3.1
     github-repo: https://github.com/mattpocock/skills
-    github-tree-sha: 5fdcdeedf2d0c73b3ecb1da0a464dd885590f8d6
+    github-tree-sha: eedaf2562c83155115e9c649fa3ecaac2e10e81d
 name: grill-with-docs
 ---
-Run a `/grilling` session, using the `/domain-modeling` skill.
+Call the Skill tool twice, for "grilling" and "domain-modeling".
