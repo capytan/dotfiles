@@ -36,7 +36,7 @@ uv・mise・Homebrew で入れたツールを更新する前に、次の 4 つ�
 | mise のインストール経路 | 今は `~/.local/bin/mise`（standalone）。brew 経由だと `mise self-update` は使えない | 手順 1 で経路を判定して分岐する |
 | mise の検証設定 | aqua の cosign/slsa/github_attestations/minisign、github の attestations/slsa、`node.verify` が有効 | mise ツールの署名は mise がインストール時に検証する。表には「mise が検証」と書く |
 | mise config | `~/.config/mise/config.toml` は `~/dotfiles/configs/mise/config.toml` への symlink。全ツールを完全な版で固定している | `mise outdated` は `--bump` を付けないと何も出ない。書き込みは `mise use -g` で行い、dotfiles に commit する |
-| uv tool の Python | mise の Python（例 `~/.local/share/mise/installs/python/3.13.3`）で入れた uv tool は、その Python が消えると "environment not found" で壊れる | uv tool は `--managed-python` を付けて uv が管理する Python で入れ、mise の Python から切り離す。参照先は `$(uv tool dir)/X/pyvenv.cfg` の `home` で分かる |
+| uv tool の Python | mise の Python（例 `~/.local/share/mise/installs/python/3.13.3`）で入れた uv tool は、その Python が消えると "environment not found" で壊れる | uv tool は `--managed-python --python 3.14` を付けて uv が管理する安定版の Python で入れ、mise の Python から切り離す。参照先は `$(uv tool dir)/X/pyvenv.cfg` の `home` で分かる |
 
 ## 版の上げ方のルール
 
@@ -233,15 +233,29 @@ gh api 'repos/<o>/<r>/compare/<cur>...<new>?per_page=100' --paginate --jq '.file
 | mise ツール | `mise use -g <tool>@<version>`（ツールごと。config の版も書き換わる） |
 | brew formula | `HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_VERIFY_ATTESTATIONS=1 brew upgrade --formula <names>` |
 | brew cask | `HOMEBREW_NO_AUTO_UPDATE=1 brew upgrade --cask <names>` |
-| uv tool（メジャー内の更新） | `uv tool upgrade <name> --managed-python --exclude-newer "7 days"` |
-| uv tool（メジャー内に固定したい） | `uv tool install '<name>>=<cur>,<<next_major>' --managed-python --exclude-newer "7 days"` |
-| 壊れた uv tool、印 `mise の Python` の uv tool | `uv tool install <name> --reinstall --managed-python --exclude-newer "7 days"`。receipt に index があれば `--default-index <url>` を付ける。メジャー跨ぎを避けるなら上の範囲指定を使う |
+| uv tool の前準備（安定版の Python） | 下の「uv tool の Python をそろえる」を参照 |
+| uv tool（メジャー内の更新） | `uv tool upgrade <name> --managed-python --python 3.14 --exclude-newer "7 days"` |
+| uv tool（メジャー内に固定したい） | `uv tool install '<name>>=<cur>,<<next_major>' --managed-python --python 3.14 --exclude-newer "7 days"` |
+| 壊れた uv tool、印 `mise の Python` の uv tool | `uv tool install <name> --reinstall --managed-python --python 3.14 --exclude-newer "7 days"`。receipt に index があれば `--default-index <url>` を付ける。メジャー跨ぎを避けるなら上の範囲指定を使う |
 
 - uv tool は `uv`（safe-chain 経由）で呼ぶ。`command uv` にしない
-- `--managed-python` は uv が管理する Python だけを使い、mise の Python を使わない。条件に合う Python が入っていなければ uv が取得する。実行後に `$(uv tool dir)/<name>/pyvenv.cfg` の `home` が `$(command uv python dir)` の下になったことを確かめる
+- `--managed-python` は uv が管理する Python だけを使い、mise の Python を使わない。実行後に `$(uv tool dir)/<name>/pyvenv.cfg` の `home` が `$(command uv python dir)` の下の安定版（alpha・beta・rc でない）になったことを確かめる
+
+#### uv tool の Python をそろえる
+
+uv は条件に合う pre-release（例 `cpython-3.14.0a6`）が入っていると、安定版を取りに行かずにそれを使う（uv のドキュメント「Python versions」）。`uv python install 3.14` も、条件に合う版が入っていれば何もせずに終わる。だから uv tool を入れる前に、安定版を版まで指定して入れる。
+
+```bash
+command uv python list 3.14 --managed-python        # 入っている版と、取得できる安定版（<download available>）を見る
+command uv python find 3.14 --managed-python        # 今 3.14 で選ばれる版
+```
+
+- `find` が pre-release を返したら、`list` に出る最新の安定版を `uv python install 3.14.<patch>` で入れる（この操作も承認の範囲に入れる）。入れたあと `find` が安定版を返すことを確かめる。安定版と pre-release が両方あれば、uv は安定版を選ぶ
+- `find` が安定版を返すなら、前準備は要らない
 - mise の Python を参照したままの tool には `uv tool upgrade` を使わず、`--reinstall` で入れ直す（環境を作り直して参照先を切り替えるため）
 - `--exclude-newer "7 days"` は推移依存にも効く。推移依存の個別確認はしない
-- mise ツールの推移依存（npm・pypi backend）も個別確認はしない
+- mise の `npm:` と `pypi:` backend の推移依存は、mise の `minimum_release_age`（config の tool option で `7d`）で守る。個別確認はしない。npm: は mise 内蔵の aube が、pypi: は uv の `--exclude-newer` が依存の解決にこの cutoff をかける（mise の公式ドキュメント）。ツール本体の固定版には効かないので、本体は手順 1〜3 で確かめる
+- `mise use -g` は tool option（`minimum_release_age`、azure-cli の `dependency_prereleases`・`with`）を残したまま `version` だけを書き換える。commit 前に `git -C ~/dotfiles diff configs/mise/config.toml` で、変わったのが版だけであることを確かめる
 
 ### 手順 5: mise config の commit と報告
 
