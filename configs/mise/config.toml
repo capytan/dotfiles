@@ -1,6 +1,6 @@
 [tools]
 node = "24.22.0"
-"npm:@devcontainers/cli" = "0.89.0"
+"npm:@devcontainers/cli" = { version = "0.89.0", minimum_release_age = "7d" }
 biome = "2.5.15"
 deno = "2.9.7"
 pre-commit = "4.7.0"
@@ -10,7 +10,7 @@ terraform = "1.16.6"
 tflint = "0.64.0"
 trivy = "0.76.0"
 gcloud = "589.0.0"
-azure-cli = { version = "2.91.0", dependency_prereleases = "allow", with = ["pip"] }
+azure-cli = { version = "2.91.0", dependency_prereleases = "allow", with = ["pip"], minimum_release_age = "7d" }
 bun = "1.4.3"
 
 [settings]
