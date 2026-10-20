@@ -36,7 +36,7 @@ uv・mise・Homebrew で入れたツールを更新する前に、次の 4 つ�
 | mise のインストール経路 | 今は `~/.local/bin/mise`（standalone）。brew 経由だと `mise self-update` は使えない | 手順 1 で経路を判定して分岐する |
 | mise の検証設定 | aqua の cosign/slsa/github_attestations/minisign、github の attestations/slsa、`node.verify` が有効 | mise ツールの署名は mise がインストール時に検証する。表には「mise が検証」と書く |
 | mise config | `~/.config/mise/config.toml` は `~/dotfiles/configs/mise/config.toml` への symlink。全ツールを完全な版で固定している | `mise outdated` は `--bump` を付けないと何も出ない。書き込みは `mise use -g` で行い、dotfiles に commit する |
-| uv tool の Python | uv tool の venv は mise の Python（例 `~/.local/share/mise/installs/python/3.13.3`）を指している | mise の Python が消えると uv tool が "environment not found" で壊れる。手順 4 の順序に反映する |
+| uv tool の Python | mise の Python（例 `~/.local/share/mise/installs/python/3.13.3`）で入れた uv tool は、その Python が消えると "environment not found" で壊れる | uv tool は `--managed-python` を付けて uv が管理する Python で入れ、mise の Python から切り離す。参照先は `$(uv tool dir)/X/pyvenv.cfg` の `home` で分かる |
 
 ## 版の上げ方のルール
 
@@ -45,6 +45,7 @@ uv・mise・Homebrew で入れたツールを更新する前に、次の 4 つ�
 | 見送り日数 | 公開から 7 日未満の版は候補にしない。7 日以上の版のうち最新を候補にする |
 | 修正版の例外 | 現行版に advisory があり、修正版が 7 日未満なら、候補に残して表で目立たせ（印 `要判断`）、承認時に個別に決める |
 | mise | メジャー内に留める。python・ruby は minor もメジャー扱いで patch のみ。0.x 系は先頭番号（`0`）だけをメジャーと見なし、minor も上げる |
+| mise の例外: gcloud | 版ごとにメジャー番号が上がる（`588.0.0` → `589.0.0`）ので、メジャー内のルールを外して最新まで上げる。7 日ルールと侵害確認はほかと同じにかける |
 | brew・uv tool | メジャー跨ぎは表で印（`メジャー跨ぎ`）を付け、既定は除外。承認時に選べるようにする。0.x の扱いは mise と同じ |
 | 候補の条件 | 候補は現在の版より新しいこと。7 日ルールで選んだ版が現在以下なら「候補なし」 |
 | cask・formula | brew は最新版しか入れられない。最新が 7 日未満なら古い版に下げる手段はないので見送る |
@@ -74,6 +75,7 @@ command uv tool dir
 
 - `warning: Tool \`X\` environment not found` が出た tool は「壊れている」として候補に入れる。今の版は `$(uv tool dir)/X/lib/python*/site-packages/` の `*.dist-info` 名から、使っている index は `$(uv tool dir)/X/uv-receipt.toml` の `[tool.options]` から読む
 - 候補版は PyPI の公開日で決める（`--outdated` は 7 日未満の版も出すため）
+- `$(uv tool dir)/X/pyvenv.cfg` の `home` が uv の Python（`$(command uv python dir)` の下）でない tool は、印 `mise の Python` を付けて表に出す。手順 4 で `--managed-python` を付けて入れ直す
 
 ```bash
 curl -s https://pypi.org/pypi/<name>/json | jq -r '.releases | to_entries | map(select(.value|length>0) | {v:.key, t:(.value|map(.upload_time_iso_8601)|min)}) | sort_by(.t) | .[-5:][] | "\(.v) \(.t)"'
@@ -103,10 +105,11 @@ mise outdated --global --bump -J
 mise latest node@24 --minimum-release-age 7d      # メジャー内（node 24.x）
 mise latest python@3.14 --minimum-release-age 7d  # python・ruby は minor 内
 mise latest tflint@0 --minimum-release-age 7d     # 0.x は先頭番号の 0 内
+mise latest gcloud --minimum-release-age 7d       # gcloud は例外で範囲を付けない
 mise ls-remote node@24 -J | jq -r '.[-5:][] | "\(.version) \(.created_at)"'   # 公開日の確認
 ```
 
-`--minimum-release-age` は範囲指定にだけ効き、固定版の `--bump` には効かない。だから `mise upgrade --bump` は使わず、上で選んだ版を手順 4 で `mise use -g` に渡す。`bump` 列がメジャーを跨ぐものは「メジャー跨ぎ、対象外」として表に参考で載せる。
+`--minimum-release-age` は範囲指定にだけ効き、固定版の `--bump` には効かない。だから `mise upgrade --bump` は使わず、上で選んだ版を手順 4 で `mise use -g` に渡す。`bump` 列がメジャーを跨ぐものは「メジャー跨ぎ、対象外」として表に参考で載せる（gcloud は除く）。
 
 #### Homebrew
 
@@ -220,7 +223,7 @@ gh api 'repos/<o>/<r>/compare/<cur>...<new>?per_page=100' --paginate --jq '.file
 
 順序と失敗時の扱い:
 - uv 本体 → mise 本体 → mise ツール → brew → uv tool の順に 1 つずつ実行する
-- uv tool を最後にするのは、mise の Python 更新で venv の参照先が変わるため。python を更新したら、手順 1 の uv tool の一覧を取り直し、壊れたものを表に足して承認を取り直す
+- uv tool を最後にするのは、mise の Python を参照したままの tool が mise の更新で壊れることがあるため。mise の python を更新したら、手順 1 の uv tool の一覧を取り直し、壊れたものを表に足して承認を取り直す
 - どれかが失敗したら、その場で止めて報告する。残りは実行しない
 
 | 対象 | コマンド |
@@ -230,11 +233,13 @@ gh api 'repos/<o>/<r>/compare/<cur>...<new>?per_page=100' --paginate --jq '.file
 | mise ツール | `mise use -g <tool>@<version>`（ツールごと。config の版も書き換わる） |
 | brew formula | `HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_VERIFY_ATTESTATIONS=1 brew upgrade --formula <names>` |
 | brew cask | `HOMEBREW_NO_AUTO_UPDATE=1 brew upgrade --cask <names>` |
-| uv tool（メジャー内の更新） | `uv tool upgrade <name> --exclude-newer "7 days"` |
-| uv tool（メジャー内に固定したい） | `uv tool install '<name>>=<cur>,<<next_major>' --exclude-newer "7 days"` |
-| 壊れた uv tool | `uv tool install <name> --reinstall --exclude-newer "7 days"`。receipt に index があれば `--default-index <url>` を付ける。メジャー跨ぎを避けるなら上の範囲指定を使う |
+| uv tool（メジャー内の更新） | `uv tool upgrade <name> --managed-python --exclude-newer "7 days"` |
+| uv tool（メジャー内に固定したい） | `uv tool install '<name>>=<cur>,<<next_major>' --managed-python --exclude-newer "7 days"` |
+| 壊れた uv tool、印 `mise の Python` の uv tool | `uv tool install <name> --reinstall --managed-python --exclude-newer "7 days"`。receipt に index があれば `--default-index <url>` を付ける。メジャー跨ぎを避けるなら上の範囲指定を使う |
 
 - uv tool は `uv`（safe-chain 経由）で呼ぶ。`command uv` にしない
+- `--managed-python` は uv が管理する Python だけを使い、mise の Python を使わない。条件に合う Python が入っていなければ uv が取得する。実行後に `$(uv tool dir)/<name>/pyvenv.cfg` の `home` が `$(command uv python dir)` の下になったことを確かめる
+- mise の Python を参照したままの tool には `uv tool upgrade` を使わず、`--reinstall` で入れ直す（環境を作り直して参照先を切り替えるため）
 - `--exclude-newer "7 days"` は推移依存にも効く。推移依存の個別確認はしない
 - mise ツールの推移依存（npm・pypi backend）も個別確認はしない
 
