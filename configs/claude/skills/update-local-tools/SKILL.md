@@ -10,7 +10,7 @@ allowed-tools: Bash, Read, WebSearch, WebFetch, AskUserQuestion, Agent
 
 uv・mise・Homebrew で入れたツールを更新する前に、次の 4 つを候補ごとに確かめる。
 
-- 公開直後の版を避ける（公開から 7 日未満は見送り）
+- 公開直後の版を避ける（公開から 168 時間未満は見送り。以下「7 日ルール」）
 - 侵害報道と advisory を調べる
 - 署名・attestation・checksum を検証する
 - 差分コードの危険箇所を見る
@@ -42,19 +42,23 @@ uv・mise・Homebrew で入れたツールを更新する前に、次の 4 つ�
 
 | 対象 | ルール |
 |---|---|
-| 見送り日数 | 公開から 7 日未満の版は候補にしない。7 日以上の版のうち最新を候補にする |
-| 修正版の例外 | 現行版に advisory があり、修正版が 7 日未満なら、候補に残して表で目立たせ（印 `要判断`）、承認時に個別に決める |
+| 見送り日数 | 公開時刻から今までの経過を時間単位で計算し、168 時間（7 日）未満の版は候補にしない。168 時間以上の版のうち最新を候補にする。日付の差で数えない（10-13 15:38Z 公開の版は 10-20 02:50Z の時点で 155 時間なので見送り） |
+| 修正版の例外 | 現行版に advisory があり、修正版が 168 時間未満なら、候補に残して表で目立たせ（印 `要判断`）、承認時に個別に決める |
 | mise | メジャー内に留める。python・ruby は minor もメジャー扱いで patch のみ。0.x 系は先頭番号（`0`）だけをメジャーと見なし、minor も上げる |
 | mise の例外: gcloud | 版ごとにメジャー番号が上がる（`588.0.0` → `589.0.0`）ので、メジャー内のルールを外して最新まで上げる。7 日ルールと侵害確認はほかと同じにかける |
 | brew・uv tool | メジャー跨ぎは表で印（`メジャー跨ぎ`）を付け、既定は除外。承認時に選べるようにする。0.x の扱いは mise と同じ |
 | 候補の条件 | 候補は現在の版より新しいこと。7 日ルールで選んだ版が現在以下なら「候補なし」 |
-| cask・formula | brew は最新版しか入れられない。最新が 7 日未満なら古い版に下げる手段はないので見送る |
+| cask・formula | brew は最新版しか入れられない。最新が 168 時間未満なら古い版に下げる手段はないので見送る |
 
 ## Execution Process
 
 ### 手順 1: 候補の収集（読み取りのみ）
 
-今日の日付を `date -u +%Y-%m-%dT%H:%M:%SZ` で取り、経過日数の基準にする。
+基準時刻を `date -u +%Y-%m-%dT%H:%M:%SZ` で取って表に書く。経過時間は公開時刻（UTC の ISO 8601）から次の式で計算する。小数秒付き（`.389957Z`、`.0Z`）の時刻もそのまま渡せる。
+
+```bash
+jq -rn --arg t '<published_at>' '(now - ($t | sub("\\.[0-9]+Z$"; "Z") | fromdateiso8601)) / 3600 | floor'
+```
 
 #### uv 本体
 
@@ -64,7 +68,7 @@ command uv self update --dry-run
 gh api 'repos/astral-sh/uv/releases?per_page=10' --jq '.[] | select(.prerelease|not) | "\(.tag_name) \(.published_at)"'
 ```
 
-`uv self update` には `--exclude-newer` が無い。公開日は GitHub Release で確かめ、7 日以上たった最新の版を候補にする。
+`uv self update` には `--exclude-newer` が無い。公開時刻は GitHub Release で確かめ、168 時間以上たった最新の版を候補にする。
 
 #### uv tool
 
@@ -74,8 +78,14 @@ command uv tool dir
 ```
 
 - `warning: Tool \`X\` environment not found` が出た tool は「壊れている」として候補に入れる。今の版は `$(uv tool dir)/X/lib/python*/site-packages/` の `*.dist-info` 名から、使っている index は `$(uv tool dir)/X/uv-receipt.toml` の `[tool.options]` から読む
-- 候補版は PyPI の公開日で決める（`--outdated` は 7 日未満の版も出すため）
+- 候補版は PyPI の公開日で決める（`--outdated` は 168 時間未満の版も出すため）
 - `$(uv tool dir)/X/pyvenv.cfg` の `home` が uv の Python（`$(command uv python dir)` の下）でない tool は、印 `mise の Python` を付けて表に出す。手順 4 で `--managed-python` を付けて入れ直す
+- 入れ直しや更新の候補があれば、使う uv 管理の Python も調べる。`command uv python find 3.14 --managed-python` が安定版を返さなければ、手順 4 の前準備で入れる版（`command uv python list 3.14 --managed-python` の最新の安定版）を、ビルドごと候補に入れる。ビルドは python-build-standalone のリリースで、URL の `releases/download/<tag>/` から tag が分かる
+
+```bash
+command uv python list 3.14.<patch> --managed-python --output-format json | jq -r '.[] | "\(.key) \(.url // .path)"'
+gh api repos/astral-sh/python-build-standalone/releases/tags/<tag> --jq '"\(.tag_name) \(.published_at)"'
+```
 
 ```bash
 curl -s https://pypi.org/pypi/<name>/json | jq -r '.releases | to_entries | map(select(.value|length>0) | {v:.key, t:(.value|map(.upload_time_iso_8601)|min)}) | sort_by(.t) | .[-5:][] | "\(.v) \(.t)"'
@@ -135,15 +145,18 @@ HOMEBREW_NO_AUTO_UPDATE=1 brew upgrade --dry-run --formula <自分で入れた o
 
 ### 手順 2: 侵害の事前確認（候補ごと）
 
-2-1 と 2-2 は全候補で行う。2-1 で 7 日未満と分かった候補は、2-2 で現行版に advisory がなければ見送りが決まるので、2-3・2-4 を省く。現行版に advisory があれば修正版の例外として 2-3・2-4 も行う。
+2-1 と 2-2 は全候補で行う。2-1 で 168 時間未満と分かった候補は、2-2 で現行版に advisory がなければ見送りが決まるので、2-3・2-4 を省く。現行版に advisory があれば修正版の例外として 2-3・2-4 も行う。
 
 候補が 5 件を超えたら、ツールごとにサブエージェント（Agent）へ分けて並列に回す。各エージェントには下の 4 項目と結果の書式（表の 1 行）を渡す。
 
 #### 2-1. 公開日
 
+公開時刻を取り、手順 1 の式で経過時間を出す。
+
 | 対象 | 取り方 |
 |---|---|
 | uv・mise 本体 | 手順 1 の GitHub Release の `published_at` |
+| uv 管理の Python のビルド | python-build-standalone のリリース（手順 1 で分かった tag）の `published_at`。CPython の版の公開日ではなく、uv が取りに行くビルドの公開日で数える |
 | uv tool | PyPI の `upload_time_iso_8601` |
 | mise ツール | `mise ls-remote <tool>@<prefix> -J` の `created_at` |
 | brew formula・cask | tap の commit 日。パスは `brew info --json=v2 <name>` の `.ruby_source_path`、repo は `.tap`（`homebrew/core` → `Homebrew/homebrew-core`、`<o>/<r>` → `<o>/homebrew-<r>`） |
@@ -170,9 +183,16 @@ gh api 'advisories?ecosystem=pip&affects=<name>&per_page=10' --jq '.[] | "\(.ghs
 | uv 本体 | 一時ディレクトリに成果物を落として `gh attestation verify <file> --repo astral-sh/uv`。成功すれば signer は `astral-sh/uv/.github/workflows/release.yml` |
 | mise 本体 | `mise self-update` が置き換え前に署名を検証する。追加で確かめるなら uv と同じく `gh attestation verify <file> --repo jdx/mise` |
 | mise ツール | mise がインストール時に検証（aqua・github backend の attestation/slsa/cosign/minisign、`node.verify`）。表には「mise が検証」 |
+| uv 管理の Python のビルド | リリースの asset の digest で GitHub attestation を引く（表の下のコマンド）。1 件以上あれば「attestation あり」 |
 | uv tool | PyPI の provenance を `curl -s -H 'Accept: application/vnd.pypi.integrity.v1+json' https://pypi.org/integrity/<name>/<version>/<file>/provenance` で取る。404 なら「provenance なし（PyPI の hash のみ）」 |
 | brew formula | 手順 4 で `HOMEBREW_VERIFY_ATTESTATIONS=1` を付ける（homebrew/core と対応 tap の bottle）。それ以外の tap は「formula の sha256 のみ」 |
 | brew cask | cask に書かれた sha256 を brew が照合する。`sha256 :no_check` の cask は表で目立たせる |
+
+```bash
+# <file> は手順 1 の URL の末尾（%2B は + に戻す）
+h=$(gh api repos/astral-sh/python-build-standalone/releases/tags/<tag> --jq '.assets[] | select(.name=="<file>") | .digest' | cut -d: -f2)
+gh api "repos/astral-sh/python-build-standalone/attestations/sha256:$h" --jq '.attestations | length'
+```
 
 一時ディレクトリは `mktemp -d` で作り、検証が終わったらファイルを消してから `rmdir` する。落とした成果物は実行しない。
 
@@ -202,20 +222,22 @@ gh api 'repos/<o>/<r>/compare/<cur>...<new>?per_page=100' --paginate --jq '.file
 
 | 判定 | 条件 |
 |---|---|
-| 更新可 | 7 日以上、候補版に advisory なし、報道なし、署名の検証が通る（または仕組み上検証される）、危険箇所に異常なし |
-| 見送り | 7 日未満、候補版に advisory がある、侵害報道がある、署名が通らない、危険箇所に説明のつかない変更がある |
+| 更新可 | 168 時間以上、候補版に advisory なし、報道なし、署名の検証が通る（または仕組み上検証される）、危険箇所に異常なし |
+| 見送り | 168 時間未満、候補版に advisory がある、侵害報道がある、署名が通らない、危険箇所に説明のつかない変更がある |
 | 要判断 | 修正版の例外、メジャー跨ぎ、壊れた uv tool の直し、コード確認不可の cask |
 
-巻き込み依存が「見送り」なら、その親も「見送り」にする。
+巻き込み依存が「見送り」なら、その親も「見送り」にする。同じように、uv 管理の Python のビルドが「見送り」なら、それを使う uv tool の行も「見送り（Python のビルドが 168 時間未満）」にし、168 時間を超える時刻を書く。
 
 ### 手順 3: 表を示して承認を得る
 
 次の列で表を出す。
 
-| ツール | 現在 → 候補 | 経過日数 | advisory | 署名 | コード確認 | 印 | 判定 |
+| ツール | 現在 → 候補 | 経過時間 | advisory | 署名 | コード確認 | 印 | 判定 |
 |---|---|---|---|---|---|---|---|
 
-- 種類（uv 本体・uv tool・mise 本体・mise ツール・brew formula・brew cask・巻き込み依存）ごとに見出しで分ける
+- 経過時間は `155 時間（6.5 日）` のように時間と日数を並べて書く。基準時刻も表の上に書く
+- 種類（uv 本体・uv tool・uv 管理の Python・mise 本体・mise ツール・brew formula・brew cask・巻き込み依存）ごとに見出しで分ける
+- uv 管理の Python の行は、ツール名に `cpython-3.14.<patch>+<tag>`、コード確認に「対象外（CPython のビルド）」と書く
 - 候補なしのツールは載せない。見送りは理由を判定の列に書く
 - 表のあとに AskUserQuestion で承認を取る。選択肢は「更新可だけ実行」「更新可と要判断を選んで実行」「やめる」。要判断の項目は multiSelect で 1 つずつ選べるようにする
 
