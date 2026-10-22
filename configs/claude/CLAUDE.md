@@ -11,7 +11,8 @@
 - In `grilling` sessions (incl. `/grill-me`, `/grill-with-docs`), ask one question per `AskUserQuestion` call and wait for the answer — overrides the skill's "ask the whole frontier in one round"
 - Don't use `git -C <path>` when cwd already matches — use plain `git <subcommand>` so existing permission rules match and Ask prompts don't fire. `-C` only when the target path genuinely differs from cwd (submodule, sibling repo, etc.)
 - Before creating a PR or updating its description, read the repo's PR template (`.github/pull_request_template.md`, the repo root, `docs/`, or `.github/PULL_REQUEST_TEMPLATE/`) and follow its headings and comments; if there is none, follow `~/.claude/pull_request_template.md`. This applies when passing the body with `--body` too, since `gh pr create` only loads a template with `-T` or in interactive mode
-- Size the description to the change. Leave out what the diff already shows, the history of the work, and abandoned attempts
+- Likewise before creating an issue, read the repo's issue templates (`.github/ISSUE_TEMPLATE/`) and follow the one that fits; if there are none, follow `~/.claude/issue_templates/bug.md` or `feature.md`. This applies to `gh issue create --body` too
+- Size the description to the change. Leave out what the diff already shows, the history of the work, and abandoned attempts. Keep issues to what is needed to reproduce or decide
 
 ## Scope of changes
 
