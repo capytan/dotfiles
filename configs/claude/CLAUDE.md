@@ -13,6 +13,7 @@
 - Before creating a PR or updating its description, read the repo's PR template (`.github/pull_request_template.md`, the repo root, `docs/`, or `.github/PULL_REQUEST_TEMPLATE/`) and follow its headings and comments; if there is none, follow `~/.claude/pull_request_template.md`. This applies when passing the body with `--body` too, since `gh pr create` only loads a template with `-T` or in interactive mode
 - Likewise before creating an issue, read the repo's issue templates (`.github/ISSUE_TEMPLATE/`) and follow the one that fits; if there are none, follow `~/.claude/issue_templates/bug.md` or `feature.md`. This applies to `gh issue create --body` too
 - Size the description to the change. Leave out what the diff already shows, the history of the work, and abandoned attempts. Keep issues to what is needed to reproduce or decide
+- In text people read (Slack messages, PR/issue bodies and comments, chat replies), refer to issues, PRs, and commits by full URL, not `#123` or a short SHA alone — readers can't resolve the bare reference
 
 ## Scope of changes
 
