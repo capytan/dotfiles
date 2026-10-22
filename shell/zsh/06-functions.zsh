@@ -50,7 +50,7 @@ fbr() {
   local branches branch
   branches=$(git branch -vv) &&
   branch=$(echo "$branches" | fzf +m) &&
-  git switch $(echo "$branch" | awk '{print $1}' | sed "s/.* //")
+  git switch "$(echo "$branch" | cut -c3- | awk '{print $1}')"
 }
 
 fbrm() {
