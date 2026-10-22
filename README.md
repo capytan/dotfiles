@@ -22,7 +22,7 @@ source platform/macos/defaults.sh
 dotfiles/
 ├── configs/              # Application configs (XDG-oriented)
 │   ├── alacritty/       # Terminal emulator configuration
-│   ├── claude/          # Claude Code custom commands & settings, default PR template
+│   ├── claude/          # Claude Code custom commands & settings, default PR/issue templates
 │   ├── cursor/rules/    # Cursor IDE rules
 │   ├── ghostty/         # Ghostty terminal config
 │   ├── git/             # Git config, ignore, completion, prompt
