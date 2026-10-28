@@ -1,6 +1,6 @@
 ---
 name: magi-decision-support
-description: Multi-perspective decision support using three AI agents (Scientist, Mother, Realist) with APPROVE/CONDITIONAL/REJECT verdicts. Use when the user weighs trade-offs, compares approaches, or faces a technical/architectural choice.
+description: Multi-perspective decision support using three AI agents (Scientist, Mother, Realist) with APPROVE/CONDITIONAL/REJECT verdicts. Use when the user asks for MAGI or a multi-perspective verdict, or must choose between concrete named options in a technical/architectural decision (e.g. monolith vs microservices). Not for stress-testing a single plan (use `grilling` or `doubt-driven-development`) or quick either/or questions answerable from the code.
 allowed-tools: Agent, AskUserQuestion
 ---
 
@@ -10,14 +10,12 @@ MAGI provides multi-perspective analysis for complex decisions by consulting thr
 
 ## When to Use This Skill
 
-Automatically invoke MAGI when the user:
+Each run starts three subagents, so invoke MAGI only when the user:
 
-- Asks "should I..." or "which is better..."
-- Faces trade-offs (performance vs maintainability, consistency vs availability, etc.)
-- Compares multiple approaches or architectures
-- Needs to choose between options with different pros/cons
-- Expresses uncertainty about a technical decision
-- Asks about normalization vs denormalization, microservices vs monolith, or similar architectural choices
+- Asks for MAGI or for a multi-perspective verdict
+- Must choose between concrete named options whose trade-offs span technical, team, and cost concerns (normalization vs denormalization, microservices vs monolith, and similar architectural choices)
+
+Answer inline instead when the question is settled by the code, project conventions, or a single perspective.
 
 ## The Three Perspectives
 
@@ -29,14 +27,12 @@ Automatically invoke MAGI when the user:
 
 ## How to Invoke
 
-Invoke this skill (`/magi-decision-support`) or simply describe the decision — Claude auto-triggers MAGI when appropriate:
+Invoke this skill (`/magi-decision-support`) or describe a decision that fits the criteria above:
 
 ```
 Should we normalize this database table or keep it denormalized? Is this the right architectural approach?
 Microservices vs monolith for our scale?
 ```
-
-Claude automatically recognizes when MAGI analysis would be helpful and suggests using it.
 
 ## Execution Process
 

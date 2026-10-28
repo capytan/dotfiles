@@ -157,5 +157,5 @@ Verdict: BLOCK — CRITICAL/HIGH issues must be fixed before merge.
 
 - **No security-relevant code**: If the reviewed files contain no user input handling, auth, crypto, or sensitive data, report "No security-relevant code paths found" and skip
 - **Escalation from another reviewer**: Focus on the specific issue flagged, then expand to related code paths
-- **Third-party library vulnerabilities**: Run audit tools; report only vulnerabilities in direct dependencies with known exploits
+- **Third-party library vulnerabilities**: Run audit tools; report every vulnerability they find, labeling each as direct or transitive and noting whether a known exploit exists
 - **Test files**: Skip security review of test fixtures unless they contain real credentials

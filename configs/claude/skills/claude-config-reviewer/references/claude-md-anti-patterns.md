@@ -1,6 +1,6 @@
 # Anti-Pattern Catalog
 
-last_updated: 2026-09-24
+last_updated: 2026-10-28
 
 > Referenced during Phase 2, criterion F (Anti-patterns).
 > Each pattern has a severity: Critical / Major / Minor.
@@ -122,9 +122,13 @@ Content that has drifted from the actual codebase, or from the current model's c
   - *Blanket anti-formatting rules* — Fable 5.1: "If your prompt contains anti-formatting language, remove it or replace it with a rule that says when specific formatting is appropriate" (same source)
   - *Rules telling the model not to think* — Opus 5: "If your system prompt contains a rule instructing the model not to think or not to reason, remove it; that kind of instruction increases tag leakage." (Opus 5 page)
   - Umbrella official statement (Anthropic blog, Thariq Shihipar, 2026-07-24): "we found that we were overconstraining Claude Code, both through our system prompt and in our CLAUDE.md files and skills … we have since found we can delete many of them and let the model use surrounding context and judgement instead." — https://claude.dev/blog/the-new-rules-of-context-engineering-for-claude-5-generation-models/ (retrieved 2026-09-24; claude.com/blog/… 301-redirects here)
+- **Model-era workarounds — extended 2026-10-28** (best-practices "What you can stop doing", `[official]`, retrieved 2026-10-28):
+  - *"Keep going / loop until done / don't be lazy" lines* — "Current models usually carry on through an agreed task without being told, and lines like that are more likely to cause over-work than fix a stall. Giving Claude a check to pass is different, and still worth doing."
+  - *"think hard" / "think harder" / "be thorough"* — "Effort is the control for that. Those phrases are ordinary prompt text that nudges Claude within its effort setting rather than keywords that raise it." **Exempt**: `ultrathink` ("still works").
+  - *History narratives* — past-tense incident stories, incident IDs, pinned retired-model names; flagged by `/doctor prompt-audit` (v2.1.283, official) per field reports (`[community:mid]`, max.nardit.com 2026-10-05).
 - **Do not flag (added 2026-09-24)**: lines adapted from an official per-model prompt block — e.g. Fable 5.1's "Keep changes and tests to what the task asks for" / "Delivering work" blocks, Opus 5's "Deliver what was asked, at the scope intended", Fable 5.1's "surgically edit a file rather than rewrite" — are *recommended additions*, not workarounds. Only flag them when the file's declared/actual model is one the block was not measured on **and** the reviewer can point to the page saying the behavior differs ("Where a technique names a specific model, treat it as measured on that model and re-check it against your own evals before applying it to another." — claude-prompting-best-practices)
 
-**Fix:** Cross-reference with codebase and update or remove. "Treat CLAUDE.md like code: review it when things go wrong, prune it regularly." For model-era rules, re-test in a fresh session without the rule; official Fable 5 guidance: "Review and consider removing older instructions if default performance is better." Scored under criterion A's inferable-content deduction when the line is obsolete; do not double-count here. (Reasoning-reproduction instructions are a separate Major entry above because they cause refusals, not just overhead.)
+**Fix:** Cross-reference with codebase and update or remove. "Treat CLAUDE.md like code: review it when things go wrong, prune it regularly." For model-era rules, re-test in a fresh session without the rule; official Fable 5 guidance: "Review and consider removing older instructions if default performance is better." Scored under criterion A's inferable-content deduction when the line is obsolete; do not double-count here. (Reasoning-reproduction instructions are a separate Major entry above because they cause refusals, not just overhead.) Official automation: `/doctor prompt-audit` (v2.1.283+) reports stale paths/commands, contradictions and older-model instructions with proposed edits. For a dated incident record that still encodes a reproducible failure, **relocate** it (rules file, skill, doc) rather than delete it (`[community:mid]`, arte.itlibra.com 2026-10-03 hands-on run).
 
 ### Conflicting Instructions `[official]`
 
@@ -155,7 +159,26 @@ Hard rules that must be enforced 100% of the time placed in CLAUDE.md instead of
 - Formatting requirements that could be a PostToolUse hook
 - Security restrictions (blocked commands, forbidden file paths)
 
-**Fix:** Convert to a PreToolUse/PostToolUse hook in `.claude/settings.json`. Keep the guidance in CLAUDE.md as documentation but rely on hooks for enforcement.
+> "If something has to happen every time, make it a hook, a deny rule, or a managed setting. `CLAUDE.md` is for guidelines, and Claude is allowed to decide a guideline doesn't apply." … "Don't overdo it, though: a hook is for a rule with *zero* exceptions, and `Prefer named exports` has plenty, so that one stays in `CLAUDE.md`."
+> — https://code.claude.com/docs/en/best-practices (retrieved 2026-10-28) — the page now makes this official; tag effectively `[official]`
+
+**Do not flag (2026-10-28, official)**: preferences that have legitimate exceptions ("prefer named exports", "prefer X over Y") — they belong in CLAUDE.md. Only zero-exception rules are hook-convertible. A `prompt`/`agent` hook is not deterministic enforcement ("asks *another model* to decide") — enforcement needs a `command`/`http` hook.
+
+**Fix:** Convert to a PreToolUse/PostToolUse hook (or a `permissions.deny` rule) in `.claude/settings.json`. Keep the guidance in CLAUDE.md as documentation but rely on hooks for enforcement. Keep the enforced set small: "If you ever find yourself at forty of them, most are probably preferences that Claude could have weighed on its own."
+
+### Oversized On-Demand Instruction File `[official]` (added 2026-10-28)
+
+A subdirectory CLAUDE.md / CLAUDE.local.md (or its `@` imports), or a path-scoped / subdirectory rules file, longer than the per-file limit for on-demand files.
+
+> "When a subdirectory `CLAUDE.md` or a rules file that loads on demand is over a per-file size limit, Claude receives only the start of it. That part ends with a note telling Claude to read the rest with the Read tool, and until Claude chooses to, the later instructions aren't in its context."
+> Limits: "**200K context window**: 40,000 characters"; "**1M context window**: 200,000 characters on Claude Opus 4.6 and Claude Sonnet 4.6, and 150,000 characters on later models". "Before v2.1.309, Claude Code didn't apply this limit to files that load on demand."
+> — https://code.claude.com/docs/en/memory#claude-ignores-the-end-of-my-subdirectory-claude-md (retrieved 2026-10-28)
+
+**Detection patterns:**
+- `wc -m` on each nested CLAUDE.md and each `paths:`-scoped or subdirectory rules file; flag when over 40,000 characters (use the conservative 200K-window limit unless the repo declares 1M-only use)
+- Root/ancestor CLAUDE.md files loaded at launch are not subject to this limit (they use the 200-line target and 4 MiB skip)
+
+**Fix:** "trim the file, or move part of it into one or more rules files, which each count against the limit on their own". Rarely triggered in practice (40,000 chars ≈ 800+ lines); also an over-200-line file, so expect A to deduct too — score here only when instructions actually sit past the cut.
 
 ---
 
@@ -182,6 +205,8 @@ Using a paragraph for what fits in one line.
 ### File Location Catalogs `[custom]`
 
 Listing every file when Claude can discover them by reading the codebase.
+
+Official corroboration (2026-10-28): "Describe your architecture and file layout in `CLAUDE.md`" is listed under "What you can stop doing" — "Claude reads the repo itself. Only write down what isn't in there." (https://code.claude.com/docs/en/best-practices). Exception the same page endorses: "Places where the code is misleading: … a directory that looks unused but isn't" — keep those.
 
 **Detection patterns:**
 - Exhaustive file lists without explanation
@@ -225,10 +250,11 @@ Content that needs constant updates belongs elsewhere.
 
 ### Emphasis Overuse `[official]`
 
-Emphasis markers ("IMPORTANT", "YOU MUST", "NEVER") applied to many lines, so none stands out.
+Emphasis markers ("IMPORTANT", "YOU MUST", "NEVER") applied to many lines, so none stands out — and, since the 2026-10 best-practices rewrite, emphasis used as an adherence fix at all.
 
-> "If Claude keeps skipping one instruction, add emphasis such as 'IMPORTANT' to that line alone. If you emphasize many lines, none of them stands out."
-> — https://code.claude.com/docs/en/best-practices (retrieved 2026-09-04)
+> "Add IMPORTANT or ALL CAPS to instructions Claude keeps missing | Older models sometimes needed the emphasis. Current ones follow a plainly worded line, and piling on emphasis mostly makes Claude over-apply the rule. If it's a rule that can't bend, turn it into a hook or a deny rule. If the line is getting lost in a long file, the file needs to be shorter."
+> "If Claude keeps ignoring a line that *is* in `CLAUDE.md`, adding IMPORTANT probably won't fix it."
+> — https://code.claude.com/docs/en/best-practices ("What you can stop doing", retrieved 2026-10-28). **Supersedes** the 2026-09-04 wording "add emphasis such as 'IMPORTANT' to that line alone", which no longer appears on the page.
 
 > "The fix is to dial back any aggressive language. Where you might have said 'CRITICAL: You MUST use this tool when...', you can use more normal prompting like 'Use this tool when...'."
 > — https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices (retrieved 2026-09-16) — newer models over-trigger on emphasis that older ones needed
@@ -244,7 +270,9 @@ Community corroboration `[community:mid]`: MindStudio (2026-09-11) reports that 
 - Escalation stacking ("VERY IMPORTANT!!", "ABSOLUTELY NEVER")
 - Bare "NEVER X" / "ALWAYS Y" rules with no stated reason, where the reason is not obvious (2026-09-24: official example above) — note, don't deduct separately; this is scored under criterion E (Actionability) as missing rationale
 
-**Fix:** Reserve emphasis for the one or two instructions Claude actually keeps skipping. Prefer replacing the emphasis with the *reason* ("…because the validator fails open") — current models generalize from the reason. If a rule needs guaranteed compliance, convert it to a hook instead of shouting louder (see "Guidance That Should Be a Hook").
+- **Severity unchanged (Minor)** for the widespread case above. One or two emphasized lines (2026-10-28): advisory note only, no deduction — suggest plain wording plus the reason, or a hook if the rule can't bend.
+
+**Fix:** Drop the emphasis and state the rule plainly. Prefer replacing the emphasis with the *reason* ("…because the validator fails open") — current models generalize from the reason. If a rule needs guaranteed compliance, convert it to a hook instead of shouting louder (see "Guidance That Should Be a Hook").
 
 ### Telling Claude in Words to Read AGENTS.md `[official]` (added 2026-09-24)
 
@@ -259,6 +287,19 @@ A CLAUDE.md whose job is to point at AGENTS.md in prose ("See AGENTS.md for the 
 - Hook config whose SessionStart command `cat`s AGENTS.md
 
 **Fix:** Replace with `@AGENTS.md`, or delete the CLAUDE.md (and any `CLAUDE.local.md`, which also suppresses AGENTS.md by default) so Claude Code reads AGENTS.md natively. Keep the import form when sessions run on Bedrock/Vertex/Foundry or can't fetch feature flags, where native AGENTS.md reading is unavailable. `@AGENTS.md` imports and a `CLAUDE.md → AGENTS.md` symlink are **not** defects — official: "Keeping the import never makes Claude read `AGENTS.md` twice".
+
+### Non-`paths` Rule Frontmatter `[official]` (added 2026-10-28)
+
+A `.claude/rules/*.md` file scoped with keys Claude Code doesn't read (Cursor-style `globs:`, `description:`, `alwaysApply:`), or with YAML that doesn't parse.
+
+> "`paths` is the only field Claude Code reads from a rule; any other field is ignored without an error." "If the YAML between the markers doesn't parse, Claude Code ignores the frontmatter and loads the rule as if it had no `paths`."
+> — https://code.claude.com/docs/en/memory#rule-frontmatter-reference (retrieved 2026-10-28)
+
+**Detection patterns:**
+- Rule frontmatter without `paths:` but with `globs:` / `alwaysApply:` / `description:` — the author intended scoping, but the rule loads every session
+- Frontmatter that fails a YAML parse (unquoted `*` at value start, tabs)
+
+**Fix:** Rename to `paths:` (YAML list or comma-separated string; quote glob values). Check with `claude --debug` or the `InstructionsLoaded` hook.
 
 ### Session-Specific Content in CLAUDE.md `[official]`
 
@@ -290,3 +331,4 @@ Content that only applies to a specific task or session.
 - 2026-09-16: Refreshed against memory + best-practices docs, the new large-codebases / context-window / sub-agents pages, the platform prompting guide (retrieved 2026-09-16), and changelog v2.1.261–v2.1.273. **No new anti-pattern; one detection pattern added and two entries re-sourced.** (1) **Stale Information** gains a **Model-era workarounds** detection pattern backed by official text (large-codebases: "instructions that worked around an older model's limitation may become overhead"; Fable 5: "Review and consider removing older instructions if default performance is better"; Fable 5.1: anti-markdown blocks can now "suppress structure the content needs") — tag widened to `[custom]` `[official]`, deduction routed through criterion A's inferable-content schedule. (2) **Emphasis Overuse** gains the platform-guide quote "dial back any aggressive language … 'CRITICAL: You MUST' → 'Use this tool when'". (3) **Guidance That Should Be a Hook** gains the memory page's own line "To block an action regardless of what Claude decides, use a PreToolUse hook instead." (4) **Verbose Writing**: the SFEIR "40%" quote is gone from its source (page updated 2026-06-05); replaced with the official "Structure" quote plus SFEIR's current "Bullet points → Better compliance" table wording. Assessor notes: a symlinked rule whose target is outside the working directory is now officially an external import (never loads without `@path` approval; path-scoped ones never load) — flag as a rules-authoring defect, not a CLAUDE.md anti-pattern; path-scoped rules and nested CLAUDE.md are summarized away on compaction, so a "must always hold" rule with `paths:` is a scoping defect. No de-flags. last_updated bumped to 2026-09-16.
 - 2026-09-04: Refreshed against memory + best-practices docs (retrieved 2026-09-04) and changelog v2.1.229–v2.1.260. **One new Minor anti-pattern added: Emphasis Overuse `[official]`** — the best-practices page now explicitly says to emphasize only the one skipped line ("If you emphasize many lines, none of them stands out"); previously the docs only said emphasis improves adherence, so blanket IMPORTANT/YOU MUST usage was not flaggable. Community had long advised this (`use only for genuine hard constraints`); now official. Assessor note: a CLAUDE.md over **4 MiB is skipped entirely** (not truncated) — treat as an extreme instance of Over-Specified. All other patterns re-verified current; no de-flags. last_updated bumped to 2026-09-04.
 - 2026-09-24: Refreshed against memory + best-practices docs, the platform prompting guide and the per-model pages for Opus 5, Opus 5.5, Fable 5 and Fable 5.1, the Anthropic blog "The new rules of context engineering for Claude 5 generation models" (all retrieved 2026-09-24), and changelog v2.1.274–v2.1.281 (newest v2.1.281, 2026-09-23). **One new Major**: **Instruction to Reproduce Reasoning in the Response** — "show your reasoning"-style lines can trigger the `reasoning_extraction` refusal category on Fable 5/5.1 and Opus 5.5 (now the default Opus, v2.1.280); justification-of-result asks are explicitly excluded. **One new Minor**: **Telling Claude in Words to Read AGENTS.md** (and SessionStart hooks that print it) — Claude Code reads AGENTS.md natively since v2.1.277 and the memory page lists both as workarounds to remove; `@AGENTS.md` imports and symlinks are not defects. **Stale Information** model-era workarounds extended with official per-model removal guidance: generic verify/double-check instructions (Opus 5), "think carefully before answering" (Opus 5.5), narration suppression and blanket anti-formatting (Fable 5.1), no-thinking rules (Opus 5), plus the official "overconstraining … in our CLAUDE.md files and skills" blog quote; concrete runnable checks stay exempt. **New do-not-flag rule**: lines adapted from official per-model prompt blocks (Fable 5.1 scope/"Delivering work", Opus 5 scope, surgical-edit) are recommended additions; flag only on a documented model mismatch. **Emphasis Overuse** gains the official "NEVER use ellipses → give the reason" example and MindStudio `[community:mid]` corroboration; bare NEVER/ALWAYS without a reason routes to criterion E, not a second F deduction. last_updated bumped to 2026-09-24.
+- 2026-10-28: Refreshed against the rewritten best-practices page and memory docs (retrieved 2026-10-28) + changelog v2.1.282–v2.1.311. **New Major**: *Oversized On-Demand Instruction File* (nested CLAUDE.md / path-scoped rules over 40,000 chars load only their start, v2.1.309). **New Minor**: *Non-`paths` Rule Frontmatter* (`paths` is the only key read; `globs:` rules load unconditionally). **Emphasis Overuse**: official quote replaced — "Add IMPORTANT or ALL CAPS" is now listed under "What you can stop doing"; widespread case stays Minor, one or two emphasized lines become advisory-only. **Stale Information**: added keep-going/don't-be-lazy and think-hard/be-thorough lines (`ultrathink` exempt), history narratives, `/doctor prompt-audit` as official automation, relocate-not-delete fix for live incident records (`[community:mid]`). **Guidance That Should Be a Hook**: official "zero exceptions" quote; preferences with exceptions are no longer flagged; `prompt`/`agent` hooks aren't enforcement. **File Location Catalogs** (`[custom]`, retained): official corroboration added. last_updated bumped to 2026-10-28.

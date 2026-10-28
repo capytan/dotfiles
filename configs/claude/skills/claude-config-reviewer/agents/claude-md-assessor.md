@@ -21,8 +21,8 @@ For each file:
 3. Score each criterion A-G from the rubric:
    - A. Token Efficiency (20 pts)
    - B. Commands & Workflows (15 pts)
-   - C. Architecture Clarity (15 pts)
-   - D. Non-Obvious Patterns (15 pts)
+   - C. Non-Derivable Structure (10 pts)
+   - D. Non-Obvious Patterns (20 pts)
    - E. Actionability (15 pts)
    - F. Anti-patterns (10 pts) — check against anti-pattern catalog
    - G. Behavioral Impact (10 pts)
@@ -58,8 +58,8 @@ Return EXACTLY this structure:
 |----------|-------|-----|----------|
 | A. Token Efficiency | X | 20 | ... |
 | B. Commands & Workflows | X | 15 | ... |
-| C. Architecture Clarity | X | 15 | ... |
-| D. Non-Obvious Patterns | X | 15 | ... |
+| C. Non-Derivable Structure | X | 10 | ... |
+| D. Non-Obvious Patterns | X | 20 | ... |
 | E. Actionability | X | 15 | ... |
 | F. Anti-patterns | X | 10 | ... |
 | G. Behavioral Impact | X | 10 | ... |

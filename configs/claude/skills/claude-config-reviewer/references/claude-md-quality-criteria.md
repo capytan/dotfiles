@@ -1,6 +1,6 @@
 # Quality Criteria
 
-last_updated: 2026-09-24
+last_updated: 2026-10-28
 
 > Referenced during Phase 2 (Quality Assessment).
 > Updated based on Phase 0 research findings.
@@ -19,8 +19,8 @@ last_updated: 2026-09-24
 Criteria & Scoring (100 points total):
 - A. Token Efficiency (20)
 - B. Commands & Workflows (15)
-- C. Architecture Clarity (15)
-- D. Non-Obvious Patterns (15)
+- C. Non-Derivable Structure (10)
+- D. Non-Obvious Patterns (20)
 - E. Actionability (15)
 - F. Anti-patterns (10)
 - G. Behavioral Impact (10)
@@ -56,6 +56,8 @@ Flag content Claude already knows without being told (official Exclude list):
 
 Each inferable item: -2 pts (max -10 pts).
 
+**Official inferability test (added 2026-10-28)** `[official]`: "1. Could it find this by reading the code? 2. Would it actually go and look? If both are yes, leave it out." (code.claude.com/docs/en/best-practices, retrieved 2026-10-28). Deduct only when **both** answers are yes. Not inferable: facts that are in the repo "but take a few minutes of digging to find" every session (e.g. which of three test runners is canonical), and "Places where the code is misleading: an old pattern that's everywhere but that new code must not copy, or a directory that looks unused but isn't".
+
 **Hook-convertible rules detection** `[semi-official]` + `[community:high]`
 Flag rules that should be hooks instead of CLAUDE.md instructions:
 - Absolute restrictions ("NEVER use rm -rf") — should be PreToolUse hooks
@@ -63,9 +65,11 @@ Flag rules that should be hooks instead of CLAUDE.md instructions:
 - Security restrictions — should be enforced deterministically
 
 Each hook-convertible rule: -1 pt (max -5 pts). Note: keeping the guidance in CLAUDE.md as documentation alongside a hook is fine; the issue is relying solely on CLAUDE.md for enforcement.
+Now official (best-practices, retrieved 2026-10-28): "If something has to happen every time, make it a hook, a deny rule, or a managed setting. `CLAUDE.md` is for guidelines" — but "a hook is for a rule with *zero* exceptions, and `Prefer named exports` has plenty, so that one stays in `CLAUDE.md`." **Do not deduct** for preferences with legitimate exceptions; only zero-exception rules count.
 
 **Emphasis dilution (added 2026-09-04)** `[official]`
 Official best-practices now says: "If Claude keeps skipping one instruction, add emphasis such as 'IMPORTANT' to that line alone. If you emphasize many lines, none of them stands out." Widespread IMPORTANT/YOU MUST markers are scored under criterion F as the Minor anti-pattern **Emphasis Overuse** (see the catalog); do not additionally deduct here — this note exists so assessors don't treat heavy emphasis as an adherence *positive*.
+**Superseded wording (2026-10-28)**: the rewritten best-practices page drops the "to that line alone" advice and lists "Add IMPORTANT or ALL CAPS to instructions Claude keeps missing" under "What you can stop doing" ("Current ones follow a plainly worded line, and piling on emphasis mostly makes Claude over-apply the rule"). Scoring is unchanged (still Minor under F for widespread use); one or two emphasized lines are now an advisory note, not a neutral practice.
 Second official source (retrieved 2026-09-16): the platform prompting guide says newer models "are also more responsive to the system prompt than previous models … The fix is to dial back any aggressive language. Where you might have said 'CRITICAL: You MUST use this tool when...', you can use more normal prompting like 'Use this tool when...'." (platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices)
 
 **Model-era workarounds (added 2026-09-16)** `[official]`
@@ -73,6 +77,7 @@ The large-codebases page: "Revisit after major model releases: instructions that
 Scoring consequence: a rule that exists only to compensate for a behavior current models no longer exhibit (forced single-file edits, "always summarize after each tool call", enumerated lists of every case a one-line instruction already covers) is **inferable/obsolete content** — apply the inferable-content deduction (-2 each, within the existing -10 cap) and flag it under F as the Stale Information detection pattern. Do not deduct twice for the same line.
 **Extended 2026-09-24 with per-model official "remove this" lists** (platform.claude.com prompting pages for Opus 5, Opus 5.5, Fable 5.1, retrieved 2026-09-24): generic "verify / double-check / re-verify / use a subagent to verify" instructions (Opus 5: "cause over-verification … removing them reduces wasted tokens with no loss in quality"), "think carefully before answering" (Opus 5.5: "The model decides for itself how much to think, and effort is the main control"), narration suppression such as "hold all findings for the final response" and blanket anti-formatting rules (Fable 5.1), and "don't think/reason" rules (Opus 5). Same -2 schedule. Anthropic's blog (2026-07-24) frames the whole category: "we were overconstraining Claude Code, both through our system prompt and in our CLAUDE.md files and skills" and removed "over 80% of Claude Code's system prompt … with no measurable loss on our coding evaluations" (claude.dev/blog/the-new-rules-of-context-engineering-for-claude-5-generation-models).
 **Exemptions (2026-09-24)**: (1) a concrete runnable check (`bash test.sh`, `herdr config check`) is *not* a verification workaround — it is the official "give Claude a check it can run" practice and earns B/E credit; (2) lines adapted from an official per-model prompt block (Fable 5.1 "Keep changes and tests to what the task asks for" / "Delivering work", Opus 5 scope block, Fable 5.1 surgical-edit line) are recommended additions, not inferable content — do not deduct under A. Flag them only when the block was measured on a different model than the file targets **and** the official page documents a behavioral difference ("Where a technique names a specific model, treat it as measured on that model and re-check it against your own evals before applying it to another"). For a user-global CLAUDE.md used with several models (e.g. Opus 5.5 by default, Fable 5.1 for planning), a Fable 5.1-sourced block is advisory-only: note it, no deduction.
+**Extended 2026-10-28** (best-practices "What you can stop doing", retrieved 2026-10-28): "keep going / loop until done / don't be lazy" lines ("more likely to cause over-work than fix a stall") and "think hard / think harder / be thorough" ("Effort is the control for that") join the list, same -2 schedule. Exempt: `ultrathink` ("still works"), and a concrete check to pass ("Giving Claude a check to pass is different, and still worth doing").
 **Reasoning-reproduction instructions** ("show your reasoning in the response") are *not* scored here — they are the Major anti-pattern under F because they can trigger `reasoning_extraction` refusals on Fable 5/5.1 and Opus 5.5.
 
 **AGENTS.md interplay (advisory, added 2026-09-24)** `[official]`
@@ -83,7 +88,7 @@ Every non-Explore/Plan subagent loads "every level of the CLAUDE.md hierarchy th
 
 **`/doctor` trim baseline (added 2026-07-25)** `[official]`
 As of v2.1.206 the `/doctor` checkup proposes trims for a checked-in CLAUDE.md, and its rule matches this criterion: "it cuts content Claude can derive from the codebase, such as **directory layouts, dependency lists, and architecture overviews**, and keeps **pitfalls, rationale, and conventions that differ from tool defaults**" (code.claude.com/docs/en/memory, retrieved 2026-07-25).
-Scoring consequence: this puts official weight behind trimming directory layouts and architecture overviews — the same material category C (Architecture Clarity) rewards. **Resolve the tension in favor of non-inferability**: award C for structure that is *not* derivable by reading the tree (module relationships, why a boundary exists, which entry point matters), and apply the inferable-content deduction under A to a plain directory listing or dependency enumeration. Do not award C points for content that A penalizes.
+Scoring consequence: this puts official weight behind trimming directory layouts and architecture overviews — the same material category C (Non-Derivable Structure, formerly Architecture Clarity) used to reward. **Resolve the tension in favor of non-inferability**: award C for structure that is *not* derivable by reading the tree (module relationships, why a boundary exists, which entry point matters), and apply the inferable-content deduction under A to a plain directory listing or dependency enumeration. Do not award C points for content that A penalizes.
 
 ### B. Commands & Workflows (15 points)
 
@@ -91,6 +96,7 @@ Scoring consequence: this puts official weight behind trimming directory layouts
 
 **15 pts**: All essential commands covered
 - Build, test, lint, dev server documented
+- How to run a single test file (official include list, 2026-10-28: "the exact test, typecheck, and lint commands, and how to run a single test file")
 - Commands are copy-paste ready
 - Platform-specific commands (OS differences, etc.) are distinguished
 
@@ -102,36 +108,39 @@ Tie-breaker (added 2026-09-16, `[community:mid]`): when deciding between 10 and 
 
 **0 pts**: No commands documented
 
-### C. Architecture Clarity (15 points)
+### C. Non-Derivable Structure (10 points)
 
-`[official]` Can Claude quickly grasp the codebase structure?
+`[official]` Does the file record the structural knowledge Claude can't read from the tree? (Renamed from "Architecture Clarity" and cut from 15 to 10 points on 2026-10-28; the 5 points moved to D.)
 
 Award only for structure that is **not** derivable by reading the tree — see the `/doctor` trim baseline under criterion A.
 
-**15 pts**: Clear structure
-- Key module relationships documented
-- Why a boundary exists / which entry point matters
-- Entry points identifiable
+**Official reframe (2026-10-28)** `[official]`: best-practices now lists "Describe your architecture and file layout in `CLAUDE.md`" under "What you can stop doing" ("Claude reads the repo itself. Only write down what isn't in there."), and its include list keeps "Places where the code is misleading" and "Decisions that aren't in the repo". Score C as **structural knowledge Claude can't read from the tree**, and do not penalize a file for omitting architecture Claude can read. (Conflict note: the memory page still names "project layout" and "architectural decisions" as CLAUDE.md content — reconciled as "decisions and misleading places stay, readable layout goes".)
 
-**10 pts**: Basic structure overview
+**10 pts**: Non-derivable structure documented
+- Misleading places flagged (legacy pattern not to copy, directory that looks unused but isn't)
+- Why a boundary exists / off-repo architectural decisions
+- Which entry point matters when several exist
 
-**5 pts**: Some non-inferable context, but thin
+**7 pts**: Some non-derivable structure, **or** no architecture section at all where the reviewer finds no misleading area or off-repo decision the file should have mentioned (correct omission — 2026-10-28; previously 0)
 
-**0 pts**: No structure info, **or** a plain directory listing / dependency enumeration only (inferable content — already penalized under A; award 0 here rather than double-crediting it)
+**3 pts**: Thin — architecture prose that is mostly derivable, with one or two non-derivable facts
 
-### D. Non-Obvious Patterns (15 points)
+**0 pts**: A plain directory listing / dependency enumeration only (inferable content — already penalized under A; award 0 here rather than double-crediting it), **or** no structure info while the repo has a misleading area or off-repo decision the reviewer can name
 
-`[official]` Project-specific knowledge Claude can't reach by inference alone.
+### D. Non-Obvious Patterns (20 points)
 
-**15 pts**: Rich gotchas & workarounds
+`[official]` Project-specific knowledge Claude can't reach by inference alone. (Raised from 15 to 20 points on 2026-10-28: the official include list — misleading code, off-repo decisions, things corrected twice — is mostly this category.)
+
+**20 pts**: Rich gotchas & workarounds
 - Known issues and their fixes
 - "Why we do it this way" for non-obvious design decisions
 - Environment-specific caveats
 - Dependency ordering constraints
+- Anything Claude has had to be corrected on twice (official include list, 2026-10-28)
 
-**10 pts**: Some patterns documented
+**14 pts**: Some patterns documented
 
-**5 pts**: Minimal
+**7 pts**: Minimal
 
 **0 pts**: None
 
@@ -141,7 +150,7 @@ Award only for structure that is **not** derivable by reading the tree — see t
 
 **15 pts**: All instructions concrete
 - Commands actually run
-- File paths exist
+- File paths exist (if the user has run `/doctor prompt-audit` (v2.1.283+), its stale-path/stale-command findings are direct evidence here)
 - Steps are unambiguous and reproducible
 
 **10 pts**: Mostly concrete, some vagueness
@@ -214,3 +223,5 @@ Deduct when Low/None exceeds 30% of total sections.
 - 2026-09-16: Refreshed against memory + best-practices docs, the new context-window / large-codebases / sub-agents pages, the platform prompting guide (retrieved 2026-09-16), and changelog v2.1.261–v2.1.273. **No weight changes; one adjudication rule added under criterion A**: *Model-era workarounds* — official guidance (large-codebases "Revisit after major model releases"; Fable 5 "steer most behaviors with a brief instruction rather than enumerating each behavior by name") makes rules that only compensate for an older model's limitation inferable/obsolete content; deduct under the existing inferable-content schedule and flag via the Stale Information detection pattern, never both for one line. Emphasis dilution gained a second official source (platform guide: "dial back any aggressive language"). Advisory notes: every non-Explore/Plan subagent re-loads the full CLAUDE.md hierarchy (`omitClaudeMd` opts out, v2.1.271), so line count is paid per subagent; criterion B tie-breaker favors the exact test command (`[community:mid]`). Line-count thresholds, `/doctor` trim baseline, inferable-content list, and hook-convertible deduction all re-verified unchanged. last_updated bumped to 2026-09-16.
 - 2026-09-04: Refreshed against memory + best-practices docs (retrieved 2026-09-04) and changelog v2.1.229–v2.1.260. **No weight changes; one adjudication note added under criterion A**: emphasis dilution — official guidance now limits emphasis to the single skipped line, and blanket emphasis is scored via the new Minor anti-pattern **Emphasis Overuse** under criterion F (single-deduction rule noted to avoid double-counting). Line-count thresholds, `/doctor` trim baseline, inferable-content list, and hook-convertible deduction all re-verified unchanged. Advisory facts for assessors: a CLAUDE.md over 4 MiB is skipped entirely; `/context` (not `/memory`) is now the official way to verify what loaded. last_updated bumped to 2026-09-04.
 - 2026-09-24: Refreshed against memory + best-practices docs, the platform prompting guide and per-model pages (Opus 5, Opus 5.5, Fable 5, Fable 5.1), the Anthropic "new rules of context engineering for Claude 5" blog (retrieved 2026-09-24), and changelog v2.1.274–v2.1.281. **No weight changes. Two scoring rules added, one extended**: (1) **A — model-era workarounds extended** with the official per-model removal lists (generic verify/double-check, "think carefully", narration suppression, anti-formatting, no-thinking rules) under the existing -2/-10 schedule, plus two **exemptions**: concrete runnable checks, and lines adapted from official per-model prompt blocks (Fable 5.1 scope/"Delivering work", Opus 5 scope, surgical-edit) — advisory-only in a multi-model user-global CLAUDE.md. (2) **E — rationale rule**: official "NEVER use ellipses" example + Fable 5 "Give the reason, not only the request" → a file with 3+ bare, non-obvious prohibitions caps at 10/15. (3) Reasoning-reproduction instructions routed to the new Major anti-pattern under F (refusal risk on Fable 5/5.1 and Opus 5.5, the default Opus since v2.1.280). Advisory: native AGENTS.md reading (v2.1.277) — a CLAUDE.md that is `@AGENTS.md` + Claude-specific lines is not penalized; v2.1.281 startup notice now aggregates instruction files and @-imports. Line-count thresholds, `/doctor` trim baseline, and hook-convertible deduction re-verified unchanged. last_updated bumped to 2026-09-24.
+- 2026-10-28 (weight change, user-approved): **C renamed "Architecture Clarity" → "Non-Derivable Structure" and cut 15 → 10 pts (bands 10/7/3/0); D raised 15 → 20 pts (bands 20/14/7/0).** Basis: best-practices now lists "Describe your architecture and file layout in `CLAUDE.md`" under "What you can stop doing", while its include list (misleading places, off-repo decisions, things corrected twice) maps mostly onto D. Total stays 100.
+- 2026-10-28: Refreshed against the rewritten best-practices page + memory docs (retrieved 2026-10-28) and changelog v2.1.282–v2.1.311. **No weight changes. One rubric change, several adjudication rules**: (1) **C rubric** — official "What you can stop doing" drops architecture/file-layout description from CLAUDE.md; a file with *no* architecture section now scores **10** (was 0) when the reviewer can't name a misleading area or off-repo decision it omits; 15 now requires misleading places / off-repo decisions / boundary rationale; memory-page "project layout" conflict noted. (2) **A** — official two-question inferability test (deduct only when both are yes; "takes digging" content is not inferable); hook-convertible deduction now excludes preferences with exceptions (official "zero exceptions"); model-era list gains keep-going/don't-be-lazy and think-hard/be-thorough (`ultrathink` exempt); emphasis note marks the "that line alone" wording superseded (F severity unchanged). (3) **B** — single-test-file command added to the 15-pt bullets. (4) **D** — "corrected twice" added. (5) **E** — `/doctor prompt-audit` (v2.1.283) findings accepted as stale-path evidence. Line-count thresholds unchanged (official under-200 re-verified; a `[community:low]` preprint claiming length doesn't matter was rejected). last_updated bumped to 2026-10-28.

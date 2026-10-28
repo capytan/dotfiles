@@ -1,6 +1,7 @@
 ---
 paths:
   - "configs/claude/hooks/**"
+  - "configs/claude/settings.json"
   - ".github/workflows/hooks-test.yml"
 ---
 

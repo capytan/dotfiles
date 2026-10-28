@@ -41,7 +41,7 @@ python3 "${CLAUDE_SKILL_DIR}/scripts/collect.py" [OPTIONS] > /tmp/prompt-review-
 
 ### 出力の読み取り
 
-スクリプト実行後、`/tmp/prompt-review-data.json` を Read で読み込む。
+スクリプト実行後、`/tmp/prompt-review-data.json` を Read で読み込む。Read は既定で先頭 2,000 行しか返さないので、先に `wc -l` で行数を確かめ、超えていれば `offset`/`limit` で最後まで分けて読む。途中までの分析で済ませない。
 
 ### スクリプト失敗・空データのフォールバック
 

@@ -71,7 +71,7 @@ Read changed files fully. Apply the review checklist below, checking surrounding
 
 ### Step 4: Report Findings
 
-Use the output format below. Only report issues with >80% confidence.
+Use the output format below. Report every issue you find with its severity; mark low-confidence findings as such instead of dropping them.
 
 ## Review Checklist
 
