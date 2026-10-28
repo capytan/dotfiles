@@ -95,7 +95,7 @@ If the user specifies a scope (e.g., "review my skills only"), honor that. Other
 ### CLAUDE.md Files
 
 ```bash
-find . -maxdepth 5 \( -name "CLAUDE.md" -o -name ".claude.local.md" \) 2>/dev/null | head -30
+find . -maxdepth 5 \( -name "CLAUDE.md" -o -name "CLAUDE.local.md" \) 2>/dev/null | head -30
 ```
 
 Also check `~/.claude/CLAUDE.md` (global defaults), `.claude/rules/*.md` (auto-loaded rules), and `.claude/settings.json` (consistency with hooks).
@@ -121,7 +121,7 @@ Also check `~/.claude/agents/*.md`.
 | Type | Location | Scope | Check |
 |------|----------|-------|-------|
 | Project root | `./CLAUDE.md` | Team-shared (git) | Primary review target |
-| Local override | `./.claude.local.md` | Personal (gitignored) | Sensitive info placed here correctly? |
+| Local override | `./CLAUDE.local.md` | Personal (gitignored) | Sensitive info placed here correctly? |
 | Global | `~/.claude/CLAUDE.md` | All projects | No project-specific content leaking in? |
 | Subdirectory | `./packages/*/CLAUDE.md` | Team-shared | No duplication with root? |
 | Rule files | `.claude/rules/*.md` | Team-shared | Properly separated from CLAUDE.md? |

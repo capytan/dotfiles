@@ -9,8 +9,11 @@
 > - `[community:mid]` = GitHub 10-50 stars, verified in a tech blog
 > - `[community:low]` = Individual report, unverified but reasonable (reference only, not in scoring)
 
-last_updated: 2026-09-24
+last_updated: 2026-10-28
 sources:
+  - https://max.nardit.com/articles/prompt-audit-claude-md
+  - https://arte.itlibra.com/en/articles/claude-code-doctor-prompt-audit
+  - https://www.alexdunlop.com/writing/claude-md-best-practices
   - https://wmedia.es/en/tips/claude-code-opus-5-prompting-tips
   - https://www.mindstudio.ai/blog/claude-fable-5-1-prompting-rules-changed
   - https://charlesjones.dev/blog/claude-opus-5-context-engineering-what-to-delete
@@ -338,6 +341,24 @@ Strengthens the "move on-demand knowledge to skills, not CLAUDE.md" recommendati
 
 > Sources: https://gihyo.jp/article/2026/09/claude-code-support-agents-md, https://www.theregister.com/ai-and-ml/2026/09/18/anthropic-decides-to-support-openais-markdown-instructions-spec/5297588, https://devops.com/claude-code-adds-agents-md-fallback-cutting-instruction-file-sprawl/ (retrieved 2026-09-24). All consistent with the official memory page; official-best-practices carries the scoring-relevant detail.
 
+### `/doctor prompt-audit` Field Reports (added 2026-10-28)
+
+#### What the audit flags, and what it keeps `[community:mid]`
+
+> Targets "capitalized MUST, NEVER, ALWAYS, CRITICAL, IMPORTANT, especially with no reason beside them", replaced scaffolds ("think step by step", scratchpad tags), step-by-step choreography for judgment work, long prohibition lists, workarounds for a retired model, stale paths/commands (which "now lead the report"), contradictions, and "history narratives" (past tense, incident IDs, pinned model names). Keeps prohibitions against current, reproducible failures and the reasons behind constraints. "Switch to the target model first" — config is audited against the session's model; "an audit that finds nothing should change nothing."
+
+> Source: https://max.nardit.com/articles/prompt-audit-claude-md (published 2026-10-05, retrieved 2026-10-28). Independently corroborated by wmedia.es, note.com/dialogs_develop, claudcod.com (retrieved 2026-10-28 via search). Consistent with the official memory page; scoring weight comes from the official source. Detection-method value: "history narratives" maps to the Stale Information pattern.
+
+#### Move incident records instead of deleting them `[community:mid]`
+
+> Hands-on run (2026-10-03, Claude Code 2.1.286, Opus 5.5, ~10,700 chars of CLAUDE.md + AGENTS.md): 9 findings, 7 applied; "Most findings were about stale or inconsistent config references", almost no older-model prompting. Five medium-confidence findings proposed deleting dated incident records; the author judged them evidence that prevents repeated mistakes and moved them to a separate records file instead. Recommendation: check each finding against the original, move text that exists for a reason rather than deleting it, and re-check real work after removing an instruction.
+
+> Source: https://arte.itlibra.com/en/articles/claude-code-doctor-prompt-audit (published 2026-10-03, updated 2026-10-23; retrieved 2026-10-28). Feeds Phase 4 fix principle: a dated incident line in CLAUDE.md is a *relocate* candidate (to a rules file, skill, or doc), not a *delete* candidate, when it encodes a still-reproducible failure.
+
+#### Oct 2026 JA sources
+
+No Zenn/Qiita article dated October 2026 on CLAUDE.md authoring surfaced (search 2026-10-28); the newest JA items (kanrinin-blog, ~2026-10-12) restate the official "add a rule after correcting twice" loop. No change.
+
 ---
 
 ## Incorporation into Scoring Criteria
@@ -358,6 +379,7 @@ When a community insight is reflected in `claude-md-quality-criteria.md`, record
 | 2026-09-16 | Exact test command is the highest-ROI line; imperative phrasing | B. Commands & Workflows (tie-breaker note) | `[community:mid]` |
 | 2026-09-24 | Grep CLAUDE.md + agents + skills for verify/double-check leftovers (detection method for official Opus 5 guidance) | A. model-era workarounds (detection); cross-artifact check 23 | `[community:mid]` (deduction itself is `[official]`) |
 | 2026-09-24 | All-caps CRITICAL/MUST/ALWAYS over-trigger on Claude 5 models | F. Emphasis Overuse (corroboration only) | `[community:mid]` |
+| 2026-10-28 | Incident/history records flagged by prompt-audit: relocate rather than delete when they encode a reproducible failure | F. Stale Information (Fix note) | `[community:mid]` |
 
 ---
 
@@ -375,6 +397,7 @@ Insights found during research but not adopted, for reasons such as:
 | 2026-09-16 | Symlink a canonical rules repo into every project's `.claude/rules/` to share security/coding standards | **Conflicts with official docs (retrieved 2026-09-16)**: a symlink whose target is outside the working directory is treated as an external import — it does not load until external-import approval (which symlinks alone never trigger), and path-scoped linked rules never load even after approval. Official alternatives: `~/.claude/rules/` for personal sharing, a plugin for team sharing | https://rahuulmiishra.medium.com/your-claude-md-is-doing-too-much-heres-how-to-fix-it-2cc495ed3599 (2026-04) |
 | 2026-09-24 | "Claude Code reads CLAUDE.md, not AGENTS.md — the 'reads it as a fallback' claim is wrong" (yurukusa gist, #6235 cluster); older Zenn articles saying AGENTS.md is unsupported | **Stale since v2.1.277** — official memory page now documents native AGENTS.md reading. Do not cite as a reason to require a CLAUDE.md/symlink, except on Bedrock/Vertex/Foundry or flag-fetch-disabled sessions | https://gist.github.com/yurukusa/d36197848911f025add142abefcde685 |
 | 2026-09-24 | "When an instruction has two readings, list both and pick one" as a CLAUDE.md rule | Conflicts with official Fable 5.1 scope block ("implement the reading … most directly support, state that assumption … don't build for the other readings") — the official form wins | https://note.com/gaku_tachibana/n/n46a0dfd9ee1e |
+| 2026-10-28 | "File length, rule position, and file arrangement did not change rule-following" (Damon McMillan, arXiv 2605.10039, 1,650 sessions, via Alex Dunlop 2026-08-12) | `[community:low]` — single-author non-peer-reviewed preprint, TypeScript/single-turn only; **conflicts with official** "Longer files consume more context and reduce adherence". Official wins; line-count schedule unchanged | https://www.alexdunlop.com/writing/claude-md-best-practices |
 | 2026-09-16 | Rules with `paths:` in `~/.claude/rules/` are ignored (GitHub #21858) | Issue is closed with no fix version stated; the memory page documents user-level rules without a `paths` restriction, so treat as "verify with `InstructionsLoaded`" rather than a rule. Recorded as a caveat in the modularization guide, not adopted for scoring | https://github.com/anthropics/claude-code/issues/21858 |
 
 ---
@@ -395,3 +418,4 @@ Insights found during research but not adopted, for reasons such as:
 - 2026-09-16: Freshness re-run (12 days stale). Surveyed Sep 2026 EN sources (eesel.ai 2026-09-09, dev.to nishilbhave, preporato, techsy, buildcamp) and JA sources (Qiita suwa_nobu 2026-09-15, DevelopersIO 2026-09-15, kirozero updated 2026-08-02, tamashiro_nobuyuki 2026-08-14; no Zenn articles dated Sep 2026 surfaced). **Adopted**: "CLAUDE.md is context, not access control" (eesel, `[community:mid]`, corroborates the official PreToolUse line); "exact test command is the highest-ROI line" (nishilbhave, `[community:mid]`, tie-breaker for criterion B); subagents inherit the whole CLAUDE.md hierarchy + `omitClaudeMd` verification (suwa_nobu/DevelopersIO, now official). **Promoted to official**: prune-after-model-updates cadence (large-codebases + Fable 5 prompting pages). **Source drift**: the SFEIR page (updated 2026-06-05) dropped the "40%" stat, the "leave formatting to linters" tip (re-sourced to nishilbhave), and the "stable CLAUDE.md on main" tip (downgraded to `[community:low]`). **Rejected**: symlinking a canonical rules repo into `.claude/rules/` (Medium) — conflicts with the new official external-import semantics for symlinks; GitHub #21858 (user-level path-scoped rules ignored) recorded as a verify-don't-assume caveat. last_updated bumped to 2026-09-16.
 - 2026-08-12: Freshness re-run (18 days stale). Community sources re-checked (mcp.directory "Claude Code Best Practices: From Vibe Coding to Agentic Engineering (2026)", SmartScope advanced-practices article, Totalum skills-vs-hooks-vs-subagents guide; `[community:mid]` or better). **No new practices worth adopting.** The dominant 2026 framing is a surface-selection decision tree - "if a rule must be enforced, use hooks or permissions; if it's contextual knowledge, use skills; if it's a delegation boundary, use subagents; if it's always-on project guidance, keep it short in CLAUDE.md" - which matches guidance already recorded here and in the modularization guide. last_updated bumped to 2026-08-12.
 - 2026-09-24: Freshness re-run (8 days stale). Surveyed Sep 2026 EN/JA sources on Claude 5-generation CLAUDE.md pruning and the v2.1.277 AGENTS.md support (wmedia.es, MindStudio 2026-09-11, charlesjones.dev, explainx.ai, Gaku Tachibana note 2026-09-02, gihyo.jp 2026-09-19, The Register / InfoWorld / DevOps.com / Publickey, yurukusa gist, Uravation/Serverworks JA guides). No Zenn article dated late September 2026 on CLAUDE.md authoring surfaced; no Opus 5.5-specific CLAUDE.md article found (model released 2026-09-22). **Added** a "Claude 5-Generation Pruning" subsection: grep-based verify/double-check sweep over CLAUDE.md + agents + skills (`[community:mid]`, detection method for the official Opus 5 deduction); all-caps emphasis over-triggers (`[community:mid]`, corroborates official Emphasis Overuse); "think carefully" removal (`[community:low]`, restates official Opus 5.5); model-routing rules example (`[community:low]`). **Added** AGENTS.md news-coverage entry (`[community:mid]`, Thariq Shihipar quote `[semi-official]`). **Rejected**: the "Claude Code does not read AGENTS.md" claim (stale since v2.1.277) and "list both readings" (conflicts with official Fable 5.1 scope block). The Anthropic "new rules of context engineering" blog is official and lives in official-best-practices. last_updated bumped to 2026-09-24.
+- 2026-10-28: Freshness re-run. Surveyed Oct 2026 EN/JA sources on `/doctor prompt-audit` (v2.1.283) and the rewritten official best-practices page. **Added** "`/doctor prompt-audit` Field Reports": what it flags/keeps (max.nardit.com 2026-10-05, `[community:mid]`, corroborated by 3+ blogs) and a hands-on run recommending relocating incident records rather than deleting them (arte.itlibra.com 2026-10-03, `[community:mid]`, reflected as a Fix note under Stale Information). **Rejected** the McMillan arXiv 2605.10039 "length/position don't matter" finding (`[community:low]`, conflicts with official). No October 2026 Zenn/Qiita CLAUDE.md article surfaced. last_updated bumped to 2026-10-28.

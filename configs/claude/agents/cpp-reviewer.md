@@ -94,7 +94,7 @@ When invoked:
 - **Designated initializers / class template argument deduction**: Verbose struct initialization or explicit template args when CTAD / `{.member = value}` is available
 - **`std::format` / `std::print` (C++20/23)**: `printf`-family calls where formatted output is available and type-safe
 
-Before recommending any C++20/23 feature, confirm the target standard from `CMakeLists.txt` / `Makefile` / `compile_commands.json`; do not suggest features below the project's compiler standard.
+Before recommending any C++20/23 feature, confirm the target standard from `CMakeLists.txt` / `Makefile` / `compile_commands.json`; do not suggest features newer than the project's compiler standard.
 
 ## Diagnostic Commands
 

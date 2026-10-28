@@ -17,6 +17,13 @@ uv・mise・Homebrew で入れたツールを更新する前に、次の 4 つ�
 
 結果を表で示し、承認を得たものだけ更新する。記録は会話に表を出すだけで、ファイルには残さない。
 
+## 守ること
+
+- 手順 1〜3 は読み取りだけ。承認の前に更新系コマンド（`uv self update`、`uv tool install/upgrade`、`mise self-update`、`mise use`、`mise upgrade`、`brew upgrade`）を実行しない
+- 承認の範囲を広げない。承認後に版が変わった（`brew update` をやり直した等）ら表を作り直す
+- 落とした成果物は検証だけに使い、実行しない
+- commit はしても push はしない
+
 ## When to Use This Skill
 
 発動する依頼:
@@ -302,9 +309,3 @@ push はしない。
 | `safe-chain` が見つからない | uv tool の更新を止めて報告する |
 | `mise self-update` が brew 管理を理由に断る | mise を brew の流れに移し、`brew upgrade --formula mise` を候補として表を出し直す |
 | 更新コマンドの失敗 | エラーを原文のまま伝え、以降の更新を止める |
-
-## 守ること
-
-- 手順 1〜3 は読み取りだけ。承認の前に更新系コマンド（`uv self update`、`uv tool install/upgrade`、`mise self-update`、`mise use`、`mise upgrade`、`brew upgrade`）を実行しない
-- 承認の範囲を広げない。承認後に版が変わった（`brew update` をやり直した等）ら表を作り直す
-- 落とした成果物は検証だけに使い、実行しない

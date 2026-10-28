@@ -61,7 +61,7 @@ You are an expert Ruby code reviewer specializing in idiomatic Ruby, Rails best 
 
 ### CRITICAL (Error Handling)
 
-- **Bare rescue** — `rescue => e` catching all exceptions including `SignalException`. Use specific exception classes
+- **Overbroad rescue** — `rescue => e` (catches every `StandardError`) where only specific errors are expected; `rescue Exception` additionally catches `SignalException` and `SystemExit`. Use specific exception classes
 - **Swallowed exceptions** — Empty rescue blocks or rescue with only logging. Re-raise or handle meaningfully
 - **Missing transaction rollback** — Database operations without `ActiveRecord::Base.transaction`
 - **Rescue in loop** — Catching exceptions inside loops instead of around them

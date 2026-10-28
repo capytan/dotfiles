@@ -3,7 +3,7 @@
 > Referenced during Phase 2, criterion E (Anti-patterns) for agent file reviews.
 > Each pattern has a severity: Critical / Major / Minor.
 
-last_updated: 2026-09-24
+last_updated: 2026-10-28
 
 ---
 
@@ -57,16 +57,18 @@ These defects make Claude Code skip the file entirely, so the agent silently doe
 5. **YAML that doesn't parse** (added 2026-09-16) — tabs, an unquoted `:` inside a value, bad indentation: "Claude Code reads no fields from the file, skips it, and writes the parse error to the debug log".
 6. **UTF-8 BOM at the start of the `.md` file** — silently ignored before v2.1.239 (changelog: "Fixed agents, skills, and commands whose `.md` file starts with a UTF-8 BOM being silently ignored"). Loads on current versions, but breaks teammates on older Claude Code.
 
+7. **`name` longer than 256 characters** (added 2026-10-28) — v2.1.292: "Changed agent names to allow at most 256 characters: a longer one is rejected"; the docs list it with the other skipped-name cases: "A `name` that starts with `-`, contains `:`, or is longer than 256 characters: Claude Code skips the file and writes an error to the debug log" (https://code.claude.com/docs/en/sub-agents, retrieved 2026-10-28).
+
 (A file with **no `name`** is also skipped, but that is the documented way to keep a README beside your agents — flag it only when the file was obviously meant to be an agent.)
 
 **Detection patterns:**
-- `name:` value containing `:` or beginning with `-`
+- `name:` value containing `:`, beginning with `-`, or longer than 256 characters
 - `description:` absent or empty while `name:` is present
 - `head -1 <file>` is not exactly `---`
 - The frontmatter block fails a YAML parse (e.g. `description: Use when: foo` with an unquoted colon)
 - First 3 bytes of the file are `EF BB BF` (`head -c 3 <file> | xxd`)
 
-**Fix:** Rename to lowercase-and-hyphens without `:` or a leading `-`; add a `description`; make `---` the first line; quote YAML values that contain `:`; re-save the file without a BOM. Score cases 1–5 under agent-quality-criteria.md criterion A (0 pts, Critical); the BOM case is -2 pts under criterion G on current versions.
+**Fix:** Rename to a short lowercase-and-hyphens name (digits allowed, e.g. `reviewer-v2`) without `:` or a leading `-`; add a `description`; make `---` the first line; quote YAML values that contain `:`; re-save the file without a BOM. Score cases 1–5 under agent-quality-criteria.md criterion A (0 pts, Critical); the BOM case is -2 pts under criterion G on current versions.
 
 ---
 
@@ -92,6 +94,16 @@ Added 2026-09-16: the check also refuses a command "when it can't verify from th
 - Body steps that run shell commands while `disallowedTools` names `Bash(...)`
 
 **Fix:** Keep `disallowedTools` to bare tool names. Put command-level restrictions in `settings.json` under `permissions.deny` (e.g. `Bash(git push *)`), which "applies to the main conversation and to subagents". Severity: Major (the tool pool is silently narrower than designed).
+
+### Misspelled Restriction Field `[official]` (added 2026-10-28)
+
+"Multi-word field names use camelCase, such as `maxTurns` and `disallowedTools`, and must match the table exactly: Claude Code ignores a field it doesn't recognize without reporting an error." (https://code.claude.com/docs/en/sub-agents, retrieved 2026-10-28). When the misspelled field is one that *restricts* the agent, the restriction silently does not exist — the agent runs with the full inherited tool pool or the parent's permission mode while the file reads as locked down.
+
+**Detection patterns:**
+- Non-camelCase or wrong-case variants of restriction fields: `disallowed-tools`, `disallowed_tools`, `disallowedtools`, `permission_mode`, `permission-mode`, `max_turns`, `Tools`
+- Any top-level key not in the recognized-field list of agent-quality-criteria.md criterion A
+
+**Fix:** Correct the key to the exact camelCase name. Verify with `claude --debug` and search `~/.claude/debug/<session-id>.txt` for `does not recognize or apply` (v2.1.296+, which names the likely intended field). Severity: Major for restriction fields (`tools`, `disallowedTools`, `permissionMode`, `maxTurns`, `isolation`); other misspellings are only the -2 pts criterion A deduction — do not also count them here.
 
 ### `omitClaudeMd: true` With a CLAUDE.md-Dependent Body `[custom]` (added 2026-09-16; derived from official field semantics)
 
@@ -291,3 +303,4 @@ System prompt lacks guidance for failure modes or unusual inputs.
 - 2026-09-04: Refreshed against code.claude.com/docs/en/sub-agents (retrieved 2026-09-04) + changelog v2.1.229-v2.1.260. **One new Critical anti-pattern**: "Agent File That Never Loads" — a `name` containing `:` (reserved for plugin scopes, file skipped with only a debug-log error, since v2.1.218) or a UTF-8 BOM at the start of the `.md` (silently ignored before v2.1.239). **Assessor notes**: (1) an agent body that depends on `CLAUDE_CODE_SUBAGENT_MODEL` overriding its `model:` frontmatter is stale — since v2.1.251 the env var is a default, not an override (`CLAUDE_CODE_SUBAGENT_MODEL_FORCE`, v2.1.257, is the explicit override). (2) Do not flag `maxTurns` as risking silent truncation: since v2.1.246 output stopped at the limit is marked partial and the subagent is resumable. (3) The background tool set is now enumerated (19 built-ins + all MCP tools; forks exempt) — check body tool dependencies against it since interactive spawns run in the background by default. (4) Very long descriptions now carry a documented cost: 15,000-token combined description budget with a startup warning. (5) Nesting depth remains 3 by default but is configurable via `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH`; a concurrent cap of 20 subagents exists (`CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS`) — both platform limits, advisory only. last_updated bumped to 2026-09-04.
 - 2026-09-16: Refreshed against code.claude.com/docs/en/sub-agents, /errors, /agent-teams, /tools-reference (retrieved 2026-09-16) + changelog v2.1.261-v2.1.273. **Critical**: (1) "Agent File That Never Loads" extended with the official skipped-file list — `name` starting with `-`, `name` without `description`, opening `---` not on line 1, unparseable YAML (all silent, debug log only). (2) **New "Empty `tools` List"** — an empty list, or one that `disallowedTools` empties, launches tool-less with *no* refusal (errors page). (3) "No Resolvable Entry in `tools`" detection rewritten around the three official failure groups, adding background-dropped built-ins (interactive default) and the model-gated `TodoWrite`/`TaskCreate`… tools on Claude 5 models. **Major (new)**: "Specifier in `disallowedTools`" (`Bash(git push *)` removes all of Bash; use `permissions.deny`); "`omitClaudeMd: true` With a CLAUDE.md-Dependent Body" `[custom]` (-3 under G); "`permissionMode: bypassPermissions` Relied On as an Escalation" (never grants more than the parent, v2.1.267). Worktree anti-pattern extended: unverifiable/computed git invocations are refused, and `cd` never persists across Bash calls in any subagent. **Minor (new)**: "Stale 'Restart to Load' Guidance" — agents dirs are hot-reloaded (three exceptions). **Assessor notes**: `memory:` auto-enables Read/Write/Edit (not an unjustified-tools finding — the docs define it, but note it on read-only agents); `SubagentHandback` (v2.1.271, auto mode) is injected regardless of `tools`/`disallowedTools` — listing or denying it is a no-op; under a parent in auto mode (the Pro/Max/Team default) every frontmatter `permissionMode` is ignored and the classifier reviews the subagent's final report; a definition reused as an agent-team teammate never gets its `skills` preloaded; `background: true` errors when the spawner is an in-process teammate. last_updated bumped to 2026-09-16.
 - 2026-09-24: Refreshed against code.claude.com/docs/en/sub-agents + best-practices, the per-model prompting pages (Opus 5, Opus 5.5, Fable 5, Fable 5.1) (retrieved 2026-09-24) + changelog v2.1.274–v2.1.281. **Two new Major**: (1) "Instruction to Reproduce Reasoning in the Output" — `reasoning_extraction` refusal risk on Fable 5/5.1 and Opus 5.5, which `model: opus` resolves to since v2.1.280; per-finding rationale exempt. (2) "Severity-Threshold Filter in a Reviewer Body" — Opus 5 follows "only report high-severity"/"be conservative" literally and under-reports; category scoping ("flag only correctness/requirement gaps", best-practices) and separate scoring stages exempt. **Two new Minor**: (3) "Generic Self-Verification Instructions" (Opus 5 over-verification; dedicated evaluator agents exempt per Fable 5 "fresh-context verifier subagents tend to outperform self-critique"); (4) "Output Contract That Issues Orders to the Parent" — subagent results arrive under a no-authority header since v2.1.277. last_updated bumped to 2026-09-24.
+- 2026-10-28: Refreshed against code.claude.com/docs/en/sub-agents (retrieved 2026-10-28) + changelog v2.1.282–v2.1.311. **Critical** "Agent File That Never Loads" gains case 7: `name` longer than 256 characters (skipped since v2.1.292); fix text now allows digits (`reviewer-v2`). **New Major**: "Misspelled Restriction Field" — unrecognized frontmatter keys are silently ignored, so a misspelled `disallowedTools`/`permissionMode`/`tools`/`maxTurns`/`isolation` leaves the agent unrestricted; detection via `claude --debug` + `does not recognize or apply` (v2.1.296). last_updated bumped to 2026-10-28.

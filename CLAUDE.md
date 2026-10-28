@@ -12,7 +12,8 @@ Three layers — do not mix:
 ## Key Rules
 
 - **Local files are sacred**: Never commit `shell/zsh/local.zsh`, `.claude/settings.local.json`
-- **Verify symlinks**: `find -L ~ -maxdepth 1 -type l; find -L ~/.config ~/.claude -type l` — `-L` follows targets, so anything printed is *broken*. `~/.config` must be searched at full depth (`install.sh` links `.config/{git,herdr,alacritty,ghostty,mise,zed}/**`, not just its top level). Check before marking work complete; the expected output is *empty*, so anything printed is a regression.
+- **Verify symlinks** before marking work complete: `find -L ~ -maxdepth 1 -type l; find -L ~/.config ~/.claude -type l`. Expected output is *empty* — `-L` follows targets, so anything printed is a broken link
+  - Search `~/.config` at full depth: `install.sh` links `.config/{git,herdr,alacritty,ghostty,mise,zed}/**`, not just its top level
 
 ## Commands
 
@@ -27,7 +28,12 @@ bash configs/claude/hooks/test-pretooluse-validate-command.sh          # Hook va
 HOOK_BASH=/bin/bash bash configs/claude/hooks/test-pretooluse-validate-command.sh   # Same, under macOS bash 3.2
 ```
 
-CI (`.github/workflows/hooks-test.yml`) runs the validator suite on both bash 5 and bash 3.2, but only for same-repo PRs that touch `configs/claude/hooks/**`, `configs/claude/settings.json` (the suite checks its `Read()`/`Edit()` rules against the sensitive-path table), or the workflow file itself (fork PRs are skipped by design). Hook-adjacent changes outside those paths — `setup-claude.sh`, `.claude/rules/claude-config.md` — get no CI run, so run the suite locally for those.
+CI (`.github/workflows/hooks-test.yml`) runs the validator suite on bash 5 and bash 3.2, only for same-repo PRs (fork PRs are skipped by design) that touch:
+- `configs/claude/hooks/**`
+- `configs/claude/settings.json` — the suite checks its `Read()`/`Edit()` rules against the sensitive-path table
+- the workflow file itself
+
+Hook-adjacent changes outside those paths (`setup-claude.sh`, `.claude/rules/claude-config.md`) get no CI run — run the suite locally for those.
 
 ## Non-Obvious Patterns
 
@@ -36,4 +42,4 @@ CI (`.github/workflows/hooks-test.yml`) runs the validator suite on both bash 5 
 - `configs/nvim/` and `configs/vim/` are legacy (vim-plug era) — do not modify
 - `configs/herdr/config.toml` keeps herdr's default `ctrl+b` prefix by omitting `[keys]` entirely. Validate edits with `herdr config check`; the full key list is `herdr --default-config`
 - `configs/claude/CLAUDE.md` is symlinked to `~/.claude/CLAUDE.md` (global rules for all projects) — separate scope from this repo's `./CLAUDE.md`, not duplication
-- Claude Code config conventions live in `.claude/rules/claude-config.md` (path-scoped to `configs/claude/**`); the PreToolUse validator's stripping algorithm and bypass history live in `.claude/rules/pretooluse-validator.md` (path-scoped to `configs/claude/hooks/**` and `.github/workflows/hooks-test.yml`)
+- Claude Code config conventions live in `.claude/rules/claude-config.md` (path-scoped to `configs/claude/**`); the PreToolUse validator's stripping algorithm and bypass history live in `.claude/rules/pretooluse-validator.md` (path-scoped to `configs/claude/hooks/**`, `configs/claude/settings.json`, and `.github/workflows/hooks-test.yml`)
