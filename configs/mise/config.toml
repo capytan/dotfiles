@@ -1,17 +1,17 @@
 [tools]
 node = "24.22.1"
 "npm:@devcontainers/cli" = { version = "0.89.0", minimum_release_age = "7d" }
-biome = "2.5.15"
-deno = "2.9.7"
+biome = "2.6.2"
+deno = "2.9.8"
 pre-commit = "4.7.0"
-python = "3.14.8"
-ruby = "4.0.7"
-terraform = "1.16.6"
+python = "3.14.10"
+ruby = "4.0.9"
+terraform = "1.17.0"
 tflint = "0.64.0"
-trivy = "0.76.0"
+trivy = "0.76.1"
 gcloud = "589.0.0"
 azure-cli = { version = "2.91.0", dependency_prereleases = "allow", with = ["pip"], minimum_release_age = "7d" }
-bun = "1.4.3"
+bun = "1.4.4"
 
 [settings]
 idiomatic_version_file_enable_tools = ["ruby"]
