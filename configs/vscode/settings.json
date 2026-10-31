@@ -93,6 +93,10 @@
     "yzhang.markdown-all-in-one": true
   },
 
+  // Workspace Trust Settings
+  "security.workspace.trust.enabled": true, // Cursor defaults to false
+  "task.allowAutomaticTasks": "off", // Cursor defaults to "on"
+
   // UI/Workbench Settings
   "window.commandCenter": true,
   "breadcrumbs.enabled": true,
