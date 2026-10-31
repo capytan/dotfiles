@@ -163,10 +163,8 @@
   },
 
   // TypeScript / JavaScript Settings
-  "typescript.updateImportsOnFileMove.enabled": "always",
-  "javascript.updateImportsOnFileMove.enabled": "always",
-  "typescript.inlayHints.parameterNames.enabled": "literals",
-  "javascript.inlayHints.parameterNames.enabled": "literals",
+  "js/ts.updateImportsOnFileMove.enabled": "always",
+  "js/ts.inlayHints.parameterNames.enabled": "literals",
 
   // Extension Settings - Prettier
   "prettier.trailingComma": "es5",
