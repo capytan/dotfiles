@@ -57,6 +57,41 @@
   "extensions.autoUpdateDelay": 168, // VS Code: hours to wait when auto update is on
   "extensions.installCooldownHours": 168, // Cursor: skip versions published less than 168 hours ago
   "update.mode": "manual",
+  // Organizations by publisher, individuals by extension.
+  // Unlisted extensions are blocked and disabled if installed
+  "extensions.allowed": {
+    "anysphere": true,
+    "anthropic": true,
+    "docker": true,
+    "github": true,
+    "golang": true,
+    "hashicorp": true,
+    "ms-azuretools": true,
+    "ms-kubernetes-tools": true,
+    "ms-python": true,
+    "ms-vscode": true,
+    "ms-vscode-remote": true,
+    "ms-vsliveshare": true,
+    "redhat": true,
+    "shopify": true,
+    "sorbet": true,
+    "3w36zj6.textlint": true,
+    "charliermarsh.ruff": true,
+    "davidanson.vscode-markdownlint": true,
+    "dbaeumer.vscode-eslint": true,
+    "esbenp.prettier-vscode": true,
+    "grapecity.gc-excelviewer": true,
+    "koichisasada.vscode-rdbg": true,
+    "marp-team.marp-vscode": true,
+    "mechatroner.rainbow-csv": true,
+    "shd101wyy.markdown-preview-enhanced": true,
+    "takumii.markdowntable": true,
+    "tamasfe.even-better-toml": true,
+    "tomoki1207.pdf": true,
+    "vscode-icons-team.vscode-icons": true,
+    "vscodevim.vim": true,
+    "yzhang.markdown-all-in-one": true
+  },
 
   // UI/Workbench Settings
   "window.commandCenter": true,
