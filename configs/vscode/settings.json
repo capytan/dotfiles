@@ -100,6 +100,11 @@
   // Telemetry Settings
   "telemetry.telemetryLevel": "off", // VS Code only
 
+  // AI Agent Settings (VS Code built-in chat)
+  "chat.tools.terminal.autoApproveWorkspaceNpmScripts": false,
+  "chat.mcp.autostart": "never",
+  "chat.agent.sandbox.enabled": "on",
+
   // UI/Workbench Settings
   "window.commandCenter": true,
   "breadcrumbs.enabled": true,
