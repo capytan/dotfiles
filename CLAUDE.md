@@ -39,7 +39,8 @@ Hook-adjacent changes outside those paths (`setup-claude.sh`, `.claude/rules/cla
 
 - `shell/zshrc` is a thin loader — add shell config to numbered modules in `shell/zsh/`, not to zshrc directly (naming + local-file rules in `.claude/rules/shell-config.md`)
 - `configs/alacritty/alacritty.toml` imports the shared modules `theme`/`font`/`font-size`/`shared`. `pane.toml` is **not** one of them — its only importer is `btop.toml`, which `install.sh` never links. `platform/ubuntu/alacritty.toml` has no `import` at all, so a change to a shared module does not reach Ubuntu
-- `configs/nvim/` and `configs/vim/` are legacy (vim-plug era) — do not modify
+- `configs/nvim/` is the LazyVim config. `lazy-lock.json` is committed on purpose to pin plugins against supply-chain attacks; the update procedure is in README's "Neovim Plugin Updates"
+- `configs/vim/` is legacy (vim-plug era) — do not modify
 - `configs/herdr/config.toml` keeps herdr's default `ctrl+b` prefix by omitting `[keys]` entirely. Validate edits with `herdr config check`; the full key list is `herdr --default-config`
 - `configs/claude/CLAUDE.md` is symlinked to `~/.claude/CLAUDE.md` (global rules for all projects) — separate scope from this repo's `./CLAUDE.md`, not duplication
 - Claude Code config conventions live in `.claude/rules/claude-config.md` (path-scoped to `configs/claude/**`); the PreToolUse validator's stripping algorithm and bypass history live in `.claude/rules/pretooluse-validator.md` (path-scoped to `configs/claude/hooks/**`, `configs/claude/settings.json`, and `.github/workflows/hooks-test.yml`)
