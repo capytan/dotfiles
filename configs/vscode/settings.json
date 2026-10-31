@@ -52,6 +52,11 @@
     "**/.cache": true
   },
 
+  // Supply Chain Settings
+  "extensions.autoUpdate": false, // boolean: Cursor reads the string "off" as on
+  "extensions.autoUpdateDelay": 168, // VS Code: hours to wait when auto update is on
+  "extensions.installCooldownHours": 168, // Cursor: skip versions published less than 168 hours ago
+
   // UI/Workbench Settings
   "window.commandCenter": true,
   "breadcrumbs.enabled": true,
@@ -159,7 +164,6 @@
     "editor.defaultFormatter": "redhat.vscode-yaml"
   },
   "claudeCode.preferredLocation": "panel",
-  "extensions.autoUpdate": "off",
   "editor.unicodeHighlight.nonBasicASCII": false,
   "git.autofetch": true,
   "git.pruneOnFetch": true,
