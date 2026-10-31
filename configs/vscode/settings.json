@@ -56,6 +56,7 @@
   "extensions.autoUpdate": false, // boolean: Cursor reads the string "off" as on
   "extensions.autoUpdateDelay": 168, // VS Code: hours to wait when auto update is on
   "extensions.installCooldownHours": 168, // Cursor: skip versions published less than 168 hours ago
+  "update.mode": "manual",
 
   // UI/Workbench Settings
   "window.commandCenter": true,
