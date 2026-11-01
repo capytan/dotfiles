@@ -1,0 +1,227 @@
+{
+  // configs/vscode/settings.json (VS Code) and configs/cursor/settings.json (Cursor)
+  // differ only in the extensions.autoUpdate line; apply every other change to both
+  // Editor Basic Settings
+  "editor.accessibilitySupport": "off",
+  "editor.editContext": false,
+  "editor.lineNumbers": "on",
+  "editor.renderLineHighlight": "all",
+  "editor.wordWrap": "on",
+  "editor.minimap.enabled": false,
+  "editor.stickyScroll.enabled": true,
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": "active",
+  "editor.suggestSelection": "first",
+  "editor.cursorSurroundingLines": 8,
+
+  // Editor Formatting
+  "editor.tabSize": 2,
+  "editor.formatOnSave": true,
+
+  // Editor Font Settings
+  "editor.fontSize": 14,
+  "editor.fontLigatures": true,
+  "editor.fontFamily": "JetBrainsMonoNL Nerd Font",
+  "editor.lineHeight": 1.5,
+
+  // File Settings
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 1000,
+  "files.insertFinalNewline": true,
+  "files.trimTrailingWhitespace": true,
+  "files.exclude": {
+    "**/.idea": true,
+    "**/.DS_Store": true,
+    "**/node_modules": true,
+    "**/__pycache__": true,
+    "**/*.pyc": true,
+  },
+
+  // Terminal Settings
+  "terminal.integrated.fontSize": 14,
+  "terminal.integrated.fontFamily": "JetBrainsMono Nerd Font",
+  "terminal.integrated.cursorStyle": "line",
+  "terminal.integrated.cursorBlinking": true,
+  "terminal.integrated.env.osx": {
+    "Q_NEW_SESSION": "1",
+  },
+
+  // Search Settings
+  "search.exclude": {
+    "**/dist": true,
+    "**/.next": true,
+    "**/coverage": true,
+    "**/.cache": true,
+  },
+
+  // Supply Chain Settings
+  "extensions.autoUpdate": false, // boolean: Cursor reads the string "off" as on; VS Code uses configs/vscode/settings.json
+  "extensions.autoUpdateDelay": 168, // VS Code: hours to wait when auto update is on
+  "extensions.installCooldownHours": 168, // Cursor: skip versions published less than 168 hours ago
+  "update.mode": "manual",
+  // Organizations by publisher, individuals by extension.
+  // Unlisted extensions are blocked and disabled if installed
+  "extensions.allowed": {
+    "anysphere": true,
+    "anthropic": true,
+    "docker": true,
+    "github": true,
+    "golang": true,
+    "hashicorp": true,
+    "ms-azuretools": true,
+    "ms-kubernetes-tools": true,
+    "ms-python": true,
+    "ms-vscode": true,
+    "ms-vscode-remote": true,
+    "ms-vsliveshare": true,
+    "redhat": true,
+    "shopify": true,
+    "sorbet": true,
+    "3w36zj6.textlint": true,
+    "charliermarsh.ruff": true,
+    "davidanson.vscode-markdownlint": true,
+    "dbaeumer.vscode-eslint": true,
+    "esbenp.prettier-vscode": true,
+    "grapecity.gc-excelviewer": true,
+    "koichisasada.vscode-rdbg": true,
+    "marp-team.marp-vscode": true,
+    "mechatroner.rainbow-csv": true,
+    "shd101wyy.markdown-preview-enhanced": true,
+    "takumii.markdowntable": true,
+    "tamasfe.even-better-toml": true,
+    "tomoki1207.pdf": true,
+    "vscode-icons-team.vscode-icons": true,
+    "vscodevim.vim": true,
+    "yzhang.markdown-all-in-one": true,
+  },
+
+  // Workspace Trust Settings
+  "security.workspace.trust.enabled": true, // Cursor defaults to false
+  "task.allowAutomaticTasks": "off", // Cursor defaults to "on"
+
+  // Telemetry Settings
+  "telemetry.telemetryLevel": "off", // VS Code only
+
+  // AI Agent Settings (VS Code built-in chat)
+  "chat.tools.terminal.autoApproveWorkspaceNpmScripts": false,
+  "chat.mcp.autostart": "never",
+  "chat.agent.sandbox.enabled": "on",
+
+  // UI/Workbench Settings
+  "window.commandCenter": true,
+  "breadcrumbs.enabled": true,
+  "workbench.colorTheme": "Spinel",
+  "workbench.iconTheme": "vscode-icons",
+  "workbench.editor.enablePreview": false,
+
+  // Language-specific Formatters
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+  },
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+  },
+  "[vue]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+  },
+  "[yaml]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml",
+  },
+  "[markdown]": {
+    "files.trimTrailingWhitespace": true,
+    "editor.defaultFormatter": "yzhang.markdown-all-in-one",
+    "editor.tabSize": 4,
+  },
+  "[terraform]": {
+    "editor.defaultFormatter": "hashicorp.terraform",
+    "editor.formatOnSaveMode": "file",
+  },
+  "[terraform-vars]": {
+    "editor.defaultFormatter": "hashicorp.terraform",
+    "editor.formatOnSaveMode": "file",
+  },
+  "[ruby]": {
+    "editor.defaultFormatter": "Shopify.ruby-lsp",
+  },
+  "[dockerfile]": {
+    "editor.tabSize": 4,
+    "editor.detectIndentation": false,
+  },
+  "[python]": {
+    "editor.tabSize": 4,
+    "editor.defaultFormatter": "charliermarsh.ruff",
+  },
+
+  // TypeScript / JavaScript Settings
+  "js/ts.updateImportsOnFileMove.enabled": "always",
+  "js/ts.inlayHints.parameterNames.enabled": "literals",
+
+  // Extension Settings - Prettier
+  "prettier.trailingComma": "es5",
+
+  // Extension Settings - Ruby LSP
+  "rubyLsp.formatter": "rubocop",
+  "rubyLsp.rubyVersionManager": {
+    "identifier": "auto",
+  },
+  "rubyLsp.enabledFeatures": {
+    "onTypeFormatting": false,
+  },
+
+  // Extension Settings - Vim
+  "vim.useSystemClipboard": true,
+
+  // Extension Settings - GitHub Copilot
+  "github.copilot.enable": {
+    "*": false,
+    "plaintext": false,
+    "markdown": false,
+    "scminput": false,
+  },
+  // Extension Settings - markdownlint
+  "markdownlint.config": {
+    "MD007": {
+      "indent": 4,
+    },
+  },
+  "docker.extension.enableComposeLanguageServer": false,
+  "[dockercompose]": {
+    "editor.insertSpaces": true,
+    "editor.tabSize": 2,
+    "editor.autoIndent": "advanced",
+    "editor.quickSuggestions": {
+      "other": true,
+      "comments": false,
+      "strings": true,
+    },
+    "editor.defaultFormatter": "redhat.vscode-yaml",
+  },
+  "[github-actions-workflow]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml",
+  },
+  "claudeCode.preferredLocation": "panel",
+  "editor.unicodeHighlight.nonBasicASCII": false,
+  "git.autofetch": true,
+  "git.pruneOnFetch": true,
+  "githubPullRequests.pullBranch": "never",
+  "yaml.disableSchemaDetection": [
+    "**/.github/workflows/*.yml",
+    "**/.github/workflows/*.yaml",
+    "**/.gitea/workflows/*.yml",
+    "**/.gitea/workflows/*.yaml",
+    "**/.forgejo/workflows/*.yml",
+    "**/.forgejo/workflows/*.yaml",
+  ],
+}

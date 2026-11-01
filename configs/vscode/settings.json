@@ -1,4 +1,6 @@
 {
+  // configs/vscode/settings.json (VS Code) and configs/cursor/settings.json (Cursor)
+  // differ only in the extensions.autoUpdate line; apply every other change to both
   // Editor Basic Settings
   "editor.accessibilitySupport": "off",
   "editor.editContext": false,
@@ -53,7 +55,7 @@
   },
 
   // Supply Chain Settings
-  "extensions.autoUpdate": false, // boolean: Cursor reads the string "off" as on
+  "extensions.autoUpdate": "off", // VS Code migrates false to "off"; Cursor uses configs/cursor/settings.json
   "extensions.autoUpdateDelay": 168, // VS Code: hours to wait when auto update is on
   "extensions.installCooldownHours": 168, // Cursor: skip versions published less than 168 hours ago
   "update.mode": "manual",
