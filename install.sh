@@ -48,8 +48,13 @@ link_file() {
   if [[ -L "$dst" ]]; then
     rm "$dst"
   elif [[ -e "$dst" ]]; then
-    warn "Backing up existing file: $dst -> ${dst}.bak"
-    mv "$dst" "${dst}.bak"
+    # mv into an existing .bak directory would nest dst inside it
+    local backup="${dst}.bak"
+    if [[ -e "$backup" || -L "$backup" ]]; then
+      backup="${dst}.bak.$(date +%Y%m%d%H%M%S)"
+    fi
+    warn "Backing up existing file: $dst -> $backup"
+    mv "$dst" "$backup"
   fi
 
   ln -sf "$src" "$dst"
