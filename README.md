@@ -29,6 +29,7 @@ dotfiles/
 │   ├── herdr/           # herdr multiplexer config and tab bar scripts
 │   ├── mise/            # Development environment manager config
 │   ├── nvim/            # Neovim (LazyVim) config and lazy-lock.json
+│   ├── takumi-guard/    # Opt-in script for the anonymous Takumi Guard registry
 │   └── vscode/          # VSCode settings and extension list
 ├── shell/               # Shell configuration (shared layer)
 │   ├── zshrc            # Thin loader (auto-detects platform)
@@ -97,6 +98,12 @@ awk '{print "--install-extension", $0}' configs/cursor/extensions.txt | xargs cu
   diff <(code --list-extensions) configs/vscode/extensions.txt
   diff <(cursor --list-extensions) configs/cursor/extensions.txt
   ```
+
+## Takumi Guard (anonymous)
+
+`configs/takumi-guard/setup-anon.sh` points npm, pnpm, yarn, bun, pip, and uv at the anonymous [Takumi Guard](https://flatt.tech/takumi/features/guard/) registry, which blocks known-malicious packages. `install.sh` does not run it; run it by hand on machines that should use it. It skips any config file that already exists, so machines set up with an organization token keep their settings.
+
+npm, yarn v1, bun, and uv may record `npm.flatt.tech` / `pypi.flatt.tech` URLs in lockfiles (including `uv.lock`), and those URLs end up in committed lockfiles.
 
 ## Machine-Specific Settings
 
