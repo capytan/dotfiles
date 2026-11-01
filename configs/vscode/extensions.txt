@@ -4,10 +4,12 @@ charliermarsh.ruff
 davidanson.vscode-markdownlint
 dbaeumer.vscode-eslint
 docker.docker
+editorconfig.editorconfig
 esbenp.prettier-vscode
 github.vscode-github-actions
 github.vscode-pull-request-github
 golang.go
+grafana.vscode-jsonnet
 hashicorp.terraform
 marp-team.marp-vscode
 mechatroner.rainbow-csv
@@ -25,10 +27,12 @@ ms-vscode.remote-explorer
 ms-vsliveshare.vsliveshare
 redhat.ansible
 redhat.vscode-yaml
+scala-lang.scala
 shopify.ruby-extensions-pack
 shopify.ruby-lsp
 sorbet.sorbet-vscode-extension
 tamasfe.even-better-toml
+vadimcn.vscode-lldb
 vscode-icons-team.vscode-icons
 vscodevim.vim
 yzhang.markdown-all-in-one
