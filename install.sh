@@ -132,13 +132,27 @@ link_file "$DOTFILES_DIR/configs/nvim" "$HOME/.config/nvim"
 # =============================================================================
 # 13. zeno.zsh (optional - snippet expansion engine)
 # =============================================================================
+# Pinned to a commit (upstream has no tags or releases); bump it with the update-local-tools skill
+ZENO_COMMIT="f6ed8fc16cc32dc110fa4f77a50386624067fbe2"
 ZENO_DIR="$HOME/.local/share/zeno"
-if [[ -d "$ZENO_DIR" ]]; then
-  info "zeno.zsh already installed, pulling latest..."
-  git -C "$ZENO_DIR" pull --ff-only 2>/dev/null || warn "zeno.zsh pull failed (non-fatal)"
-else
+if [[ ! -d "$ZENO_DIR" ]]; then
   info "Installing zeno.zsh..."
-  git clone --depth 1 https://github.com/yuki-yano/zeno.zsh.git "$ZENO_DIR" || warn "zeno.zsh clone failed (non-fatal)"
+  # --no-checkout: if the pinned checkout below fails, no unpinned zeno.zsh is left to source
+  git clone --no-checkout --filter=blob:none https://github.com/yuki-yano/zeno.zsh.git "$ZENO_DIR" ||
+    warn "zeno.zsh clone failed (non-fatal)"
+fi
+if [[ -d "$ZENO_DIR/.git" ]]; then
+  if [[ -f "$ZENO_DIR/zeno.zsh" && "$(git -C "$ZENO_DIR" rev-parse -q --verify HEAD)" == "$ZENO_COMMIT" ]]; then
+    info "zeno.zsh already at ${ZENO_COMMIT:0:7}"
+  else
+    info "Checking out zeno.zsh ${ZENO_COMMIT:0:7}..."
+    { git -C "$ZENO_DIR" cat-file -e "$ZENO_COMMIT^{commit}" 2>/dev/null ||
+      git -C "$ZENO_DIR" fetch --quiet origin "$ZENO_COMMIT"; } &&
+      git -C "$ZENO_DIR" checkout --quiet --detach "$ZENO_COMMIT" ||
+      warn "zeno.zsh checkout failed (non-fatal)"
+  fi
+elif [[ -d "$ZENO_DIR" ]]; then
+  warn "$ZENO_DIR is not a git clone; cannot pin zeno.zsh (non-fatal)"
 fi
 
 # zeno configuration
