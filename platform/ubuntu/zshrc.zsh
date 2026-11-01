@@ -1,6 +1,10 @@
 #!/usr/bin/env zsh
 # Ubuntu-specific interactive shell settings
 
+# install.sh links nvim here; keep it ahead of /usr/bin so it wins over apt's neovim.
+# Set here, not in zprofile: terminals on Ubuntu start non-login shells
+path=("$HOME/.local/bin" ${path:#$HOME/.local/bin})
+
 # dircolors
 eval "$(dircolors -b)"
 
