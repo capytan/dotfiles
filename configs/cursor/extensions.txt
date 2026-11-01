@@ -12,6 +12,7 @@ grapecity.gc-excelviewer
 hashicorp.hcl
 hashicorp.terraform
 ms-azuretools.vscode-containers
+ms-kubernetes-tools.vscode-kubernetes-tools
 redhat.vscode-yaml
 shd101wyy.markdown-preview-enhanced
 shopify.ruby-extensions-pack
