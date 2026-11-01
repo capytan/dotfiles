@@ -75,8 +75,8 @@ dotfiles/
 
 `configs/nvim/lazy-lock.json` pins every plugin to a commit. lazy.nvim only checks for updates in the background and never installs them on its own.
 
-1. `:Lazy check` — list the incoming commits without installing them
-2. `:Lazy update` — install, then review and commit the `lazy-lock.json` diff
+1. Update plugins with the `update-nvim-plugins` Claude Code skill (`configs/claude/skills/update-nvim-plugins/`). It holds back commits pushed less than 7 days ago, checks each candidate for supply-chain risks, edits `lazy-lock.json` only for the approved ones, and opens a PR
+2. Inside nvim, stop at `:Lazy check` to see what is incoming. Don't use `:Lazy update`, `:Lazy sync`, or `U`/`S` in the `:Lazy` window — they jump to the latest commit or tag without those checks
 3. If something breaks, revert `lazy-lock.json` and run `:Lazy restore`
 
 ## Machine-Specific Settings
