@@ -29,6 +29,7 @@ dotfiles/
 │   ├── herdr/           # herdr multiplexer config and tab bar scripts
 │   ├── mise/            # Development environment manager config
 │   ├── nvim/            # Neovim (LazyVim) config and lazy-lock.json
+│   ├── takumi-guard/    # Opt-in script for the anonymous Takumi Guard registry
 │   └── vscode/          # VSCode settings, VSCode/Cursor extensions
 ├── shell/               # Shell configuration (shared layer)
 │   ├── zshrc            # Thin loader (auto-detects platform)
@@ -78,6 +79,12 @@ dotfiles/
 1. Update plugins with the `update-nvim-plugins` Claude Code skill (`configs/claude/skills/update-nvim-plugins/`). It holds back commits pushed less than 7 days ago, checks each candidate for supply-chain risks, edits `lazy-lock.json` only for the approved ones, and opens a PR
 2. Inside nvim, stop at `:Lazy check` to see what is incoming. Don't use `:Lazy update`, `:Lazy sync`, or `U`/`S` in the `:Lazy` window — they jump to the latest commit or tag without those checks
 3. If something breaks, revert `lazy-lock.json` and run `:Lazy restore`
+
+## Takumi Guard (anonymous)
+
+`configs/takumi-guard/setup-anon.sh` points npm, pnpm, yarn, bun, pip, and uv at the anonymous [Takumi Guard](https://flatt.tech/takumi/features/guard/) registry, which blocks known-malicious packages. `install.sh` does not run it; run it by hand on machines that should use it. It skips any config file that already exists, so machines set up with an organization token keep their settings.
+
+npm, yarn v1, bun, and uv may record `npm.flatt.tech` / `pypi.flatt.tech` URLs in lockfiles (including `uv.lock`), and those URLs end up in committed lockfiles.
 
 ## Machine-Specific Settings
 
