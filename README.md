@@ -23,7 +23,7 @@ dotfiles/
 ├── configs/              # Application configs (XDG-oriented)
 │   ├── alacritty/       # Terminal emulator configuration
 │   ├── claude/          # Claude Code custom commands & settings, default PR/issue templates
-│   ├── cursor/          # Cursor IDE rules and settings
+│   ├── cursor/          # Cursor IDE rules, settings, Agent sandbox policy (copied, not linked)
 │   ├── ghostty/         # Ghostty terminal config
 │   ├── git/             # Git config, ignore, completion, prompt
 │   ├── herdr/           # herdr multiplexer config and tab bar scripts
