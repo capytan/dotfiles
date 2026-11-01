@@ -28,6 +28,7 @@ dotfiles/
 │   ├── git/             # Git config, ignore, completion, prompt
 │   ├── herdr/           # herdr multiplexer config and tab bar scripts
 │   ├── mise/            # Development environment manager config
+│   ├── nvim/            # Neovim (LazyVim) config and lazy-lock.json
 │   └── vscode/          # VSCode/Cursor settings and extensions
 ├── shell/               # Shell configuration (shared layer)
 │   ├── zshrc            # Thin loader (auto-detects platform)
@@ -69,6 +70,14 @@ dotfiles/
 - **FZF functions**: `fbr` (branch switch), `fbrm` (remote branch), `fa` (git add), `fzf-src` (ghq + fzf)
 - **Commit helpers**: `gdcp` (diff to Japanese commit msg), `gdcpe` (English)
 - **Modern CLI**: `cat` → bat, `ls` → eza, `du` → dust, `top` → btm
+
+## Neovim Plugin Updates
+
+`configs/nvim/lazy-lock.json` pins every plugin to a commit. lazy.nvim only checks for updates in the background and never installs them on its own.
+
+1. `:Lazy check` — list the incoming commits without installing them
+2. `:Lazy update` — install, then review and commit the `lazy-lock.json` diff
+3. If something breaks, revert `lazy-lock.json` and run `:Lazy restore`
 
 ## Machine-Specific Settings
 
