@@ -176,6 +176,53 @@ elif [[ "$PLATFORM" == "ubuntu" ]]; then
     link_file "$DOTFILES_DIR/platform/ubuntu/alacritty.toml" \
       "$HOME/.config/alacritty/alacritty.toml"
   fi
+
+  # Neovim from the official release tarball: apt's neovim is older than
+  # LazyVim's minimum (0.11.2). Pinned; bump only to a release published 7+ days ago
+  NVIM_VERSION="0.12.6"
+  NVIM_DIR="$HOME/.local/opt/nvim-$NVIM_VERSION"
+  case "$(uname -m)" in
+    x86_64)        NVIM_ARCH="x86_64" ;;
+    aarch64|arm64) NVIM_ARCH="arm64" ;;
+    *)             NVIM_ARCH="" ;;
+  esac
+
+  # Verifies the tarball against the sha256 digest GitHub reports for the asset
+  # Runs in a subshell so the EXIT trap cleans up the temp dir on any exit
+  install_nvim() (
+    local asset="nvim-linux-${NVIM_ARCH}.tar.gz"
+    local url="https://github.com/neovim/neovim/releases/download/v${NVIM_VERSION}/${asset}"
+    local tmp expected
+    tmp="$(mktemp -d)" || exit 1
+    trap 'rm -r "$tmp"' EXIT
+
+    expected="$(curl -fsSL "https://api.github.com/repos/neovim/neovim/releases/tags/v${NVIM_VERSION}" |
+      python3 -c 'import json, sys; print(next(a["digest"] for a in json.load(sys.stdin)["assets"] if a["name"] == sys.argv[1]))' "$asset")" || exit 1
+    curl -fsSL -o "$tmp/$asset" "$url" || exit 1
+
+    if ! echo "${expected#sha256:}  $tmp/$asset" | sha256sum -c --quiet; then
+      error "Neovim checksum mismatch (expected $expected)"
+      exit 1
+    fi
+
+    # Clear a partial install left by an interrupted run, or mv would nest into it
+    tar -xzf "$tmp/$asset" -C "$tmp" &&
+      rm -rf "$NVIM_DIR" &&
+      mkdir -p "$(dirname "$NVIM_DIR")" &&
+      mv "$tmp/nvim-linux-${NVIM_ARCH}" "$NVIM_DIR"
+  )
+
+  if [[ -z "$NVIM_ARCH" ]]; then
+    warn "No Neovim release for $(uname -m), skipping"
+  elif [[ -x "$NVIM_DIR/bin/nvim" ]]; then
+    info "Neovim $NVIM_VERSION already installed"
+  else
+    info "Installing Neovim $NVIM_VERSION..."
+    install_nvim || warn "Neovim install failed (non-fatal)"
+  fi
+  if [[ -x "$NVIM_DIR/bin/nvim" ]]; then
+    link_file "$NVIM_DIR/bin/nvim" "$HOME/.local/bin/nvim"
+  fi
 fi
 
 # =============================================================================
