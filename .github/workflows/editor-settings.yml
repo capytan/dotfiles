@@ -7,6 +7,9 @@ on:
       - "configs/vscode/settings.json"
       - "configs/cursor/settings.json"
       - "configs/vscode/check-settings-sync.sh"
+      - "configs/vscode/extensions.txt"
+      - "configs/cursor/extensions.txt"
+      - "configs/vscode/check-extensions-allowed.py"
       - ".github/workflows/editor-settings.yml"
   push:
     branches: [main]
@@ -14,6 +17,9 @@ on:
       - "configs/vscode/settings.json"
       - "configs/cursor/settings.json"
       - "configs/vscode/check-settings-sync.sh"
+      - "configs/vscode/extensions.txt"
+      - "configs/cursor/extensions.txt"
+      - "configs/vscode/check-extensions-allowed.py"
       - ".github/workflows/editor-settings.yml"
   workflow_dispatch:
 
@@ -35,3 +41,16 @@ jobs:
 
       - name: Compare settings.json except extensions.autoUpdate
         run: bash configs/vscode/check-settings-sync.sh
+
+  allowed:
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name == github.repository
+    name: extensions.txt against extensions.allowed
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # 発行元の表示名と依存を VS Code Marketplace と Cursor の gallery に問い合わせる
+      - name: Check extensions.txt against extensions.allowed
+        run: python3 configs/vscode/check-extensions-allowed.py
