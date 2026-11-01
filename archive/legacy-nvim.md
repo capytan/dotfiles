@@ -1,3 +1,16 @@
+# Legacy Neovim Archive
+
+Archived: 2026-11-01
+Source: `configs/nvim/init.vim`
+Reason: vim-plug era config, replaced by the LazyVim config in `configs/nvim/`.
+
+---
+
+## init.vim
+
+Full content of the legacy `init.vim`.
+
+```vim
 "*****************************************************************************
 "" Vim-Plug
 "*****************************************************************************
@@ -616,3 +629,4 @@ else
   let g:airline_symbols.linenr = ''
 endif
 
+```

@@ -123,7 +123,14 @@ info "Setting up Zed configuration..."
 link_file "$DOTFILES_DIR/configs/zed/settings.json" "$HOME/.config/zed/settings.json"
 
 # =============================================================================
-# 12. zeno.zsh (optional - snippet expansion engine)
+# 12. Neovim (LazyVim) configuration
+# =============================================================================
+# Link the whole directory so lazy.nvim writes lazy-lock.json back into dotfiles
+info "Setting up Neovim configuration..."
+link_file "$DOTFILES_DIR/configs/nvim" "$HOME/.config/nvim"
+
+# =============================================================================
+# 13. zeno.zsh (optional - snippet expansion engine)
 # =============================================================================
 ZENO_DIR="$HOME/.local/share/zeno"
 if [[ -d "$ZENO_DIR" ]]; then
@@ -139,7 +146,7 @@ info "Setting up zeno configuration..."
 link_file "$DOTFILES_DIR/configs/zeno" "$HOME/.config/zeno"
 
 # =============================================================================
-# 13. Platform-specific setup
+# 14. Platform-specific setup
 # =============================================================================
 if [[ "$PLATFORM" == "macos" ]]; then
   info "Setting up macOS-specific configurations..."
@@ -167,7 +174,7 @@ elif [[ "$PLATFORM" == "ubuntu" ]]; then
 fi
 
 # =============================================================================
-# 14. Migrate local.zsh from old path (if needed)
+# 15. Migrate local.zsh from old path (if needed)
 # =============================================================================
 OLD_LOCAL_ZSH="$HOME/dotfiles/macos/.zsh/local.zsh"
 NEW_LOCAL_ZSH="$DOTFILES_DIR/shell/zsh/local.zsh"
@@ -180,7 +187,7 @@ if [[ -f "$OLD_LOCAL_ZSH" && ! -f "$NEW_LOCAL_ZSH" ]]; then
 fi
 
 # =============================================================================
-# 15. Symlink verification report
+# 16. Symlink verification report
 # =============================================================================
 echo ""
 echo "============================================="
