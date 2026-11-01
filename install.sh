@@ -152,7 +152,7 @@ if [[ "$PLATFORM" == "macos" ]]; then
   info "Setting up macOS-specific configurations..."
 
   # VSCode / Cursor settings
-  link_file "$DOTFILES_DIR/configs/vscode/settings.json" \
+  link_file "$DOTFILES_DIR/configs/cursor/settings.json" \
     "$HOME/Library/Application Support/Cursor/User/settings.json"
   link_file "$DOTFILES_DIR/configs/vscode/settings.json" \
     "$HOME/Library/Application Support/Code/User/settings.json"

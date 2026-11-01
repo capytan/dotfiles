@@ -1,4 +1,6 @@
 {
+  // configs/vscode/settings.json (VS Code) and configs/cursor/settings.json (Cursor)
+  // differ only in the extensions.autoUpdate line; apply every other change to both
   // Editor Basic Settings
   "editor.accessibilitySupport": "off",
   "editor.editContext": false,
@@ -32,7 +34,7 @@
     "**/.DS_Store": true,
     "**/node_modules": true,
     "**/__pycache__": true,
-    "**/*.pyc": true
+    "**/*.pyc": true,
   },
 
   // Terminal Settings
@@ -41,7 +43,7 @@
   "terminal.integrated.cursorStyle": "line",
   "terminal.integrated.cursorBlinking": true,
   "terminal.integrated.env.osx": {
-    "Q_NEW_SESSION": "1"
+    "Q_NEW_SESSION": "1",
   },
 
   // Search Settings
@@ -49,11 +51,11 @@
     "**/dist": true,
     "**/.next": true,
     "**/coverage": true,
-    "**/.cache": true
+    "**/.cache": true,
   },
 
   // Supply Chain Settings
-  "extensions.autoUpdate": false, // boolean: Cursor reads the string "off" as on
+  "extensions.autoUpdate": "off", // VS Code migrates false to "off"; Cursor uses configs/cursor/settings.json
   "extensions.autoUpdateDelay": 168, // VS Code: hours to wait when auto update is on
   "extensions.installCooldownHours": 168, // Cursor: skip versions published less than 168 hours ago
   "update.mode": "manual",
@@ -90,7 +92,7 @@
     "tomoki1207.pdf": true,
     "vscode-icons-team.vscode-icons": true,
     "vscodevim.vim": true,
-    "yzhang.markdown-all-in-one": true
+    "yzhang.markdown-all-in-one": true,
   },
 
   // Workspace Trust Settings
@@ -114,52 +116,52 @@
 
   // Language-specific Formatters
   "[html]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
   },
   "[css]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
   },
   "[javascript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
   },
   "[typescript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
   },
   "[vue]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
   },
   "[json]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
   },
   "[jsonc]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
   },
   "[yaml]": {
-    "editor.defaultFormatter": "redhat.vscode-yaml"
+    "editor.defaultFormatter": "redhat.vscode-yaml",
   },
   "[markdown]": {
     "files.trimTrailingWhitespace": true,
     "editor.defaultFormatter": "yzhang.markdown-all-in-one",
-    "editor.tabSize": 4
+    "editor.tabSize": 4,
   },
   "[terraform]": {
     "editor.defaultFormatter": "hashicorp.terraform",
-    "editor.formatOnSaveMode": "file"
+    "editor.formatOnSaveMode": "file",
   },
   "[terraform-vars]": {
     "editor.defaultFormatter": "hashicorp.terraform",
-    "editor.formatOnSaveMode": "file"
+    "editor.formatOnSaveMode": "file",
   },
   "[ruby]": {
-    "editor.defaultFormatter": "Shopify.ruby-lsp"
+    "editor.defaultFormatter": "Shopify.ruby-lsp",
   },
   "[dockerfile]": {
     "editor.tabSize": 4,
-    "editor.detectIndentation": false
+    "editor.detectIndentation": false,
   },
   "[python]": {
     "editor.tabSize": 4,
-    "editor.defaultFormatter": "charliermarsh.ruff"
+    "editor.defaultFormatter": "charliermarsh.ruff",
   },
 
   // TypeScript / JavaScript Settings
@@ -172,10 +174,10 @@
   // Extension Settings - Ruby LSP
   "rubyLsp.formatter": "rubocop",
   "rubyLsp.rubyVersionManager": {
-    "identifier": "auto"
+    "identifier": "auto",
   },
   "rubyLsp.enabledFeatures": {
-    "onTypeFormatting": false
+    "onTypeFormatting": false,
   },
 
   // Extension Settings - Vim
@@ -186,13 +188,13 @@
     "*": false,
     "plaintext": false,
     "markdown": false,
-    "scminput": false
+    "scminput": false,
   },
   // Extension Settings - markdownlint
   "markdownlint.config": {
     "MD007": {
-      "indent": 4
-    }
+      "indent": 4,
+    },
   },
   "docker.extension.enableComposeLanguageServer": false,
   "[dockercompose]": {
@@ -202,12 +204,12 @@
     "editor.quickSuggestions": {
       "other": true,
       "comments": false,
-      "strings": true
+      "strings": true,
     },
-    "editor.defaultFormatter": "redhat.vscode-yaml"
+    "editor.defaultFormatter": "redhat.vscode-yaml",
   },
   "[github-actions-workflow]": {
-    "editor.defaultFormatter": "redhat.vscode-yaml"
+    "editor.defaultFormatter": "redhat.vscode-yaml",
   },
   "claudeCode.preferredLocation": "panel",
   "editor.unicodeHighlight.nonBasicASCII": false,
@@ -220,6 +222,6 @@
     "**/.gitea/workflows/*.yml",
     "**/.gitea/workflows/*.yaml",
     "**/.forgejo/workflows/*.yml",
-    "**/.forgejo/workflows/*.yaml"
-  ]
+    "**/.forgejo/workflows/*.yaml",
+  ],
 }
