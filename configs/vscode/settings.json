@@ -57,6 +57,7 @@
   "extensions.installCooldownHours": 168, // Cursor: skip versions published less than 168 hours ago
   "update.mode": "manual",
   // Organizations by publisher, individuals by extension.
+  // Microsoft is "microsoft" (in VS Code, ms-* publisher IDs do not work).
   // Unlisted extensions are blocked and disabled if installed
   "extensions.allowed": {
     "anysphere": true,
@@ -65,12 +66,7 @@
     "github": true,
     "golang": true,
     "hashicorp": true,
-    "ms-azuretools": true,
-    "ms-kubernetes-tools": true,
-    "ms-python": true,
-    "ms-vscode": true,
-    "ms-vscode-remote": true,
-    "ms-vsliveshare": true,
+    "microsoft": true,
     "redhat": true,
     "shopify": true,
     "sorbet": true,
