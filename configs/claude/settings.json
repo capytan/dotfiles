@@ -279,6 +279,7 @@
       "mcp__*__truncate*"
     ],
     "defaultMode": "auto",
+    "disableBypassPermissionsMode": "disable",
     "additionalDirectories": [
       "~/ghq",
       "~/dev"
