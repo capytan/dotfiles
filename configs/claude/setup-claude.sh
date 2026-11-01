@@ -120,10 +120,10 @@ chmod +x "$DOTFILES_CLAUDE/statusline.sh"
 # CLAUDE.md: グローバル指示ファイル
 create_symlink "$CLAUDE_DIR/CLAUDE.md" "$DOTFILES_CLAUDE/CLAUDE.md" "CLAUDE.md"
 
-# pull_request_template.md: リポジトリに PR テンプレートが無いときの既定（CLAUDE.md から参照）
+# pull_request_template.md: リポジトリの PR テンプレートで足りないときの既定（CLAUDE.md から参照）
 create_symlink "$CLAUDE_DIR/pull_request_template.md" "$DOTFILES_CLAUDE/pull_request_template.md" "pull_request_template.md"
 
-# issue_templates: リポジトリに Issue テンプレートが無いときの既定（CLAUDE.md から参照）
+# issue_templates: リポジトリの Issue テンプレートで足りないときの既定（CLAUDE.md から参照）
 create_symlink "$CLAUDE_DIR/issue_templates" "$DOTFILES_CLAUDE/issue_templates" "issue_templates"
 
 # 5. 確認と完了メッセージ
