@@ -76,10 +76,10 @@ allowed-tools: Bash, Read, Edit, WebSearch, WebFetch, AskUserQuestion, Agent
 
 シェルの変数は Bash の呼び出しをまたいで残らない。下のコードブロックは、使う変数（`LAZY`・`cutoff`・`LOCK`、プラグインごとの `n`・`d`・`repo`・`b`・`base`・`t7`・`cand`・`sha`・`from`・`to`）をそのブロックの先頭で定義し直してから実行する。`cutoff` は最初に出した値をそのまま書き込み、呼び出しのたびに計算し直さない。
 
-dotfiles への `git` は、`~/dotfiles` を cwd にして `-C` を付けずに書いている（グローバルの CLAUDE.md の決まり）。lock は `~/.config/nvim` の symlink を通して必ず `~/dotfiles` の本体に書かれるので、始める前に次で cwd を確かめ、`OTHER` なら（別の repo、dotfiles の worktree など）以降の dotfiles への `git` をすべて `git -C ~/dotfiles` に読み替える。プラグインのディレクトリへの `git -C "$d"` はそのまま使う。
+dotfiles への `git` は、`~/dotfiles` を cwd にして `-C` を付けずに書いている（グローバルの CLAUDE.md の決まり）。lock は `~/.config/nvim` の symlink を通して必ず `~/dotfiles` の本体に書かれるので、始める前に次で cwd を確かめ、`OTHER` なら（別の repo、dotfiles の worktree、`~/dotfiles` の下のディレクトリなど）以降の dotfiles への `git` をすべて `git -C ~/dotfiles` に読み替える。プラグインのディレクトリへの `git -C "$d"` はそのまま使う。
 
 ```bash
-[ "$(git rev-parse --show-toplevel 2>/dev/null)" = "$(cd ~/dotfiles && pwd -P)" ] && echo DOTFILES || echo OTHER
+[ "$(pwd -P)" = "$(cd ~/dotfiles && pwd -P)" ] && echo DOTFILES || echo OTHER
 ```
 
 ### 手順 1: 候補の収集（読み取りのみ）
@@ -256,8 +256,7 @@ gh api "repos/$repo/security-advisories?per_page=10" --jq '.[] | "\(.ghsa_id) \(
 #### 2-5. Mason のツール（入れ替えない）
 
 ```bash
-cd ~/.local/share/nvim/mason/packages
-jq -n '[inputs | (.source.id // .primary_source.id) | select(startswith("pkg:")) | sub("#.*$"; "")] | {queries: map({package: {purl: .}})}' */mason-receipt.json > "$TMPDIR/osv-q.json"
+jq -n '[inputs | (.source.id // .primary_source.id) | select(startswith("pkg:")) | sub("#.*$"; "")] | {queries: map({package: {purl: .}})}' ~/.local/share/nvim/mason/packages/*/mason-receipt.json > "$TMPDIR/osv-q.json"
 curl -s -X POST -d @"$TMPDIR/osv-q.json" https://api.osv.dev/v1/querybatch |
   jq -r --slurpfile q "$TMPDIR/osv-q.json" '.results | to_entries[] | select(.value.vulns) | "\($q[0].queries[.key].package.purl) \([.value.vulns[].id] | join(","))"'
 ```
@@ -289,7 +288,7 @@ LazyVim が「見送り」なら、それが連れてくる `新規プラグイ�
 - 候補なしのプラグインは載せない。見送りは理由を判定の列に書く
 - 表の下に Mason の結果（`MAL` と脆弱性のあるものだけ）を書く
 - 表のあとに AskUserQuestion で承認を取る。最初の質問の選択肢は「更新可だけ実行」「更新可と要判断を選んで実行」「やめる」
-- 「要判断を選んで実行」なら、要判断の項目を multiSelect で選ばせる。AskUserQuestion は 1 問に選択肢 2〜4 個、1 回の呼び出しに 4 問までなので、項目を 2〜4 件ずつの問いに分けて 1 回に 4 問まで並べ、16 件を超える分は次の呼び出しで聞く。1 件だけの問いは作らない（5 件は 3 + 2）。全体で 1 件なら「<名前>: 上げる」「上げない」の 2 択にする
+- 「要判断を選んで実行」なら、要判断の項目を multiSelect で選ばせる。AskUserQuestion は 1 問に選択肢 2〜4 個、1 回の呼び出しに 4 問までなので、問いの数を件数 ÷ 4 の切り上げにして、件数の差が 1 以内になるよう均等に分け（5 件は 3 + 2）、5 問目からは次の呼び出しで聞く。こう分ければ 1 件だけの問いはできない。全体で 1 件なら multiSelect を使わず、その項目を変えるか既定のままにするかの 2 択にする（label の書き方は下と同じ）
   - 選択肢の label には、選んだときに起きることを書く（`blink.cmp: 上げる`、`LazyVim: cand に戻す` など）。選ばなかった項目が既定（上げない、基準を残す）になる向きにそろえる
 - 印 `ずれ` で承認しなかったものは基準の commit に戻ること、印 `基準が 168 時間未満` で戻すと選んだものは `cand` に戻ることを、承認の前に書いておく
 
