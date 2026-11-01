@@ -1,6 +1,6 @@
 ---
 name: update-nvim-plugins
-description: LazyVim（lazy.nvim）のプラグインを、サプライチェーン侵害の事前確認（GitHub への push から 7 日の見送り、差分の危険箇所、作者と merge した人、advisory と報道）を挟んでから更新する。候補を表にして承認を得てから lazy-lock.json を書き換えて restore し、dotfiles に PR を出す。「nvim のプラグインを更新」「LazyVim を更新」「Lazy update して」「lazy-lock を更新」等で発動する。uv・mise・Homebrew のツールには使わない（`update-local-tools` を使う）。
+description: LazyVim（lazy.nvim）のプラグインを、サプライチェーン侵害の事前確認（GitHub への push から 7 日の見送り、差分の危険箇所、作者と merge した人、advisory と報道）を挟んでから更新する。候補を表にして承認を得てから lazy-lock.json を書き換えて restore し、dotfiles に PR を出す。Mason の npm のツールも、同じ確認のあと承認を得て入れ替える。「nvim のプラグインを更新」「LazyVim を更新」「Lazy update して」「lazy-lock を更新」「Mason のツールを更新」等で発動する。uv・mise・Homebrew のツールには使わない（`update-local-tools` を使う）。
 allowed-tools: Bash, Read, Edit, WebSearch, WebFetch, AskUserQuestion, Agent
 ---
 
@@ -14,7 +14,7 @@ allowed-tools: Bash, Read, Edit, WebSearch, WebFetch, AskUserQuestion, Agent
 - 差分の危険箇所（build のフック、外部の実行、ダウンロード、難読化、バイナリ）を見る
 - 初めての作者の commit と、それを merge した人を見る
 - repo が archived や移管されていないか、候補が上流の正規の branch に載っているかを見る
-- advisory と報道を調べる。Mason で入れたツールは OSV で `MAL-` を見る
+- advisory と報道を調べる。Mason で入れたツールは OSV と trivy で `MAL-` と脆弱性を見る
 
 結果を表で示し、承認を得たものだけ lock を書き換えて入れ替える。lock の変更は dotfiles のブランチに commit し、PR にする。
 
@@ -24,13 +24,15 @@ allowed-tools: Bash, Read, Edit, WebSearch, WebFetch, AskUserQuestion, Agent
 - 入れ替えは、lock を書き換えてから `Lazy! restore` で行う。restore は lock の commit にだけ checkout する
 - 承認の範囲を広げない。承認後に候補が変わった（手順 1 をやり直した等）ら表を作り直す
 - main に直接 commit しない。ブランチを切って lock だけを commit し、PR にする。merge はしない
-- Mason のツールは確かめるだけで、入れ替えない
+- nvim を起動する前に、手順 1 の `MISSING` が空であること。spec を読み出したあとの起動（restore、`MasonInstall` など）では、spec にあって lock に無いプラグインも無いこと。起動時のインストール（前提の表）で、確かめていない commit が入るのを防ぐ
+- Mason のツールは、手順 1〜6 では確かめるだけで入れ替えない。入れ替えは「Mason のツールの入れ替え」の節で、表と承認を別に取ってから行う
 
 ## When to Use This Skill
 
 発動する依頼:
 - 「nvim のプラグインを更新」「LazyVim を更新」「Lazy update して」「lazy-lock を更新」
 - 「`:Lazy` で更新が出ている」「プラグインを最新に」
+- 「Mason のツールを更新」「Mason のツールの脆弱性を消して」→ 手順 1 の `cutoff`、手順 2-5、「Mason のツールの入れ替え」の節だけを回す
 
 使わないケース:
 - uv・mise・Homebrew のツール → `update-local-tools`
@@ -49,7 +51,7 @@ allowed-tools: Bash, Read, Edit, WebSearch, WebFetch, AskUserQuestion, Agent
 | 壊れた lock | lock が空や不正な JSON だと、lazy.nvim はエラーにせず lock 無しとして扱い、restore が branch の先頭まで進む（`lua/lazy/manage/lock.lua` の `pcall(vim.json.decode, ...)`） | restore の前に `jq` で lock を検証する |
 | build のフック | 入れ替えたときに走る。spec の `build`（`nvim-specs.tsv` の `build=` 列。例 `nvim-treesitter` の parser のビルド、`markdown-preview.nvim` のビルド済みバイナリの取得）と、プラグインの `build.lua`・`build/init.lua` | build があるプラグインと、spec を書いている LazyVim は、build まわりの差分を必ず読む |
 | 実行時のダウンロード | GitHub Release の成果物を実行時に落とすプラグインがある（例 blink.cmp は tag の release から fuzzy のバイナリを落とし、同じ release の `.sha256` と照合する。attestation は無い） | release の成果物を使うプラグインは、release の公開時刻も 7 日ルールにかける |
-| Mason | `~/.local/share/nvim/mason/packages/<名前>/mason-receipt.json` の `source.id` が purl（`pkg:npm/...@版`） | purl を OSV の querybatch に渡す。OSV に無い種類（github・generic）は空の結果が返る |
+| Mason | `~/.local/share/nvim/mason/packages/<名前>/mason-receipt.json` の `source.id` が purl（`pkg:npm/...@版`）。ツールのディレクトリに、推移的な依存や Go のバイナリがある | purl を OSV の querybatch に渡す。OSV に無い種類（github・generic）は空の結果が返る。推移的な依存と Go のバイナリは `trivy rootfs` で見る（2-5） |
 | ヘッドレス | lazy.nvim の公式の形は `nvim --headless "+Lazy! sync" +qa`。`!` を付けると処理が終わるまで待つ（doc の Commands） | restore も `nvim --headless "+Lazy! restore" +qa` で行う |
 | 起動時のインストール | 設定を読み込んで起動すると、入っていないプラグインを lazy.nvim がその場で clone する（`install.missing` の既定）。lock にあるものは lock の commit に、lock に無いものは branch の先頭（tag を追うものは最新の tag）に checkout する（`lua/lazy/core/loader.lua` の `install({ lockfile = true })`） | lock に無いプラグインが spec にある状態で nvim を起動しない。LazyVim を上げて依存のプラグインが増えるときは、そのプラグインも候補にして lock に足してから起動する |
 
@@ -74,7 +76,7 @@ allowed-tools: Bash, Read, Edit, WebSearch, WebFetch, AskUserQuestion, Agent
 
 ## Execution Process
 
-シェルの変数は Bash の呼び出しをまたいで残らない。下のコードブロックは、使う変数（`LAZY`・`cutoff`・`LOCK`、プラグインごとの `n`・`d`・`repo`・`b`・`base`・`t7`・`cand`・`sha`・`from`・`to`）をそのブロックの先頭で定義し直してから実行する。`cutoff` は最初に出した値をそのまま書き込み、呼び出しのたびに計算し直さない。
+シェルの変数は Bash の呼び出しをまたいで残らない。下のコードブロックは、使う変数（`LAZY`・`cutoff`・`LOCK`、プラグインごとの `n`・`d`・`repo`・`b`・`base`・`t7`・`cand`・`sha`・`from`・`to`、Mason のツールごとの `m`・`pkg`・`cur`・`cand`・`W`）をそのブロックの先頭で定義し直してから実行する。`cutoff` は最初に出した値をそのまま書き込み、呼び出しのたびに計算し直さない。
 
 dotfiles への `git` は、`~/dotfiles` を cwd にして `-C` を付けずに書いている（グローバルの CLAUDE.md の決まり）。lock は `~/.config/nvim` の symlink を通して必ず `~/dotfiles` の本体に書かれるので、始める前に次で cwd を確かめ、`OTHER` なら（別の repo、dotfiles の worktree、`~/dotfiles` の下のディレクトリなど）以降の dotfiles への `git` をすべて `git -C ~/dotfiles` に読み替える。プラグインのディレクトリへの `git -C "$d"` はそのまま使う。
 
@@ -253,17 +255,27 @@ gh api "repos/$repo/security-advisories?per_page=10" --jq '.[] | "\(.ghsa_id) \(
 - WebSearch で `<repo> neovim plugin compromised OR malicious OR "supply chain"` を調べる。出典が 1 つしかない主張や、時期の合わない記事は「未確認」として表の注記に書く
 - Neovim のプラグインは GitHub Advisory Database の ecosystem に無いので、repo の advisory と報道で見る
 
-#### 2-5. Mason のツール（入れ替えない）
+#### 2-5. Mason のツール（ここでは入れ替えない）
+
+ツールそのものの purl を OSV に、ツールのディレクトリの中身を `trivy rootfs` にかける。rootfs は入っているパッケージのメタデータ（`node_modules/<pkg>/package.json`、`specifications/<gem>.gemspec`、`site-packages/<pkg>.dist-info`。以下「メタデータの置き場所」）と Go のバイナリを読み、lock は読まない。`trivy fs` は Go のバイナリと gemspec を読まないので使わない。
 
 ```bash
 jq -n '[inputs | (.source.id // .primary_source.id) | select(startswith("pkg:")) | sub("#.*$"; "")] | {queries: map({package: {purl: .}})}' ~/.local/share/nvim/mason/packages/*/mason-receipt.json > "$TMPDIR/osv-q.json"
 curl -s -X POST -d @"$TMPDIR/osv-q.json" https://api.osv.dev/v1/querybatch |
   jq -r --slurpfile q "$TMPDIR/osv-q.json" '.results | to_entries[] | select(.value.vulns) | "\($q[0].queries[.key].package.purl) \([.value.vulns[].id] | join(","))"'
+trivy rootfs --scanners vuln --format json --quiet ~/.local/share/nvim/mason/packages/ 2> "$TMPDIR/trivy-mason.err" |
+  jq -r '.Results[]? | .Target as $t | .Type as $ty | .Vulnerabilities[]? | (.PkgPath // $t) as $p | "\($p | split("/")[0]) \($ty) \($p) \(.PkgName)@\(.InstalledVersion) \(.VulnerabilityID) \(.Severity) fixed=\(.FixedVersion)"' | sort -u > "$TMPDIR/trivy-mason.txt"
+awk '{ print $1, $2 }' "$TMPDIR/trivy-mason.txt" | sort | uniq -c   # ツールと種類ごとの件数
 ```
 
-- `MAL-` で始まる id があるツールは、表の下に印 `MAL` で目立たせ、`:MasonUninstall` を勧める（このスキルでは入れ替えない）
-- `GHSA-` などの脆弱性は参考として書く
+- 各行は、ツール（Mason の名前）、種類（`node-pkg`・`gemspec`・`python-pkg`・`gobinary`）、パス、パッケージ@版、id、重さ、修正版。Go のバイナリは Target、それ以外は `PkgPath` の先頭がツールの名前になる
+- `trivy-mason.err` が空でなければ、下のエラー処理の表の trivy の行に従う
+
+- `MAL-` で始まる id があるツールは、表の下に印 `MAL` で目立たせ、下の「Mason のツールの入れ替え」で消すか入れ替えるかを聞く
+- `GHSA-`・`CVE-` などの脆弱性は参考として書き、入れ替えるかは下の節で聞く。purl が `pkg:npm/` でないツール（Go のバイナリ、gem、pypi など）の行は、M-3 の表の下に「対象外」としてまとめ、報告に残す
 - `pkg:github/`・`pkg:generic/` の purl（codelldb、golangci-lint など）は OSV に無く空で返るので、「OSV の対象外」とまとめて書く
+- パスがメタデータの置き場所でない行（gem や npm のパッケージに同梱されたテスト用の `package.json` など）は、入っているものではない。その名前と版が `<ツール>/package-lock.json`・`<ツール>/specifications`・`site-packages` に無ければ誤検知として数えない
+- `gobinary` の行は、バイナリに埋め込まれたモジュールと、ビルドに使った Go（`stdlib`）の版で判定したもの。ツールがその箇所を呼ぶかは分からない。直すには上流が新しい Go でビルドし直した版が要る
 - 2-2 で LazyVim の `ensure_installed` に増えたツールがあれば、その名前も書く（次の起動で Mason が最新版を入れる）
 
 #### 判定
@@ -286,7 +298,7 @@ LazyVim が「見送り」なら、それが連れてくる `新規プラグイ�
 - 基準 → 候補は短い sha（tag を追うものは tag 名も）。経過時間は候補が branch に届いた時刻（手順 1）から `190 時間（7.9 日）` のように書く。印 `基準が 168 時間未満` の行は、基準が届いた時刻（手順 1 の届いた時刻のコマンドを `sha=$base` で）からの時間も書く。時間は `jq -rn --arg t '<timestamp>' '(now - ($t | fromdateiso8601)) / 3600 | floor'` で出す
 - 印 `ずれ` の行は HEAD も書き、HEAD が候補の先にあるなら「HEAD は 168 時間未満、候補まで戻す」と書く
 - 候補なしのプラグインは載せない。見送りは理由を判定の列に書く
-- 表の下に Mason の結果（`MAL` と脆弱性のあるものだけ）を書く
+- 表の下に Mason の結果（`MAL` と脆弱性のあるものだけ）を書く。入れ替えはこの承認に含めず、「Mason のツールの入れ替え」で別に聞く
 - 表のあとに AskUserQuestion で承認を取る。最初の質問の選択肢は「更新可だけ実行」「更新可と要判断を選んで実行」「やめる」
 - 「要判断を選んで実行」なら、要判断の項目を multiSelect で選ばせる。AskUserQuestion は 1 問に選択肢 2〜4 個、1 回の呼び出しに 4 問までなので、問いの数を件数 ÷ 4 の切り上げにして、件数の差が 1 以内になるよう均等に分け（5 件は 3 + 2）、5 問目からは次の呼び出しで聞く。こう分ければ 1 件だけの問いはできない。全体で 1 件なら multiSelect を使わず、その項目を変えるか既定のままにするかの 2 択にする（label の書き方は下と同じ）
   - 選択肢の label には、選んだときに起きることを書く（`blink.cmp: 上げる`、`LazyVim: cand に戻す` など）。選ばなかった項目が既定（上げない、基準を残す）になる向きにそろえる
@@ -365,6 +377,153 @@ git branch -d chore/nvim-lazy-lock-<日付>
 
 merge までは `~/dotfiles` をこのブランチのままにしておく。main に戻すと lock が古い版になり、HEAD とずれる。
 
+### Mason のツールの入れ替え（承認されたときだけ）
+
+手順 2-5 で `MAL` や脆弱性が出たツールを、確かめた版に入れ替える（または消す）。Mason のツールは `~/.local/share/nvim/mason` にあり、dotfiles の lock にも PR にも載らない。lock の流れ（手順 3〜6）とは表と承認を分け、承認されたものだけを入れ替える。lock の流れを回さずにこの節だけを頼まれたときも、手順 1 の `cutoff` と手順 2-5 を先に行う。
+
+対象は purl が `pkg:npm/` のツール。ほかの種類（`pkg:pypi/`・`pkg:gem/`・`pkg:golang/`・`pkg:github/` など）は確かめ方を決めていないので、表に「対象外（入れ替えの手順なし）」と書き、入れ替えない。
+
+| 項目 | 事実 | 手順への影響 |
+|---|---|---|
+| Mason の npm | `mason-core/installer/managers/npm.lua` は `npm install <pkg>@<版>` を呼ぶだけで、lock を持たない。推移的な依存はその場で最新に解決され、install のスクリプトも走る | 事前に一時ディレクトリで同じ木を作って確かめ、本番の後に木が一致するかを見る |
+| `min-release-age` | npm の設定で、単位は日（npm の `@npmcli/config` の definitions）。指定した版や依存がそれより新しいと `ETARGET` で止まる。環境変数 `npm_config_min_release_age` は Mason が起動する npm にも届く | 事前の木と本番の両方に `npm_config_min_release_age=7` を付ける。推移的な依存にも 7 日ルールがかかる。知らない npm は警告だけ出して無視するので、M-2 と M-4 の前に `npm_config_min_release_age=7 npm config get min-release-age` が `7` を返すことを確かめ、返さなければ止める |
+| registry | npm の registry が npmjs 以外を向いている Mac がある（例 `configs/takumi-guard/setup-anon.sh` の Takumi Guard） | 確かめるための照会（packument、attestations、integrity、`npm diff`、`npm audit signatures`）は、いつも `registry.npmjs.org` に向ける |
+| mason.nvim の読み込み | LazyVim は mason.nvim を遅延して読み込む。doc の形 `nvim --headless -c "MasonInstall ..." -c qall` だけだと `E492: Not an editor command: MasonInstall` で失敗し、exit は 0 のまま | `MasonInstall`・`MasonUninstall` の前に `Lazy! load mason.nvim` を置き、結果はログで見る |
+| `ensure_installed` | LazyVim の extra などの `ensure_installed` に入っているツールは、`MasonUninstall` しても次の起動で入り直す | 消すには `configs/nvim/lua/plugins/` で外す変更（dotfiles の PR）が要る（例 markdown-toc は `markdown.lua` で外した） |
+
+#### M-1. 候補の版
+
+ツールごとに、Mason の名前（`MasonInstall` に渡す）、npm のパッケージ名、今の版を receipt から取る。npm 以外は `対象外` と purl を出すので、2-5 で当たったものは表に「対象外（入れ替えの手順なし）」で載せる。
+
+```bash
+jq -r '(.source.id // .primary_source.id // "") as $id | if ($id | startswith("pkg:npm/")) then .name + " " + ($id | sub("^pkg:npm/"; "") | sub("%40"; "@") | sub("@(?<v>[^@]+)$"; " \(.v)")) else .name + " 対象外 " + $id end' ~/.local/share/nvim/mason/packages/*/mason-receipt.json
+```
+
+候補は、`cutoff`（手順 1）以前に npm に公開された安定版（`X.Y.Z`、pre-release を除く）のうち、版が最も新しいもの。`m`・`pkg`・`cur` は上の行の値。
+
+```bash
+curl -s "https://registry.npmjs.org/$pkg" > "$TMPDIR/npm-$m.json"
+jq -r --arg c "$cutoff" '.time as $t | .versions | keys[] | select(test("^[0-9]+\\.[0-9]+\\.[0-9]+$") and $t[.] <= $c)' "$TMPDIR/npm-$m.json" | sort -V | tail -1
+```
+
+- 候補が `cur` と同じなら「候補なし」。`cur` より古ければ、今の版が 168 時間未満で入っているので印 `今の版が 168 時間未満` を付けて要判断
+- 候補で目的の脆弱性が消えるかは、M-2 の木の OSV で見る。直接の版で直らず、推移的な依存（例 markdownlint-cli2 の中の re2js）の版で直るものもある
+- 消すだけ（`MAL` のツールなど）の行は候補を取らず、M-2 を省いて M-3 に進む
+
+#### M-2. 確認（候補ごと）
+
+公開時刻、公開者、maintainers、install のスクリプトを、今の版から候補までの全部の版（公開の順）で比べる。間の版の変更も候補の差分に入るので、両端だけで見ない。
+
+```bash
+jq -r --arg a "$cur" --arg b "$cand" '.time as $t | ([$t[$a], $t[$b]] | sort) as [$lo, $hi] | [.versions[]] |
+  "before=\(map(select($t[.version] < $lo) | ._npmUser.name) | unique | join(","))",
+  (.[] | select($t[.version] >= $lo and $t[.version] <= $hi) | "\(.version) published=\($t[.version]) npmUser=\(._npmUser.name) maintainers=\([(.maintainers // [])[].name] | join(",")) scripts=\(.scripts // {} | with_entries(select(.key | test("install"))) | keys | join(","))")' "$TMPDIR/npm-$m.json"
+```
+
+`before=` は範囲より前の公開者。範囲の端は公開の順に並べるので、候補が今の版より古いとき（`今の版が 168 時間未満`）も出る。
+
+- 範囲の中で公開者が変わったとき、今の版より前の公開者に無い（初めての作者）とき、maintainers が増減したときは印 `公開者の変化` を付けて要判断
+- `preinstall`・`install`・`postinstall` が候補で増えたら印 `install のスクリプト` を付け、中身を読む
+
+provenance を見て、上流の tag の commit と照合する。
+
+```bash
+curl -s "https://registry.npmjs.org/-/npm/v1/attestations/$pkg@$cand" |
+  jq -r '.attestations[]? | select(.predicateType == "https://slsa.dev/provenance/v1") | .bundle.dsseEnvelope.payload | @base64d | fromjson | .predicate.buildDefinition | "\(.externalParameters.workflow.repository) \(.externalParameters.workflow.ref) \(.resolvedDependencies[0].digest.gitCommit)"'
+gh api "repos/<owner>/<repo>/commits/<tag>" --jq .sha   # 上の commit と同じか
+```
+
+- repository が `npm-$m.json` の `.repository.url` と同じ owner/repo で（`git+` と `.git` を除き、大文字と小文字を区別せずに比べる。例 `git+https://github.com/biomejs/biome.git` と `https://github.com/biomejs/biome` は同じ）、ref が候補の tag、commit が tag の commit と一致することを見る
+- 前の版に provenance があって候補に無いときは印 `provenance なし` を付けて要判断。もともと無いパッケージは、tag と版の対応（GitHub の release、CHANGELOG）を見て表に「provenance なし（前から）」と書く
+
+範囲の差分を tarball で取り、危険箇所を 2-2 と同じ見方で読む。
+
+```bash
+npm diff --registry=https://registry.npmjs.org/ --diff="$pkg@$cur" --diff="$pkg@$cand" > "$TMPDIR/npm-diff-$m.patch"
+grep -nE '^\+.*(child_process|execSync|spawn\(|exec\(|eval\(|new Function|https?://|base64|(\\x[0-9a-fA-F]{2}){8})' "$TMPDIR/npm-diff-$m.patch"
+grep -E '^\+' "$TMPDIR/npm-diff-$m.patch" | awk 'length > 400 { print substr($0, 1, 200) "..." }'
+```
+
+- 見る箇所は、install・postinstall のスクリプト、外部の実行、ダウンロード、難読化。bundle された `dist/` は長い行が多いので、当たった行の前後を読み、上流の tag の同じ変更で説明がつくかを見る
+- advisory は `gh api "advisories?ecosystem=npm&affects=$pkg@$cand&per_page=10" --jq '.[] | "\(.ghsa_id) \(.type) \(.severity) \(.summary)"'`、報道は 2-4 と同じく WebSearch で `<pkg> npm compromised OR malicious OR "supply chain"` を調べる
+
+推移的な依存の木を、一時ディレクトリで本番と同じ条件（7 日ルール、Mason の `install-strategy=shallow`、receipt の `extra_packages`）で作る。`--ignore-scripts` で install のスクリプトは走らせない。先に、npm が `min-release-age` を知っていることを確かめる（上の表）。
+
+```bash
+extra=$(jq -r '(.source.raw.extra_packages // []) | join(" ")' ~/.local/share/nvim/mason/packages/"$m"/mason-receipt.json)
+W=$(mktemp -d)
+(cd "$W" && npm_config_min_release_age=7 npm install --ignore-scripts --install-strategy=shallow "$pkg@$cand" $extra)
+npm_tree() { jq -r '.packages | to_entries[] | select(.key != "") | "\(.value.name // (.key | sub(".*node_modules/"; ""))) \(.value.version) \(.value.integrity // "-")"' "$1" | sort -u; }   # 名前 版 integrity（alias は本当の名前）
+npm_tree "$W/package-lock.json" > "$TMPDIR/npm-tree-$m.txt"
+npm_tree ~/.local/share/nvim/mason/packages/"$m"/package-lock.json | diff - "$TMPDIR/npm-tree-$m.txt"   # 今の木から増えた・変わった依存
+jq -Rn '{queries: [inputs | split(" ") | {package: {ecosystem: "npm", name: .[0]}, version: .[1]}]}' "$TMPDIR/npm-tree-$m.txt" > "$TMPDIR/osv-tree-$m.json"
+curl -s -X POST -d @"$TMPDIR/osv-tree-$m.json" https://api.osv.dev/v1/querybatch |
+  jq -r --slurpfile q "$TMPDIR/osv-tree-$m.json" '.results | to_entries[] | select(.value.vulns) | "\($q[0].queries[.key].package.name)@\($q[0].queries[.key].version) \([.value.vulns[].id] | join(","))"'
+jq -r '.packages | to_entries[] | select(.value.hasInstallScript) | .key' "$W/package-lock.json"
+awk '$3 != "-"' "$TMPDIR/npm-tree-$m.txt" | xargs -P 8 -n 3 sh -c 'r=$(curl -sf "https://registry.npmjs.org/$0/$1" | jq -r ".dist.integrity // \"none\""); if [ -z "$r" ]; then echo "FETCH-FAILED $0@$1"; elif [ "$r" = none ]; then echo "NO-INTEGRITY $0@$1"; elif [ "$r" != "$2" ]; then echo "INTEGRITY-MISMATCH $0@$1"; fi'
+(cd "$W" && npm audit signatures --registry=https://registry.npmjs.org/)
+```
+
+- `extra` の中身は今の版の receipt のもの。Mason の registry で候補の版の `extra_packages` が変わっていれば、それに合わせる
+- 今の木から増えた・変わった依存（上の `diff` の `>` の行）のうち、この Mac に入ったもの（`$W/node_modules` の下にあるもの。lock は別の OS の optional のバイナリも並べる）は本番で新しく入る。その全部に、上の公開者と maintainers の比べ（`$TMPDIR/npm-$m.json` の代わりにその依存の packument）をかける。そのうちツールが実行するコードを持つもの（biome・oxfmt・oxlint の `@biomejs/cli-darwin-arm64`・`@oxfmt/binding-darwin-arm64` のような platform 別のバイナリ、本体が呼ぶ実装のパッケージ）には、provenance と `npm diff` もかける
+- 木の OSV に `MAL-` があれば見送り。目的の脆弱性の id が残っていれば印 `脆弱性が残る` を付けて要判断
+- `hasInstallScript` の依存は、本番では install のスクリプトが走る。今の木に無かったものは、そのパッケージの scripts を読む
+- `FETCH-FAILED` は registry の一時的な失敗（429 など）。その行だけやり直す
+- `INTEGRITY-MISMATCH` が出たら見送り。`npm audit signatures` が署名や attestation の失敗を出したら見送り
+- `NO-INTEGRITY` は registry に `dist.integrity` が無い古いパッケージ。`curl -s "https://registry.npmjs.org/$n/$v" | jq -r .dist.shasum` と、lock の `sha1-` の値（base64）を hex にしたもの（`echo '<base64>' | base64 -d | xxd -p`）を比べる
+- `W` の中身は消さずに残してよい（`$TMPDIR` の下）。M-5 で `npm-tree-$m.txt` と比べる
+
+#### M-3. 表と承認
+
+lock の表（手順 3）とは別に、次の列で表を出す。
+
+| ツール | 今の版 → 候補 | 公開からの時間 | 解消する脆弱性 | 公開者・maintainers | provenance・署名 | 差分の危険箇所 | 依存の木 | 印 | 判定 |
+|---|---|---|---|---|---|---|---|---|---|
+
+| 判定 | 条件 |
+|---|---|
+| 入れ替え可 | 168 時間以上、公開者と maintainers に変化なし、provenance が上流の tag の commit と一致（前から無いものは tag と版の対応が取れる）、integrity と署名が通る、危険箇所に異常なし、木に `MAL-` なし、advisory・報道なし |
+| 見送り | 168 時間未満、`INTEGRITY-MISMATCH`、署名の失敗、説明のつかない差分、木に `MAL-`、advisory・侵害報道がある |
+| 要判断 | `今の版が 168 時間未満`、`公開者の変化`、`install のスクリプト`、`provenance なし`、`脆弱性が残る`、メジャー跨ぎ、消す（`ensure_installed` に入っているものは PR が要る） |
+
+- 2-5 で当たった npm 以外のツールは、判定の列を「対象外（入れ替えの手順なし）」にして同じ表の下にまとめる。列は、ツール、種類（`gobinary`・`gemspec`・`python-pkg`）、件数（重さ別）、主なパッケージ（`stdlib@v1.24.0`、`nokogiri@1.19.3` など）。承認の選択肢には入れない
+- 公開からの時間は `jq -r --arg v "$cand" '(now - (.time[$v] | sub("\\.[0-9]+Z$"; "Z") | fromdateiso8601)) / 3600 | floor' "$TMPDIR/npm-$m.json"`（`update-local-tools` と同じ形）。npm の時刻はミリ秒つき（`...47.800Z`）で、`fromdateiso8601` がそのままでは読めないので `sub` で落とす
+- AskUserQuestion で承認を取る。選択肢と、要判断の multiSelect の分け方は手順 3 と同じ（「入れ替え可だけ実行」「入れ替え可と要判断を選んで実行」「やめる」）。label は `oxfmt: 0.74.0 に上げる`、`markdown-toc: 消す` のように、選んだときに起きることを書く
+- 消す行のうち `ensure_installed` に入っているものは、`MasonUninstall` だけでは次の起動で戻ることを承認の前に書き、`configs/nvim/lua/plugins/` で外す PR を別に作るかも聞く。その PR は手順 4・6 と同じく dotfiles のブランチで作る
+
+#### M-4. 実行
+
+承認したものだけを、7 日ルールの環境変数を付けて入れ替える。複数のツールは 1 回の `MasonInstall` に並べてよい。headless の `MasonInstall` は終わるまで待つ。
+
+先に、npm が `min-release-age` を知っていること（上の表）と、守ることの nvim の起動の前の確認を行う。
+
+```bash
+npm_config_min_release_age=7 nvim --headless -c "Lazy! load mason.nvim" -c "MasonInstall <m>@<cand> ..." -c qall > "$TMPDIR/mason-install.log" 2>&1; echo "exit=$?"
+sed 's/\x1b\[[0-9;]*m//g' "$TMPDIR/mason-install.log" | grep -E 'Installing|installed|failed|[Ee]rror|E492|ETARGET|aborted'
+```
+
+消すと承認したものは、同じく mason.nvim を読み込んでから消す。
+
+```bash
+nvim --headless -c "Lazy! load mason.nvim" -c "MasonUninstall <m> ..." -c qall 2>&1 | sed 's/\x1b\[[0-9;]*m//g'
+```
+
+- exit が 0 でも失敗していることがある（`E492` など）。ログで各ツールの成否を見る
+- 失敗したツールは前の版が残る（receipt が変わらない）。M-5 で receipt を見て確かめる
+
+#### M-5. 入れ替え後の確認
+
+receipt の版と、入った後の木が M-2 の事前の木と一致するかを見る。`npm_tree` は M-2 の定義をこのブロックの先頭に置き直す。
+
+```bash
+jq -r '.source.id' ~/.local/share/nvim/mason/packages/"$m"/mason-receipt.json
+npm_tree ~/.local/share/nvim/mason/packages/"$m"/package-lock.json | diff "$TMPDIR/npm-tree-$m.txt" - && echo SAME
+```
+
+- 差が出たら（事前の確認のあとに依存の新しい版が 7 日を越えた等）、増えた・変わった依存を M-2 と同じく OSV・integrity・install のスクリプトにかけて報告する
+- 手順 2-5 の OSV と trivy をかけ直す。trivy の出力先は `$TMPDIR/trivy-mason-after.txt`・`trivy-mason-after.err` に変え（同じ名前だと前の結果を上書きする）、`diff "$TMPDIR/trivy-mason.txt" "$TMPDIR/trivy-mason-after.txt"` で目的の脆弱性が減ったことを確かめる
+- 報告には、入れ替えたもの（版の前後）、消したもの、見送ったものと理由、減った脆弱性と残った脆弱性を表で書く。`ensure_installed` から外す PR を作ったときは完全な URL を付ける
+
 ## エラー処理
 
 | 状況 | 対応 |
@@ -378,3 +537,10 @@ merge までは `~/dotfiles` をこのブランチのままにしておく。mai
 | restore の失敗（exit が 0 でない、ログに error） | ログを原文で伝えて止める。commit しない。戻すときは `git restore configs/nvim/lazy-lock.json` のあと、もう一度 `nvim --headless "+Lazy! restore" +qa` |
 | restore のあと HEAD が lock とずれる | どのプラグインかと両方の sha を伝えて止める。commit しない |
 | `pull --ff-only` が止まる | 作業ツリーの変更を `git status` で見て報告する。lock 以外の変更は捨てない |
+| `trivy: command not found`、trivy の DB の取得の失敗 | `trivy-mason.txt` が空でも「脆弱性なし」と書かない。エラーを原文で伝え、表に「trivy 未実行」と書く。入れ替えの後の比べ（M-5）もできないので、入れ替えは OSV の結果だけで決めてよいか持ち主に聞く |
+| `E492: Not an editor command: MasonInstall`（`MasonUninstall` も同じ） | mason.nvim が読み込まれていない。`-c "Lazy! load mason.nvim"` を前に置いてやり直す。exit が 0 でも失敗している |
+| `npm error code ETARGET`（`No matching version found for <pkg>@<版> with a date before ...`） | 指定した版か依存が 7 日ルールに引っかかった。その版は見送り、M-1 の候補を取り直す。前の版が残っていることを receipt で確かめる |
+| `Neovim is exiting while packages are still installing` と `Installation was aborted` | mason.nvim を読み込んだときに `ensure_installed` の入っていないツールの install が始まり、`qall` で止まった。止まったツールの名前を報告し、入れるかを持ち主に聞く。`MasonInstall` に並べたツールがこの中に出たら、先に `ensure_installed` の側が入れ始めて待たれなかったので、M-5 で receipt を見てから入れ替えをやり直す |
+| `MasonUninstall` したツールが次の起動で戻る | `ensure_installed` に入っている。`configs/nvim/lua/plugins/` で外す PR を作るかを持ち主に聞く |
+| `INTEGRITY-MISMATCH`、`npm audit signatures` の失敗 | 入れ替えない。どのパッケージかと、registry の値を原文で伝えて止める |
+| 入れ替え後の木が事前の木と違う | 差の依存を M-2 と同じく確かめて報告する。`MAL-` があれば `MasonUninstall` を勧める |
