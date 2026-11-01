@@ -90,7 +90,7 @@ awk '{print "--install-extension", $0}' configs/cursor/extensions.txt | xargs cu
 ```
 
 - `extensions.allowed` in both `settings.json` files is the gate: in VS Code, unlisted extensions are blocked from installing, even from the CLI, and disabled if already installed. Add a new extension to the list and to `extensions.allowed`
-- Allow Microsoft extensions with the `microsoft` key. In VS Code 1.144, publisher keys such as `ms-python` or `ms-vscode` do not take effect, and those extensions fail to install with a misleading "not available in Visual Studio Code for the Mac Silicon platform" error
+- Allow Microsoft extensions with both keys: VS Code matches `microsoft`, and Cursor matches the `ms-*` publisher IDs (`ms-python`, `ms-vscode`, and so on). In VS Code 1.144 the `ms-*` keys do not take effect, and those extensions fail to install with a misleading "not available in Visual Studio Code for the Mac Silicon platform" error. In Cursor 3.27, `microsoft` does not take effect, and Microsoft extensions such as `ms-vscode.makefile-tools` are reported as not in the allowed list
 - In VS Code, `--install-extension` installs the latest version, without the 168-hour wait that `extensions.autoUpdateDelay` applies to auto updates. Append `@<version>` to an ID to install a specific version
 - Cursor does not document whether it honors `extensions.allowed`, or whether `extensions.installCooldownHours` covers CLI installs
 - Check for drift between the lists and the installed extensions:
