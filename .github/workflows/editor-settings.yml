@@ -1,0 +1,37 @@
+name: editor-settings
+
+# main に直接 push した変更も拾うため push でも走らせる
+on:
+  pull_request:
+    paths:
+      - "configs/vscode/settings.json"
+      - "configs/cursor/settings.json"
+      - "configs/vscode/check-settings-sync.sh"
+      - ".github/workflows/editor-settings.yml"
+  push:
+    branches: [main]
+    paths:
+      - "configs/vscode/settings.json"
+      - "configs/cursor/settings.json"
+      - "configs/vscode/check-settings-sync.sh"
+      - ".github/workflows/editor-settings.yml"
+  workflow_dispatch:
+
+# repo の既定は write。checkout して比べるだけなので絞る
+permissions:
+  contents: read
+
+jobs:
+  compare:
+    # hooks-test.yml と同じく fork PR には compute を開放しない
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name == github.repository
+    name: VS Code / Cursor settings.json
+    runs-on: ubuntu-latest
+    steps:
+      # tag は移動しうるので SHA 固定
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Compare settings.json except extensions.autoUpdate
+        run: bash configs/vscode/check-settings-sync.sh
