@@ -42,9 +42,6 @@
   "terminal.integrated.fontFamily": "JetBrainsMono Nerd Font",
   "terminal.integrated.cursorStyle": "line",
   "terminal.integrated.cursorBlinking": true,
-  "terminal.integrated.env.osx": {
-    "Q_NEW_SESSION": "1",
-  },
 
   // Search Settings
   "search.exclude": {
