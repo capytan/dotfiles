@@ -13,5 +13,8 @@ fi
 
 # safe-chain
 if [[ -f "$HOME/.safe-chain/scripts/init-posix.sh" ]]; then
+  # Also inspect Takumi Guard registries; safe-chain only intercepts known hosts
+  export SAFE_CHAIN_NPM_CUSTOM_REGISTRIES="npm.flatt.tech"
+  export SAFE_CHAIN_PIP_CUSTOM_REGISTRIES="pypi.flatt.tech"
   source "$HOME/.safe-chain/scripts/init-posix.sh"
 fi

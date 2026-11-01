@@ -289,8 +289,8 @@ if [ "$_skip_path_rules" = "0" ] && echo "$COMMAND" | grep -qEi '(\bid_(rsa|ed25
 fi
 
 # 9. 機微ファイルへのアクセスを確認 (ask)
-if [ "$_skip_path_rules" = "0" ] && echo "$COMMAND" | grep -qEi '(\.env(rc)?\b|\.(ssh|aws|kube)([/[:space:]]|$)|\b(secrets|credentials)/|\.netrc\b|\.docker/config\.json\b|\.tfvars\b)'; then
-  ask "機微ファイル (.env / .envrc / ~/.ssh / ~/.aws / ~/.kube 配下 / secrets・credentials ディレクトリ / .netrc / .docker/config.json / *.tfvars) にアクセスする可能性があります。内容を確認の上で承認してください。"
+if [ "$_skip_path_rules" = "0" ] && echo "$COMMAND" | grep -qEi '(\.env(rc)?\b|\.(ssh|aws|kube)([/[:space:]]|$)|\b(secrets|credentials)/|\.netrc\b|\.docker/config\.json\b|\.tfvars\b|\.npmrc\b|\.yarnrc\.yml\b|\.bunfig\.toml\b|\.config/pip/pip\.conf\b|\.config/uv/uv\.toml\b)'; then
+  ask "機微ファイル (.env / .envrc / ~/.ssh / ~/.aws / ~/.kube 配下 / secrets・credentials ディレクトリ / .netrc / .docker/config.json / *.tfvars / registry の認証を置く .npmrc / .yarnrc.yml / .bunfig.toml / .config/pip/pip.conf / .config/uv/uv.toml) にアクセスする可能性があります。内容を確認の上で承認してください。"
 fi
 
 exit 0
