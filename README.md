@@ -23,14 +23,14 @@ dotfiles/
 ├── configs/              # Application configs (XDG-oriented)
 │   ├── alacritty/       # Terminal emulator configuration
 │   ├── claude/          # Claude Code custom commands & settings, default PR/issue templates
-│   ├── cursor/          # Cursor IDE rules, settings, Agent sandbox policy (copied, not linked)
+│   ├── cursor/          # Cursor IDE rules, settings, extension list, Agent sandbox policy (copied, not linked)
 │   ├── ghostty/         # Ghostty terminal config
 │   ├── git/             # Git config, ignore, completion, prompt
 │   ├── herdr/           # herdr multiplexer config and tab bar scripts
 │   ├── mise/            # Development environment manager config
 │   ├── nvim/            # Neovim (LazyVim) config and lazy-lock.json
 │   ├── takumi-guard/    # Opt-in script for the anonymous Takumi Guard registry
-│   └── vscode/          # VSCode settings, VSCode/Cursor extensions
+│   └── vscode/          # VSCode settings and extension list
 ├── shell/               # Shell configuration (shared layer)
 │   ├── zshrc            # Thin loader (auto-detects platform)
 │   ├── zprofile         # Login shell settings
@@ -79,6 +79,25 @@ dotfiles/
 1. Update plugins with the `update-nvim-plugins` Claude Code skill (`configs/claude/skills/update-nvim-plugins/`). It holds back commits pushed less than 7 days ago, checks each candidate for supply-chain risks, edits `lazy-lock.json` only for the approved ones, and opens a PR
 2. Inside nvim, stop at `:Lazy check` to see what is incoming. Don't use `:Lazy update`, `:Lazy sync`, or `U`/`S` in the `:Lazy` window — they jump to the latest commit or tag without those checks
 3. If something breaks, revert `lazy-lock.json` and run `:Lazy restore`
+
+## VS Code / Cursor Extensions
+
+`configs/vscode/extensions.txt` (VS Code) and `configs/cursor/extensions.txt` (Cursor) list the extensions to install, one ID per line, in `--list-extensions` format. `install.sh` does not install them; run this on a new Mac:
+
+```bash
+awk '{print "--install-extension", $0}' configs/vscode/extensions.txt | xargs code
+awk '{print "--install-extension", $0}' configs/cursor/extensions.txt | xargs cursor
+```
+
+- `extensions.allowed` in both `settings.json` files is the gate: in VS Code, unlisted extensions are blocked from installing, even from the CLI, and disabled if already installed. Add a new extension to the list and to `extensions.allowed`
+- In VS Code, `--install-extension` installs the latest version, without the 168-hour wait that `extensions.autoUpdateDelay` applies to auto updates. Append `@<version>` to an ID to install a specific version
+- Cursor does not document whether it honors `extensions.allowed`, or whether `extensions.installCooldownHours` covers CLI installs
+- Check for drift between the lists and the installed extensions:
+
+  ```bash
+  diff <(code --list-extensions) configs/vscode/extensions.txt
+  diff <(cursor --list-extensions) configs/cursor/extensions.txt
+  ```
 
 ## Takumi Guard (anonymous)
 
