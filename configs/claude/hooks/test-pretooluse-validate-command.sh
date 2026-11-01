@@ -157,6 +157,11 @@ ask|home-dir|.aws|~/.aws
 ask|home-dir|.kube|~/.kube
 ask|home-file|.docker/config.json|.docker/config.json
 ask|home-file|.netrc|.netrc
+ask|home-file|.npmrc|.npmrc
+ask|home-file|.yarnrc.yml|.yarnrc.yml
+ask|home-file|.bunfig.toml|.bunfig.toml
+ask|home-file|.config/pip/pip.conf|.config/pip/pip.conf
+ask|home-file|.config/uv/uv.toml|.config/uv/uv.toml
 ask|ext|tfvars|*.tfvars
 ask|file-only|token|
 ask|file-only|key|
