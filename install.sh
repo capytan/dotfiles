@@ -175,10 +175,6 @@ if [[ "$PLATFORM" == "macos" ]]; then
     "$HOME/Library/Application Support/Cursor/User/settings.json"
   link_file "$DOTFILES_DIR/configs/vscode/settings.json" \
     "$HOME/Library/Application Support/Code/User/settings.json"
-  link_file "$DOTFILES_DIR/configs/vscode/extensions.json" \
-    "$HOME/Library/Application Support/Code/User/extensions.json"
-  link_file "$DOTFILES_DIR/configs/vscode/extensions.json" \
-    "$HOME/Library/Application Support/Cursor/User/extensions.json"
 
   # Cursor Agent sandbox: copy, not symlink. A symlink would let sandboxed
   # commands in a dotfiles workspace rewrite the live policy, which Cursor
