@@ -59,6 +59,12 @@ uv・mise・Homebrew で入れたツールを更新する前に、次の 4 つ�
 
 ## Execution Process
 
+dotfiles への `git` は、`~/dotfiles` を cwd にして `-C` を付けずに書いている（グローバルの CLAUDE.md の決まり）。`mise use -g` は `~/.config/mise/config.toml` の symlink を通して必ず `~/dotfiles` の本体に書くので、始める前に次で cwd を確かめ、`OTHER` なら（別の repo、dotfiles の worktree など）以降の dotfiles への `git` をすべて `git -C ~/dotfiles` に読み替える。
+
+```bash
+[ "$(pwd -P)" = "$(cd ~/dotfiles && pwd -P)" ] && echo DOTFILES || echo OTHER
+```
+
 ### 手順 1: 候補の収集（読み取りのみ）
 
 基準時刻を `date -u +%Y-%m-%dT%H:%M:%SZ` で取って表に書く。経過時間は公開時刻（UTC の ISO 8601）から次の式で計算する。小数秒付き（`.389957Z`、`.0Z`）の時刻もそのまま渡せる。
@@ -246,7 +252,9 @@ gh api 'repos/<o>/<r>/compare/<cur>...<new>?per_page=100' --paginate --jq '.file
 - 種類（uv 本体・uv tool・uv 管理の Python・mise 本体・mise ツール・brew formula・brew cask・巻き込み依存）ごとに見出しで分ける
 - uv 管理の Python の行は、ツール名に `cpython-3.14.<patch>+<tag>`、コード確認に「対象外（CPython のビルド）」と書く
 - 候補なしのツールは載せない。見送りは理由を判定の列に書く
-- 表のあとに AskUserQuestion で承認を取る。選択肢は「更新可だけ実行」「更新可と要判断を選んで実行」「やめる」。要判断の項目は multiSelect で 1 つずつ選べるようにする
+- 表のあとに AskUserQuestion で承認を取る。最初の質問の選択肢は「更新可だけ実行」「更新可と要判断を選んで実行」「やめる」
+- 「要判断を選んで実行」なら、要判断の項目を multiSelect で選ばせる。AskUserQuestion は 1 問に選択肢 2〜4 個、1 回の呼び出しに 4 問までなので、問いの数を件数 ÷ 4 の切り上げにして、件数の差が 1 以内になるよう均等に分け（5 件は 3 + 2）、5 問目からは次の呼び出しで聞く。こう分ければ 1 件だけの問いはできない。全体で 1 件なら multiSelect を使わず、その項目を変えるか既定のままにするかの 2 択にする（label の書き方は下と同じ）
+  - 選択肢の label には、選んだときに起きることを書く（`node: 24.1.0 に上げる`、`ruff: 入れ直す` など）。選ばなかった項目が既定（上げない、入れ直さない）になる向きにそろえる
 
 ### 手順 4: 承認分だけ更新する
 
@@ -284,16 +292,16 @@ command uv python find 3.14 --managed-python        # 今 3.14 で選ばれる�
 - mise の Python を参照したままの tool には `uv tool upgrade` を使わず、`--reinstall` で入れ直す（環境を作り直して参照先を切り替えるため）
 - `--exclude-newer "7 days"` は推移依存にも効く。推移依存の個別確認はしない
 - mise の `npm:` と `pypi:` backend の推移依存は、mise の `minimum_release_age`（config の tool option で `7d`）で守る。個別確認はしない。npm: は mise 内蔵の aube が、pypi: は uv の `--exclude-newer` が依存の解決にこの cutoff をかける（mise の公式ドキュメント）。ツール本体の固定版には効かないので、本体は手順 1〜3 で確かめる
-- `mise use -g` は tool option（`minimum_release_age`、azure-cli の `dependency_prereleases`・`with`）を残したまま `version` だけを書き換える。commit 前に `git -C ~/dotfiles diff configs/mise/config.toml` で、変わったのが版だけであることを確かめる
+- `mise use -g` は tool option（`minimum_release_age`、azure-cli の `dependency_prereleases`・`with`）を残したまま `version` だけを書き換える。commit 前に `git diff configs/mise/config.toml` で、変わったのが版だけであることを確かめる
 
 ### 手順 5: mise config の commit と報告
 
-1. `git -C ~/dotfiles status --short` で `configs/mise/config.toml` に差分があるか見る
+1. `git status --short` で `configs/mise/config.toml` に差分があるか見る
 2. 差分があり、ほかに staged の変更がなければ `configs/mise/config.toml` だけを stage して commit する。ほかに staged の変更があれば commit せずに報告する
 
 ```bash
-git -C ~/dotfiles add configs/mise/config.toml
-git -C ~/dotfiles commit -m "chore(mise): ツールバージョンを更新"
+git add configs/mise/config.toml
+git commit -m "chore(mise): ツールバージョンを更新"
 ```
 
 push はしない。
