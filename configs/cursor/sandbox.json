@@ -1,0 +1,8 @@
+{
+  "type": "workspace_readwrite",
+  "readBoundary": "workspace",
+  "networkPolicy": {
+    "default": "deny",
+    "allow": []
+  }
+}

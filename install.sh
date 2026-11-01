@@ -161,6 +161,21 @@ if [[ "$PLATFORM" == "macos" ]]; then
   link_file "$DOTFILES_DIR/configs/vscode/extensions.json" \
     "$HOME/Library/Application Support/Cursor/User/extensions.json"
 
+  # Cursor Agent sandbox: copy, not symlink. A symlink would let sandboxed
+  # commands in a dotfiles workspace rewrite the live policy, which Cursor
+  # write-protects only under ~/.cursor
+  CURSOR_SANDBOX_SRC="$DOTFILES_DIR/configs/cursor/sandbox.json"
+  CURSOR_SANDBOX="$HOME/.cursor/sandbox.json"
+  if [[ -L "$CURSOR_SANDBOX" ]]; then
+    warn "$CURSOR_SANDBOX is a symlink; replace it with a copy of $CURSOR_SANDBOX_SRC"
+  elif [[ ! -e "$CURSOR_SANDBOX" ]]; then
+    mkdir -p "$(dirname "$CURSOR_SANDBOX")"
+    cp "$CURSOR_SANDBOX_SRC" "$CURSOR_SANDBOX"
+    ok "Copied Cursor sandbox policy: $CURSOR_SANDBOX"
+  elif ! cmp -s "$CURSOR_SANDBOX_SRC" "$CURSOR_SANDBOX"; then
+    warn "$CURSOR_SANDBOX differs from $CURSOR_SANDBOX_SRC (left unchanged; diff and copy by hand)"
+  fi
+
   # Homebrew packages: platform/macos/Brewfile is for reference only
   # Run manually if needed: brew bundle --file=platform/macos/Brewfile
 
