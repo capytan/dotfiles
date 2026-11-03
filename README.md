@@ -109,6 +109,28 @@ awk '{print "--install-extension", $0}' configs/cursor/extensions.txt | xargs cu
 
 npm, yarn v1, bun, and uv may record `npm.flatt.tech` / `pypi.flatt.tech` URLs in lockfiles (including `uv.lock`), and those URLs end up in committed lockfiles.
 
+## safe-chain
+
+[safe-chain](https://github.com/AikidoSec/safe-chain) wraps npm, pnpm, yarn, bun, pip, uv, and other package managers in shell functions that route downloads through a local proxy. It complements Takumi Guard:
+
+- Both block known-malicious packages
+- Only safe-chain blocks packages published less than 48 hours ago (its default minimum package age)
+- Only Takumi Guard covers contexts without the shell functions (non-interactive shells, IDEs, mise's `npm:`/`pypi:` backends), since it is registry configuration
+
+`shell/zsh/03-tools.zsh` sources `~/.safe-chain/scripts/init-posix.sh` only when it exists, and sets `SAFE_CHAIN_NPM_CUSTOM_REGISTRIES` / `SAFE_CHAIN_PIP_CUSTOM_REGISTRIES` first so the Takumi Guard registries get inspected too. `install.sh` does not install safe-chain, and nothing warns when it is missing; install it by hand on a new machine:
+
+```bash
+curl -fsSL https://github.com/AikidoSec/safe-chain/releases/download/1.5.27/install-safe-chain.sh -o /tmp/install-safe-chain.sh \
+  && echo "600ebddcb3aaf1fd53653a8d7985df44528722c0f5ee7eb9fff86f26a1a4e5a8  /tmp/install-safe-chain.sh" | sha256sum -c - \
+  && sh /tmp/install-safe-chain.sh \
+  && rm /tmp/install-safe-chain.sh
+```
+
+- The checksum is the one in safe-chain's README "Installation" section, and matches the `install-safe-chain.sh` asset digest on the [release](https://github.com/AikidoSec/safe-chain/releases/tag/1.5.27). The installer has the version and the binary checksums baked in, so it also verifies the binary it downloads
+- The installer runs `safe-chain setup` (it has no option to skip it), which appends `source ~/.safe-chain/scripts/init-posix.sh` to `~/.zshrc` and `~/.bashrc`. `~/.zshrc` is the symlinked `shell/zshrc`, where the line would source the script a second time, after the Takumi Guard settings. Revert it with `git checkout -- shell/zshrc`, or delete just that line if the file has other uncommitted edits
+- Check it in a new zsh: `type uv` should report a shell function from `init-posix.sh`, and `command -v safe-chain` should print the path under `~/.safe-chain/bin/`. `npm safe-chain-verify` (or `uv`, `pip`, ...) should print "OK: Safe-chain works!"
+- To upgrade, replace `1.5.27` throughout this section, take the new checksum from the same places, rerun the command, and revert `shell/zshrc`. Check the release notes for changes to the `SAFE_CHAIN_*_CUSTOM_REGISTRIES` variables that `03-tools.zsh` relies on
+
 ## Machine-Specific Settings
 
 For settings that differ between personal and work machines, use gitignored local files:
