@@ -2,9 +2,9 @@
 description: Shared vocabulary for designing deep modules. Use when the user wants to design or improve a module's interface, find deepening opportunities, decide where a seam goes, make code more testable or AI-navigable, or when another skill needs the deep-module vocabulary.
 metadata:
     github-path: skills/engineering/codebase-design
-    github-ref: refs/tags/v1.3.1
+    github-ref: refs/tags/v1.3.2
     github-repo: https://github.com/mattpocock/skills
-    github-tree-sha: 07ba1cd60efc12d0d3a083005c1d9651cf15e39a
+    github-tree-sha: 4cbe1c131e1ea54109cb1e4e5f3c505810db6606
 name: codebase-design
 ---
 # Codebase Design
