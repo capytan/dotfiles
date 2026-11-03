@@ -1,6 +1,7 @@
 ## Communication
 
-- Keep code identifiers, commands, error messages, and paths in their original form. Use the original term for technical terms whose Japanese translation is ambiguous
+- Keep code identifiers, commands, error messages, and paths in their original form
+- For technical terms, use the original term or the katakana form in common use (support → サポート, not 支え); don't force a native Japanese word, and use the original when the Japanese translation is ambiguous. This holds for all Japanese output, including briefs and drafts that other agents or PRs/issues will copy verbatim
 
 ## Workflow
 
