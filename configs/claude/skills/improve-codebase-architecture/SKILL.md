@@ -3,9 +3,9 @@ description: Scan a codebase for deepening opportunities, present them as a visu
 disable-model-invocation: true
 metadata:
     github-path: skills/engineering/improve-codebase-architecture
-    github-ref: refs/tags/v1.3.1
+    github-ref: refs/tags/v1.3.2
     github-repo: https://github.com/mattpocock/skills
-    github-tree-sha: 39bd9cc130f7dfcc4e3ea0b3613f6ebed0d0ad2b
+    github-tree-sha: 587147dd230da299cc5e84971cb0a33f6676f8a6
 name: improve-codebase-architecture
 ---
 # Improve Codebase Architecture
@@ -28,7 +28,7 @@ This command is _informed_ by the project's domain model and built on a shared d
 
 Read the project's domain glossary (`GLOSSARY.md`) and any ADRs in the area you're touching first.
 
-Then spawn a sub-agent to walk the codebase. Don't follow rigid heuristics; explore organically and note where you experience friction:
+Then spawn a sub-agent with a fresh context window to walk the codebase. Don't follow rigid heuristics; explore organically and note where you experience friction:
 
 - Where does understanding one concept require bouncing between many small modules?
 - Where are modules **shallow**, with an interface nearly as complex as the implementation?
