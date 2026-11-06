@@ -1,12 +1,12 @@
 [tools]
-node = "24.22.1"
-"npm:@devcontainers/cli" = { version = "0.89.0", minimum_release_age = "7d" }
-biome = "2.6.3"
+node = "24.22.2"
+"npm:@devcontainers/cli" = { version = "0.90.0", minimum_release_age = "7d" }
+biome = "2.6.4"
 deno = "2.9.8"
 pre-commit = "4.7.0"
 python = "3.14.10"
 ruby = "4.0.9"
-terraform = "1.17.0"
+terraform = "1.17.1"
 tflint = "0.65.0"
 trivy = "0.76.1"
 gcloud = "591.0.0"
