@@ -154,6 +154,13 @@ regex = '''(?i)[a-z0-9._%+-]+@(?:[a-z0-9-]+\.)*<company-domain-with-escaped-dots
 keywords = ["<company-domain>"]
 ```
 
+`install.sh` also sets this clone's `user.email` to the GitHub noreply address; repo-local config beats `~/.gitconfig` and covers its worktrees. For other personal repos, append to `~/.gitconfig` after its `[user]` section:
+
+```gitconfig
+[includeIf "gitdir:~/ghq/github.com/capytan/"]
+	path = ~/dotfiles/configs/git/personal.gitconfig
+```
+
 ## Machine-Specific Settings
 
 For settings that differ between personal and work machines, use gitignored local files:
