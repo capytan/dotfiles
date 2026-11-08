@@ -101,7 +101,6 @@ check deny 'rm -fr /tmp/x'
 check deny 'rm -r -f /tmp/x'
 check deny 'rm --recursive --force /tmp/x'
 check allow 'rm /tmp/x'
-check allow 'rm -r /tmp/x'
 # path 中の -f を flag と誤認しない
 check allow 'rm /var/log-final/app.log'
 
@@ -283,6 +282,27 @@ while IFS='|' read -r tier kind name tokens; do
     check_contains "rule ($tier) のメッセージ" "$msg" "$t"
   done
 done <<<"$SENSITIVE_PATHS"
+
+# --- rule 10: rm -rf の迂回になる再帰削除 (ask) ---
+check ask 'rm -r build'
+check ask 'rm -R build'
+check ask "find . -name '*.tmp' -delete"
+check ask 'find . -exec rm -r {} +'
+check ask 'find . -execdir /bin/rm {} \;'
+check allow 'rm file.txt'
+# path 中の -r を flag と誤認しない
+check allow 'rm ./data-r/x'
+check allow "find . -name '*.md'"
+check allow 'find . -type f -exec grep -l foo {} +'
+# `-exec ... \;` の `;` で find の検査が切れない
+check ask 'find . -name x -exec echo {} \; -delete'
+check ask 'grm -r build'
+check ask 'gfind . -delete'
+# `--rm` の後ろの -r を rm -r と誤認しない
+check allow 'docker run --rm alpine grep -r TODO /src'
+# index から外すだけ
+check allow 'git rm -r --cached .'
+check ask 'git rm -r src'
 
 # --- rule 0: 実行されないテキスト領域の除去 ---
 # 事故: PR 本文を heredoc で書き、その中で Dockerfile の `rm -rf /var/lib/apt/lists/*` を

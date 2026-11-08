@@ -299,4 +299,19 @@ if [ "$_skip_path_rules" = "0" ] && echo "$COMMAND" | grep -qEi '(\.env(rc)?\b|\
   ask "機微ファイル (.env / .envrc / ~/.ssh / ~/.aws / ~/.kube 配下 / secrets・credentials ディレクトリ / .netrc / .docker/config.json / *.tfvars / registry の認証を置く .npmrc / .yarnrc.yml / .bunfig.toml / .config/pip/pip.conf / .config/uv/uv.toml) にアクセスする可能性があります。内容を確認の上で承認してください。"
 fi
 
+# 10. rm -rf の deny を迂回できる再帰削除を確認 (ask)。deny の rules より後ろで評価する
+# - rm -r / -R / --recursive の単独 (-f 付きは rule 5 が deny 済み)。flag 位置 anchor は rule 5 と同じ
+#   rm は語の先頭 (空白・区切り・/ の直後) に限る。`docker run --rm ... grep -r` を拾わない
+#   `git rm -r --cached` は index から外すだけなので除外する
+# - find の -delete / -exec rm / -execdir rm (/bin/rm 等のパス付きも)。-exec grep 等は許可
+#   find は `-exec ... \;` の `;` を含むので、segment 境界から `;` を外す
+# - Homebrew の coreutils / findutils (grm / gfind) も拾う
+if echo "$COMMAND" | grep -qE '(^|[[:space:]/;&|(`])g?rm[[:space:]]([^|;&`]*[[:space:]])?(-[a-zA-Z]*[rR][a-zA-Z]*\b|--recursive\b)' &&
+  ! echo "$COMMAND" | grep -qE '\bgit\b[^|;&`]*[[:space:]]rm[[:space:]][^|;&`]*--cached\b'; then
+  ask "rm -r は再帰的にファイルを削除します。対象ディレクトリを確認の上で承認してください。"
+fi
+if echo "$COMMAND" | grep -qE '\bg?find\b[^|&`]*(^|[[:space:]])(-delete\b|-exec(dir)?[[:space:]]+([^[:space:]]*/)?g?rm\b)'; then
+  ask "find の -delete / -exec rm はマッチしたファイルを削除します。先に -print で対象を確認の上で承認してください。"
+fi
+
 exit 0
