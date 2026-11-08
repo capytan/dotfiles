@@ -3,11 +3,16 @@
 # Claude Code の PreToolUse イベントで呼び出される
 # stdin: {"tool_name": "Bash", "tool_input": {"command": "..."}}
 # stdout: {"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny", "permissionDecisionReason": "..."}} でブロック
-# fail-open 方針: set -euo pipefail を使わず、jq 欠損時などは黙って allow (validator が二次的な信頼できないゲートである前提)
+# fail-closed 方針: 起動できない・jq が無い・時間切れは、settings.json の onFailure: "block" で止める。
+#   黙って allow すると deny が消えたことに誰も気づけないため。
+#   set -euo pipefail は使わない。onFailure: "block" の下では helper の非 0 (grep の不一致など) が全コマンドを止める
+
+# jq が無い・入力を parse できないと TOOL_NAME が空になり素通りするので、非 0 で抜けて onFailure で止める
+command -v jq >/dev/null 2>&1 || { echo "jq missing" >&2; exit 1; }
 
 INPUT=$(cat)
 
-TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // empty' 2>/dev/null)
+TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // empty' 2>/dev/null) || { echo "invalid hook input" >&2; exit 1; }
 
 # Bash ツールのみ対象
 if [ "$TOOL_NAME" != "Bash" ]; then
@@ -254,7 +259,8 @@ fi
 
 # 秘密ファイル系の path 検知は settings.json の Read()/Edit() ルールと対称に 2 段階で扱う:
 #   鍵・証明書 (実体が必ず秘匿) は deny、機微ファイル (中身次第) は ask。
-#   Read()/Edit() permission は Bash 経由の cat/head 等に効かないため、ここで具体パスを拾う。
+#   Read()/Edit() の deny は Bash の cat/head 等にも効くが、ask が Bash に効くかは公式に記載が無く、
+#   cp/scp/base64 や grep -r には deny も効かないため、ここで具体パスを拾う。
 #   対象パスの一覧は test-pretooluse-validate-command.sh の SENSITIVE_PATHS 表が正。
 #   ここの regex・メッセージと settings.json はテストで表と照合されるので、追加・削除は表の 1 行から始める
 #
@@ -291,6 +297,26 @@ fi
 # 9. 機微ファイルへのアクセスを確認 (ask)
 if [ "$_skip_path_rules" = "0" ] && echo "$COMMAND" | grep -qEi '(\.env(rc)?\b|\.(ssh|aws|kube)([/[:space:]]|$)|\b(secrets|credentials)/|\.netrc\b|\.docker/config\.json\b|\.tfvars\b|\.npmrc\b|\.yarnrc\.yml\b|\.bunfig\.toml\b|\.config/pip/pip\.conf\b|\.config/uv/uv\.toml\b)'; then
   ask "機微ファイル (.env / .envrc / ~/.ssh / ~/.aws / ~/.kube 配下 / secrets・credentials ディレクトリ / .netrc / .docker/config.json / *.tfvars / registry の認証を置く .npmrc / .yarnrc.yml / .bunfig.toml / .config/pip/pip.conf / .config/uv/uv.toml) にアクセスする可能性があります。内容を確認の上で承認してください。"
+fi
+
+# 10. rm -rf の deny を迂回できる再帰削除を確認 (ask)。deny の rules より後ろで評価する
+# - rm -r / -R / --recursive の単独 (-f 付きは rule 5 が deny 済み)。flag 位置 anchor は rule 5 と同じ
+#   rm は語の先頭 (空白・区切り・/ の直後) に限る。`docker run --rm ... grep -r` を拾わない
+#   `git rm -r --cached` は index から外すだけなので除外する
+# - find の -delete / -exec rm / -execdir rm (/bin/rm 等のパス付きも)。-exec grep 等は許可
+#   find は `-exec ... \;` の `;` を含むので、segment 境界から `;` を外す
+# - Homebrew の coreutils / findutils (grm / gfind) も拾う
+if echo "$COMMAND" | grep -qE '(^|[[:space:]/;&|(`])g?rm[[:space:]]([^|;&`]*[[:space:]])?(-[a-zA-Z]*[rR][a-zA-Z]*\b|--recursive\b)' &&
+  ! echo "$COMMAND" | grep -qE '\bgit\b[^|;&`]*[[:space:]]rm[[:space:]][^|;&`]*--cached\b'; then
+  ask "rm -r は再帰的にファイルを削除します。対象ディレクトリを確認の上で承認してください。"
+fi
+if echo "$COMMAND" | grep -qE '\bg?find\b[^|&`]*(^|[[:space:]])(-delete\b|-exec(dir)?[[:space:]]+([^[:space:]]*/)?g?rm\b)'; then
+  ask "find の -delete / -exec rm はマッチしたファイルを削除します。先に -print で対象を確認の上で承認してください。"
+fi
+
+# 11. rimraf を確認 (ask)。npx / pnpm dlx 経由でも語として現れる
+if echo "$COMMAND" | grep -qE '\brimraf\b'; then
+  ask "rimraf は rm -rf と同じ再帰削除です。対象を確認の上で承認してください。"
 fi
 
 exit 0
