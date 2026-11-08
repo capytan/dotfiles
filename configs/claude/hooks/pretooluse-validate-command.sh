@@ -3,11 +3,16 @@
 # Claude Code の PreToolUse イベントで呼び出される
 # stdin: {"tool_name": "Bash", "tool_input": {"command": "..."}}
 # stdout: {"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny", "permissionDecisionReason": "..."}} でブロック
-# fail-open 方針: set -euo pipefail を使わず、jq 欠損時などは黙って allow (validator が二次的な信頼できないゲートである前提)
+# fail-closed 方針: 起動できない・jq が無い・時間切れは、settings.json の onFailure: "block" で止める。
+#   黙って allow すると deny が消えたことに誰も気づけないため。
+#   set -euo pipefail は使わない。onFailure: "block" の下では helper の非 0 (grep の不一致など) が全コマンドを止める
+
+# jq が無い・入力を parse できないと TOOL_NAME が空になり素通りするので、非 0 で抜けて onFailure で止める
+command -v jq >/dev/null 2>&1 || { echo "jq missing" >&2; exit 1; }
 
 INPUT=$(cat)
 
-TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // empty' 2>/dev/null)
+TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // empty' 2>/dev/null) || { echo "invalid hook input" >&2; exit 1; }
 
 # Bash ツールのみ対象
 if [ "$TOOL_NAME" != "Bash" ]; then
@@ -254,7 +259,8 @@ fi
 
 # 秘密ファイル系の path 検知は settings.json の Read()/Edit() ルールと対称に 2 段階で扱う:
 #   鍵・証明書 (実体が必ず秘匿) は deny、機微ファイル (中身次第) は ask。
-#   Read()/Edit() permission は Bash 経由の cat/head 等に効かないため、ここで具体パスを拾う。
+#   Read()/Edit() の deny は Bash の cat/head 等にも効くが、ask が Bash に効くかは公式に記載が無く、
+#   cp/scp/base64 や grep -r には deny も効かないため、ここで具体パスを拾う。
 #   対象パスの一覧は test-pretooluse-validate-command.sh の SENSITIVE_PATHS 表が正。
 #   ここの regex・メッセージと settings.json はテストで表と照合されるので、追加・削除は表の 1 行から始める
 #
