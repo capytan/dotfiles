@@ -304,6 +304,10 @@ check allow 'docker run --rm alpine grep -r TODO /src'
 check allow 'git rm -r --cached .'
 check ask 'git rm -r src'
 
+# --- rule 11: rimraf (ask) ---
+check ask 'npx --yes rimraf x'
+check ask 'pnpm dlx rimraf dist'
+
 # --- rule 0: 実行されないテキスト領域の除去 ---
 # 事故: PR 本文を heredoc で書き、その中で Dockerfile の `rm -rf /var/lib/apt/lists/*` を
 #       引用しただけで rule 5 が deny した。実害ゼロの deny はゲートへの信頼を下げ、

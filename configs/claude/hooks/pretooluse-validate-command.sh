@@ -314,4 +314,9 @@ if echo "$COMMAND" | grep -qE '\bg?find\b[^|&`]*(^|[[:space:]])(-delete\b|-exec(
   ask "find の -delete / -exec rm はマッチしたファイルを削除します。先に -print で対象を確認の上で承認してください。"
 fi
 
+# 11. rimraf を確認 (ask)。npx / pnpm dlx 経由でも語として現れる
+if echo "$COMMAND" | grep -qE '\brimraf\b'; then
+  ask "rimraf は rm -rf と同じ再帰削除です。対象を確認の上で承認してください。"
+fi
+
 exit 0
