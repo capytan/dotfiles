@@ -131,6 +131,29 @@ curl -fsSL https://github.com/AikidoSec/safe-chain/releases/download/1.5.27/inst
 - Check it in a new zsh: `type uv` should report a shell function from `init-posix.sh`, and `command -v safe-chain` should print the path under `~/.safe-chain/bin/`. `npm safe-chain-verify` (or `uv`, `pip`, ...) should print "OK: Safe-chain works!"
 - To upgrade, replace `1.5.27` throughout this section, take the new checksum from the same places, rerun the command, and revert `shell/zshrc`. Check the release notes for changes to the `SAFE_CHAIN_*_CUSTOM_REGISTRIES` variables that `03-tools.zsh` relies on
 
+## gitleaks
+
+gitleaks checks file contents, commit messages, and commit author/committer addresses. `.gitleaks.toml` holds only the default rules; the rules for company names and the work email domain stay out of this public repo and are added at scan time:
+
+- CI (`.github/workflows/gitleaks.yml`) scans only the commits a PR or a push to `main` adds. It reads the company rules from the Actions secret `GITLEAKS_COMPANY_RULES`, and falls back to the default rules when the secret is unavailable (fork PRs)
+- `.githooks/commit-msg` checks the staged diff, the message, and the author/committer, adding `~/.config/gitleaks/company.toml` when it exists. `install.sh` sets this clone's `core.hooksPath` to `.githooks`; gitleaks comes from `configs/mise/config.toml` (`mise install`). Bypass with `git commit --no-verify`
+
+Both hold only `[[rules]]` entries; `[extend]` pointing at `.gitleaks.toml` is prepended for them:
+
+```toml
+[[rules]]
+id = "company-name"
+description = "Company name"
+regex = '''(?i)<company-name>|<other-company-name>'''
+keywords = ["<company-name>", "<other-company-name>"]
+
+[[rules]]
+id = "company-email"
+description = "Company email address"
+regex = '''(?i)[a-z0-9._%+-]+@(?:[a-z0-9-]+\.)*<company-domain-with-escaped-dots>'''
+keywords = ["<company-domain>"]
+```
+
 ## Machine-Specific Settings
 
 For settings that differ between personal and work machines, use gitignored local files:

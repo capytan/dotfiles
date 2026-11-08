@@ -1,0 +1,5 @@
+# gitleaks の設定。CI（.github/workflows/gitleaks.yml）と commit-msg hook（.githooks/commit-msg）が使う
+# 社名と会社のアドレスのルールは public の repo に置かず、CI は secret、hook は手元のファイルから足す（README "gitleaks"）
+
+[extend]
+useDefault = true
