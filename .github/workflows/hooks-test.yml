@@ -38,7 +38,7 @@ jobs:
       # tag は移動しうるので SHA 固定
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      # jq が無いと validator は fail-open し、原因の分かりにくい全件失敗になる
+      # jq が無いと validator は exit 1 で抜け、原因の分かりにくい全件失敗になる
       - name: Check jq
         run: jq --version
 

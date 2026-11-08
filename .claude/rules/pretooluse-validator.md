@@ -38,7 +38,7 @@ bash が double quote 内 / unquoted heredoc 本文で**実行**を起こせる�
 
 対象パスの正は `test-pretooluse-validate-command.sh` の `SENSITIVE_PATHS` 表 (1 行 = `tier|kind|name|表示トークン`)。テストが 3 つを照合する: settings.json の deny/ask にある `Read(`/`Edit(` エントリとの完全一致、kind ごとの代表コマンドに対する rules 8/9 の判定、deny/ask メッセージへの表示トークンの包含。パスを足すときは表に 1 行足してテストを落とし、落ちた箇所を直す。
 
-生成ではなく照合にしたのは、validator が fail-open だから。表を runtime に読ませると、読めなかったときに鍵の deny が黙って消える。settings.json は `~/.claude/` への symlink 先そのもので、生成物にすると生成忘れがそのまま食い違いになる。
+生成ではなく照合にしたのは、validator の runtime 依存を増やさないため。表を runtime に読ませると、読めなかったときに全コマンドが止まるか (fail-closed)、鍵の deny が黙って消える。settings.json は `~/.claude/` への symlink 先そのもので、生成物にすると生成忘れがそのまま食い違いになる。
 
 意図的な非対称は kind の定義に置き、テストで振る舞いを固定している:
 
