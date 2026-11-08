@@ -74,6 +74,13 @@ link_file "$DOTFILES_DIR/shell/zprofile" "$HOME/.zprofile"
 info "Setting up git configuration..."
 link_file "$DOTFILES_DIR/configs/git/config" "$HOME/.config/git/config"
 link_file "$DOTFILES_DIR/configs/git/ignore" "$HOME/.config/git/ignore"
+# This clone's hooks, shared by its worktrees (README "gitleaks"). hooksPath is relative,
+# so each worktree runs its checkout's .githooks
+if git -C "$DOTFILES_DIR" rev-parse --git-dir >/dev/null 2>&1; then
+  git -C "$DOTFILES_DIR" config core.hooksPath .githooks
+else
+  warn "$DOTFILES_DIR is not a git clone; commit-msg hook not enabled (non-fatal)"
+fi
 
 # =============================================================================
 # 5. herdr configuration

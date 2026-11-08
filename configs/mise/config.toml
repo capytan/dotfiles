@@ -9,6 +9,7 @@ ruby = "4.0.9"
 terraform = "1.17.1"
 tflint = "0.65.0"
 trivy = "0.76.1"
+gitleaks = "8.30.1"
 gcloud = "591.0.0"
 azure-cli = { version = "2.91.0", dependency_prereleases = "allow", with = ["pip"], minimum_release_age = "7d" }
 bun = "1.4.4"
