@@ -2,7 +2,7 @@
 # pretooluse-validate-command.sh の判定テーブルテスト
 #
 # 使い方: bash configs/claude/hooks/test-pretooluse-validate-command.sh
-# 依存: jq のみ (hook 自体がすでに jq 必須)。CI では回さず、hook を触ったときに手で叩く
+# 依存: jq のみ (hook 自体がすでに jq 必須)。CI (.github/workflows/hooks-test.yml) が bash 5 と 3.2 で回す
 #
 # allow ケースは単なる正常系ではなく、過去に踏んだ false positive の回帰テスト。
 # 削らないこと (どの事故に対応するかは各ケースのコメントを参照)
@@ -135,7 +135,7 @@ check allow 'git log --oneline -- .env'
 
 # --- rules 8/9 と settings.json: 機密パス方針の表 ---
 # 機密パス方針の唯一の情報源。validator (rules 8/9 の regex とメッセージ) と settings.json の
-# Read()/Edit() deny/ask は手書きのまま、この表と照合する。生成にしないのは、fail-open の
+# Read()/Edit() deny/ask は手書きのまま、この表と照合する。生成にしないのは、
 # validator に runtime 依存を増やさず、symlink 先の settings.json を生成物にしないため。
 # kind ごとの展開と意図的な非対称の理由は .claude/rules/pretooluse-validator.md の「機密パス方針」
 #
@@ -476,6 +476,27 @@ check deny "$(printf 'git status\nssh h -t "rm -rf /x"')"
 # --- 対象外の入力 ---
 check_raw allow 'tool_name=Read' '{"tool_name": "Read", "tool_input": {"file_path": "/etc/passwd"}}'
 check_raw allow 'empty command' '{"tool_name": "Bash", "tool_input": {"command": ""}}'
+
+# --- fail-closed: jq が無い・parse できないなら非 0 で抜け、settings.json の onFailure: "block" で止まる ---
+# check_eq <label> <expected> <actual>
+check_eq() {
+  if [ "$3" = "$2" ]; then
+    pass=$((pass + 1))
+  else
+    fail=$((fail + 1))
+    printf 'FAIL  expected=%s actual=%s  %s\n' "$2" "$3" "$1"
+  fi
+}
+
+# PATH=/nonexistent では HOOK_BASH を探せないので、先に絶対パスにしておく
+hook_bash_path=$(command -v "$HOOK_BASH")
+PATH=/nonexistent "$hook_bash_path" "$HOOK" <<<'{"tool_name": "Bash", "tool_input": {"command": "rm -rf /"}}' 2>/dev/null
+check_eq 'jq が無いときの終了コード' 1 $?
+"$HOOK_BASH" "$HOOK" <<<'not json' 2>/dev/null
+check_eq 'parse できない入力の終了コード' 1 $?
+# 終了コードだけでは止まらない。settings.json の登録が onFailure: "block" と timeout を持つこと
+check_eq 'settings.json の validator 登録' '{"onFailure":"block","timeout":10}' \
+  "$(jq -c '[.hooks.PreToolUse[].hooks[] | select(.command | test("pretooluse-validate-command"))][0] | {onFailure, timeout}' "$SETTINGS" 2>/dev/null)"
 
 printf '\n%d passed, %d failed\n' "$pass" "$fail"
 [ "$fail" -eq 0 ]
