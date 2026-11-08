@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# これから作る commit の staged の差分、メッセージ、author / committer を gitleaks で調べる（README "gitleaks"）。
+# メッセージも見るので pre-commit でなく commit-msg に置く。$1 はメッセージのファイル
+set -euo pipefail
+
+if ! command -v gitleaks >/dev/null 2>&1; then
+  echo "commit-msg: gitleaks が無い。mise install で入れる（configs/mise/config.toml に版がある）" >&2
+  exit 1
+fi
+
+# hook は worktree の root で動く。社名のルールは repo の外にあり、あれば .gitleaks.toml に足す
+company="$HOME/.config/gitleaks/company.toml"
+if [[ -f "$company" ]]; then
+  # GITLEAKS_CONFIG（ファイル）は GITLEAKS_CONFIG_TOML（中身）より優先されるので消しておく
+  unset GITLEAKS_CONFIG
+  GITLEAKS_CONFIG_TOML="$(printf "[extend]\npath = '%s'\n\n" "$PWD/.gitleaks.toml"; cat "$company")"
+  export GITLEAKS_CONFIG_TOML
+else
+  export GITLEAKS_CONFIG=.gitleaks.toml
+fi
+
+gitleaks git --pre-commit --staged -v --redact --no-banner
+
+# メッセージとアドレスは差分に入らないので stdin で同じルールに通す
+if ! { git var GIT_AUTHOR_IDENT; git var GIT_COMMITTER_IDENT; cat "$1"; } | gitleaks stdin -v --redact --no-banner; then
+  echo "commit-msg: メッセージか author / committer のアドレスが止める対象。git config user.email も確かめる" >&2
+  exit 1
+fi

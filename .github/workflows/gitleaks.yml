@@ -1,0 +1,80 @@
+name: gitleaks
+
+# 鍵・社名・会社のアドレスが新しい commit に入るのを止める（README "gitleaks"）。
+# 全履歴でなく、その PR / push で増えた commit だけを見る。main に直接 push した分も拾う
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# repo の既定は write。checkout して調べるだけなので絞る
+permissions:
+  contents: read
+
+jobs:
+  # ほかの workflow と違い fork PR も走らせる。repo のコードは実行せず、外から入る commit こそ調べたいため
+  scan:
+    name: gitleaks (diff and commit authors)
+    runs-on: ubuntu-latest
+    env:
+      # configs/mise/config.toml の gitleaks と揃える
+      GITLEAKS_VERSION: 8.30.1
+      # gitleaks_${GITLEAKS_VERSION}_checksums.txt の linux_x64 の行
+      GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+    steps:
+      # tag は移動しうるので SHA 固定
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # base..head の範囲を git log で辿るため
+          fetch-depth: 0
+
+      # gitleaks-action は PR コメント用に token を使う。checksum を確かめて CLI を直接入れる
+      - name: Install gitleaks
+        run: |
+          tarball="gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          curl -fsSLO "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/${tarball}"
+          echo "${GITLEAKS_SHA256}  ${tarball}" | sha256sum -c -
+          tar -xzf "$tarball" gitleaks
+          ./gitleaks version
+
+      - name: Resolve commit range
+        env:
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          PUSH_AFTER: ${{ github.sha }}
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == pull_request ]]; then
+            range="$PR_BASE..$PR_HEAD"
+          elif git cat-file -e "$PUSH_BEFORE^{commit}" 2>/dev/null; then
+            range="$PUSH_BEFORE..$PUSH_AFTER"
+          else
+            # force push（履歴の書き換えなど）で before がどの ref にも無い。push 後の履歴を全部見る
+            range="$PUSH_AFTER"
+          fi
+          echo "RANGE=$range" >> "$GITHUB_ENV"
+          git log --oneline "$range"
+
+      # 社名のルールは public の repo に置かず secret から足す。fork の PR などで secret が無ければ既定のルールだけで調べる
+      - name: Build gitleaks config
+        env:
+          COMPANY_RULES: ${{ secrets.GITLEAKS_COMPANY_RULES }}
+        run: |
+          if [[ -z "$COMPANY_RULES" ]]; then
+            echo "::notice::GITLEAKS_COMPANY_RULES is not available; scanning with the default rules only"
+            echo "GITLEAKS_CONFIG=.gitleaks.toml" >> "$GITHUB_ENV"
+            exit 0
+          fi
+          config="$RUNNER_TEMP/gitleaks.toml"
+          { printf "[extend]\npath = '%s'\n\n" "$PWD/.gitleaks.toml"; printf '%s\n' "$COMPANY_RULES"; } > "$config"
+          echo "GITLEAKS_CONFIG=$config" >> "$GITHUB_ENV"
+
+      # gitleaks は GITLEAKS_CONFIG を読む
+      - name: Scan diff
+        run: ./gitleaks git -v --redact --no-banner --log-opts="$RANGE" .
+
+      # メッセージとアドレスは差分に入らないので stdin で同じルールに通す
+      - name: Scan commit messages, authors and committers
+        run: |
+          git log --format='%an <%ae>%n%cn <%ce>%n%B' "$RANGE" |
+            ./gitleaks stdin -v --redact --no-banner
