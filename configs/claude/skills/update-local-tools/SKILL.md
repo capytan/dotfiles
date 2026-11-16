@@ -22,7 +22,7 @@ uv・mise・Homebrew で入れたツールと zeno.zsh を更新する前に、�
 - 手順 1〜3 は読み取りだけ。承認の前に更新系コマンド（`uv self update`、`uv tool install/upgrade`、`mise self-update`、`mise use`、`mise upgrade`、`brew upgrade`、zeno.zsh の `git checkout`）を実行しない
 - 承認の範囲を広げない。承認後に版が変わった（`brew update` をやり直した等）ら表を作り直す
 - 落とした成果物は検証だけに使い、実行しない
-- commit はしても push はしない
+- `~/dotfiles` の本体のブランチを切り替えず（main のまま）、本体で commit しない。mise config と `install.sh` の変更は、origin/main から切った worktree のブランチに commit し、PR にする。merge はしない
 
 ## When to Use This Skill
 
@@ -42,9 +42,10 @@ uv・mise・Homebrew で入れたツールと zeno.zsh を更新する前に、�
 | uv | `uv` は safe-chain のシェル関数（`wrapSafeChainCommand`）で包まれている。本体は `~/.local/bin/uv` | 更新系（`uv tool install` など）は `uv` で呼び、safe-chain を通す。`command -v safe-chain` が空なら更新系を止めて報告する。読み取りは `command uv` でよい |
 | mise のインストール経路 | 今は `~/.local/bin/mise`（standalone）。brew 経由だと `mise self-update` は使えない | 手順 1 で経路を判定して分岐する |
 | mise の検証設定 | aqua の cosign/slsa/github_attestations/minisign、github の attestations/slsa、`node.verify` が有効 | mise ツールの署名は mise がインストール時に検証する。表には「mise が検証」と書く |
-| mise config | `~/.config/mise/config.toml` は `~/dotfiles/configs/mise/config.toml` への symlink。全ツールを完全な版で固定している | `mise outdated` は `--bump` を付けないと何も出ない。書き込みは `mise use -g` で行い、dotfiles に commit する |
+| mise config | `~/.config/mise/config.toml` は `~/dotfiles/configs/mise/config.toml` への symlink。全ツールを完全な版で固定している | `mise outdated` は `--bump` を付けないと何も出ない |
+| global の config の差し替え | `MISE_GLOBAL_CONFIG_FILE` は global の config を 1 つのファイルに置き換え、`mise use -g` はそのファイルに書く。ただし `$HOME` の下を cwd にすると、`~/.config/mise/config.toml` は project の config として読まれ、global より強い（mise の doc「Configuration」） | `mise use -g` は cwd を `/` にし、`MISE_GLOBAL_CONFIG_FILE` を worktree の config に向けて呼び、その変更を PR にする。ツールはその場で入るが、本体の config は古い版のままなので、新しい版が効くのは merge のあとに本体を pull してから |
 | uv tool の Python | mise の Python（例 `~/.local/share/mise/installs/python/3.13.3`）で入れた uv tool は、その Python が消えると "environment not found" で壊れる | uv tool は `--managed-python --python 3.14` を付けて uv が管理する安定版の Python で入れ、mise の Python から切り離す。参照先は `$(uv tool dir)/X/pyvenv.cfg` の `home` で分かる |
-| zeno.zsh | `~/.local/share/zeno` の git clone。上流に tag も release も無いので、`~/dotfiles/install.sh` の `ZENO_COMMIT`（40 桁の sha）で固定している。`install.sh` は clone と、その commit への checkout しかしない | 更新は `ZENO_COMMIT` の書き換えと checkout で行い、`install.sh` を dotfiles に commit する |
+| zeno.zsh | `~/.local/share/zeno` の git clone。上流に tag も release も無いので、`~/dotfiles/install.sh` の `ZENO_COMMIT`（40 桁の sha）で固定している。`install.sh` は clone と、その commit への checkout しかしない | 更新は checkout と、worktree の `install.sh` の `ZENO_COMMIT` の書き換えで行い、PR にする。merge までに本体の `install.sh` を実行すると、古い commit に戻る |
 
 ## 版の上げ方のルール
 
@@ -61,11 +62,18 @@ uv・mise・Homebrew で入れたツールと zeno.zsh を更新する前に、�
 
 ## Execution Process
 
-dotfiles への `git` は、`~/dotfiles` を cwd にして `-C` を付けずに書いている（グローバルの CLAUDE.md の決まり）。`mise use -g` は `~/.config/mise/config.toml` の symlink を通して必ず `~/dotfiles` の本体に書くので、始める前に次で cwd を確かめ、`OTHER` なら（別の repo、dotfiles の worktree など）以降の dotfiles への `git` をすべて `git -C ~/dotfiles` に読み替える。
+dotfiles への `git` は 2 か所に向く。本体（`~/dotfiles`。`~/.config/mise/config.toml` は symlink でここの config を指す）は `git -C ~/dotfiles`、手順 4 で作る worktree は `git -C "$WT"` と書いている。本体では fetch・status・pull・`worktree add` など読み取りと main の更新だけを行い、ブランチの切り替えと commit は worktree で行う。始める前に次で cwd を確かめ、`DOTFILES` なら `git -C ~/dotfiles` の `-C ~/dotfiles` を外す（cwd と同じ repo に `-C` を付けない、グローバルの CLAUDE.md の決まり）。シェルの変数は Bash の呼び出しをまたいで残らない。`br`・`WT` は手順 4 で `$TMPDIR/local-tools-state.sh` に書き、使うブロックの先頭で `. "$TMPDIR/local-tools-state.sh"; : "${WT:?}"` と読み込む（`br` は時刻から作るので計算し直すと別の名前になり、`WT` が空だと `git -C ""` が cwd の repo に向く）。
+
+始める前に本体を origin/main にそろえる。
 
 ```bash
 [ "$(pwd -P)" = "$(cd ~/dotfiles && pwd -P)" ] && echo DOTFILES || echo OTHER
+if [ "$(git -C ~/dotfiles branch --show-current)" = main ]; then git -C ~/dotfiles pull --ff-only; else echo NOT-MAIN; fi
+git -C ~/dotfiles status --short
 ```
+
+- `NOT-MAIN` が出たとき、`pull --ff-only` が止まったときは、エラー処理の表に従って止める
+- `status` に `configs/mise/config.toml` か `install.sh` が出たら止めて報告する。手順 1 は本体の config を読み、手順 4 は origin/main から切った worktree に書くので、両者が違うと候補と PR がずれ、merge のあとの pull もぶつかる
 
 ### 手順 1: 候補の収集（読み取りのみ）
 
@@ -165,7 +173,7 @@ HOMEBREW_NO_AUTO_UPDATE=1 brew upgrade --dry-run --formula <自分で入れた o
 ```bash
 Z=~/.local/share/zeno
 cutoff=$(jq -rn 'now - 168*3600 | todate')
-base=$(sed -nE 's/^ZENO_COMMIT="([0-9a-f]{40})"$/\1/p' ~/dotfiles/install.sh)
+base=$(git -C ~/dotfiles show origin/main:install.sh | sed -nE 's/^ZENO_COMMIT="([0-9a-f]{40})"$/\1/p')
 git -C "$Z" fetch --quiet origin main
 [ "$(git -C "$Z" rev-parse --is-shallow-repository)" = true ] && git -C "$Z" fetch --quiet --unshallow origin    # 古い install.sh の --depth 1 の clone
 git -C "$Z" rev-parse HEAD    # base と違えば印 `ずれ`
@@ -295,20 +303,29 @@ gh api 'repos/<o>/<r>/compare/<cur>...<new>?per_page=100' --paginate --jq '.file
 順序と失敗時の扱い:
 - uv 本体 → mise 本体 → mise ツール → brew → uv tool → zeno.zsh の順に 1 つずつ実行する
 - uv tool を最後にするのは、mise の Python を参照したままの tool が mise の更新で壊れることがあるため。mise の python を更新したら、手順 1 の uv tool の一覧を取り直し、壊れたものを表に足して承認を取り直す
-- どれかが失敗したら、その場で止めて報告する。残りは実行しない
+- どれかが失敗したら、エラー処理の表の「更新コマンドの失敗」に従う
+
+mise のツールか zeno.zsh を承認したときは、mise ツールの前に dotfiles の worktree を origin/main から作る。
+
+```bash
+br=chore/local-tools-$(date +%Y%m%d-%H%M)
+WT=~/.herdr/worktrees/dotfiles/${br//\//-}
+printf 'br=%q\nWT=%q\n' "$br" "$WT" > "$TMPDIR/local-tools-state.sh"
+git -C ~/dotfiles worktree add -b "$br" "$WT" origin/main
+```
 
 | 対象 | コマンド |
 |---|---|
 | uv 本体 | `uv self update <version>` |
 | mise 本体（standalone） | `mise self-update -y <version>` |
-| mise ツール | `mise use -g <tool>@<version>`（ツールごと。config の版も書き換わる） |
+| mise ツール | `. "$TMPDIR/local-tools-state.sh"; : "${WT:?}"; (cd / && MISE_GLOBAL_CONFIG_FILE="$WT/configs/mise/config.toml" mise use -g <tool>@<version>)`（ツールごと） |
 | brew formula | `HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_VERIFY_ATTESTATIONS=1 brew upgrade --formula <names>` |
 | brew cask | `HOMEBREW_NO_AUTO_UPDATE=1 brew upgrade --cask <names>` |
 | uv tool の前準備（安定版の Python） | 下の「uv tool の Python をそろえる」を参照 |
 | uv tool（メジャー内の更新） | `uv tool upgrade <name> --managed-python --python 3.14 --exclude-newer "7 days"` |
 | uv tool（メジャー内に固定したい） | `uv tool install '<name>>=<cur>,<<next_major>' --managed-python --python 3.14 --exclude-newer "7 days"` |
 | 壊れた uv tool、印 `mise の Python` の uv tool | `uv tool install <name> --reinstall --managed-python --python 3.14 --exclude-newer "7 days"`。receipt に index があれば `--default-index <url>` を付ける。メジャー跨ぎを避けるなら上の範囲指定を使う |
-| zeno.zsh | `git -C ~/.local/share/zeno checkout --quiet --detach <cand>` が通ってから、`~/dotfiles/install.sh` の `ZENO_COMMIT` を `cand` の 40 桁の sha に Edit で書き換える（checkout が失敗したら書き換えずに止める） |
+| zeno.zsh | `git -C ~/.local/share/zeno checkout --quiet --detach <cand>` が通ってから、`$WT/install.sh` の `ZENO_COMMIT` を `cand` の 40 桁の sha に Edit で書き換える（checkout が失敗したら書き換えずに止める） |
 
 - uv tool は `uv`（safe-chain 経由）で呼ぶ。`command uv` にしない
 - `--managed-python` は uv が管理する Python だけを使い、mise の Python を使わない。実行後に `$(uv tool dir)/<name>/pyvenv.cfg` の `home` が `$(command uv python dir)` の下の安定版（alpha・beta・rc でない）になったことを確かめる
@@ -327,21 +344,64 @@ command uv python find 3.14 --managed-python        # 今 3.14 で選ばれる�
 - mise の Python を参照したままの tool には `uv tool upgrade` を使わず、`--reinstall` で入れ直す（環境を作り直して参照先を切り替えるため）
 - `--exclude-newer "7 days"` は推移依存にも効く。推移依存の個別確認はしない
 - mise の `npm:` と `pypi:` backend の推移依存は、mise の `minimum_release_age`（config の tool option で `7d`）で守る。個別確認はしない。npm: は mise 内蔵の aube が、pypi: は uv の `--exclude-newer` が依存の解決にこの cutoff をかける（mise の公式ドキュメント）。ツール本体の固定版には効かないので、本体は手順 1〜3 で確かめる
-- `mise use -g` は tool option（`minimum_release_age`、azure-cli の `dependency_prereleases`・`with`）を残したまま `version` だけを書き換える。commit 前に `git diff configs/mise/config.toml` で、変わったのが版だけであることを確かめる
+- `mise use -g` は tool option（`minimum_release_age`、azure-cli の `dependency_prereleases`・`with`）を残したまま `version` だけを書き換える。commit 前に `git -C "$WT" diff configs/mise/config.toml` で、変わったのが版だけであることを確かめる。`git -C ~/dotfiles status --short` に config が出たら（`MISE_GLOBAL_CONFIG_FILE` を付け忘れて本体に書いた）、止めて報告する
 
-### 手順 5: mise config の commit と報告
+### 手順 5: worktree で commit、push、PR と報告
 
-1. `git status --short` で `configs/mise/config.toml` に差分があるか見る
-2. 差分があり、ほかに staged の変更がなければ `configs/mise/config.toml` だけを stage して commit する。ほかに staged の変更があれば commit せずに報告する
+worktree を作らなかった（mise のツールも zeno.zsh も上げなかった）ときは 3 だけを行う。
+
+1. `git -C "$WT" status --short` が `configs/mise/config.toml` と `install.sh` だけであることを確かめ、ファイルごとに別に commit する（変わっていない方の commit は飛ばす）
 
 ```bash
-git add configs/mise/config.toml
-git commit -m "chore(mise): ツールバージョンを更新"
+. "$TMPDIR/local-tools-state.sh"; : "${WT:?}"
+git -C "$WT" add configs/mise/config.toml && git -C "$WT" commit -m "chore(mise): ツールバージョンを更新"   # mise を上げたときだけ
+git -C "$WT" add install.sh && git -C "$WT" commit -m "chore(zeno): zeno.zsh を <cand の短い sha> に上げる"   # zeno.zsh を上げたときだけ
+git -C "$WT" push -u origin HEAD
 ```
 
-zeno.zsh を上げたときは、同じ条件で `install.sh` だけを stage して別に commit する（`chore(zeno): zeno.zsh を <cand の短い sha> に上げる`）。push はしない。
+2. PR を作る。本文は `~/.claude/pull_request_template.md` の見出しに従い、表の全文は貼らず、要点だけを書く
 
-3. 更新したもの、見送ったものとその理由、失敗したものを表で報告する。commit したならその hash も書く
+- Summary: 基準時刻、上げた mise のツールと zeno.zsh、7 日ルールと侵害の確認を通したこと
+- Test plan: 手順 4 の実行結果と、config の差分が版だけであること
+- Review focus: 要判断で決めたもの、見送ったものと理由
+- Merge and release notes: merge のあとに手順 6 を回すまで、mise の新しい版は効かないこと（入ってはいる）
+
+```bash
+gh pr create -R capytan/dotfiles --base main --head "$br" --title "chore: ローカルツールを更新する" --body-file "$TMPDIR/local-tools-pr-body.md"
+```
+
+3. 更新したもの、見送ったものとその理由、失敗したものを表で報告する。PR を作ったなら完全な URL と `br`・`WT` を書き、merge のあとに手順 6 を回すことを伝える
+
+### 手順 6: merge のあとに本体を pull する
+
+持ち主が PR を merge したと伝えたら回す。`$TMPDIR/local-tools-state.sh` が無い（別の会話や再起動のあと）ときは、報告に書いた `br`・`WT` で書き直す。
+
+先に、PR が merge されたことと本体の状態だけを見る。`MERGED` でないとき、本体が main でないときは、ここで止めて報告する（下に進むと worktree を消す）。
+
+```bash
+. "$TMPDIR/local-tools-state.sh"; : "${WT:?}"
+gh pr view "$br" -R capytan/dotfiles --json state,headRefOid --jq '"\(.state) \(.headRefOid)"'
+git -C ~/dotfiles status --short --branch
+```
+
+両方を満たしたら pull し、PR の中身と同じになったか、上げた版が入っているかを見る。`pull --ff-only` が止まったらエラー処理の表に従う。
+
+```bash
+git -C ~/dotfiles pull --ff-only
+git -C ~/dotfiles diff --quiet <headRefOid> HEAD -- configs/mise/config.toml install.sh && echo SAME-AS-PR
+(cd / && mise ls --global --missing)
+```
+
+- `SAME-AS-PR` が出なければ（merge のあとに main の config か `install.sh` がまた変わった）、片付けずに報告する
+- `mise ls --global --missing` が空なら、上げた版は手順 4 で入っていて、pull で効くようになった。出たツールがあれば報告する
+
+ここまで通ったら片付ける。merge commit を pull してあるので `branch -d` で消せる。
+
+```bash
+. "$TMPDIR/local-tools-state.sh"; : "${WT:?}"
+git -C ~/dotfiles worktree remove "$WT"
+git -C ~/dotfiles branch -d "$br"
+```
 
 ## エラー処理
 
@@ -351,4 +411,7 @@ zeno.zsh を上げたときは、同じ条件で `install.sh` だけを stage �
 | PyPI・GitHub で公開日が取れない | その候補は「見送り（公開日不明）」 |
 | `safe-chain` が見つからない | uv tool の更新を止めて報告する |
 | `mise self-update` が brew 管理を理由に断る | mise を brew の流れに移し、`brew upgrade --formula mise` を候補として表を出し直す |
-| 更新コマンドの失敗 | エラーを原文のまま伝え、以降の更新を止める |
+| 更新コマンドの失敗 | エラーを原文のまま伝え、以降の更新を止める。それまでに済んだ mise のツールと zeno.zsh の変更は worktree に残っているので、手順 5 で PR にしてから報告する（入ったツールの版がどこにも固定されないまま残るのを防ぐ） |
+| 本体が main でない（`NOT-MAIN`） | ブランチを切り替えず、本体の変更も捨てずに止めて報告する |
+| `worktree add` が「already exists」で止まる | 同じ名前のブランチ・worktree と PR の状態を `gh pr list -R capytan/dotfiles --head "$br" --state all` で見て報告する。ブランチと worktree は消さない |
+| `pull --ff-only` が止まる | 本体の変更を `git -C ~/dotfiles status` で見て報告する。変更は捨てない |
