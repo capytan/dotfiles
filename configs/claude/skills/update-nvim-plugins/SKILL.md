@@ -1,6 +1,6 @@
 ---
 name: update-nvim-plugins
-description: LazyVim（lazy.nvim）のプラグインを、サプライチェーン侵害の事前確認（GitHub への push から 7 日の見送り、差分の危険箇所、作者と merge した人、advisory と報道）を挟んでから更新する。候補を表にして承認を得てから lazy-lock.json を書き換えて restore し、dotfiles に PR を出す。Mason の npm のツールも、同じ確認のあと承認を得て入れ替える。「nvim のプラグインを更新」「LazyVim を更新」「Lazy update して」「lazy-lock を更新」「Mason のツールを更新」等で発動する。uv・mise・Homebrew のツールには使わない（`update-local-tools` を使う）。
+description: LazyVim（lazy.nvim）のプラグインを、サプライチェーン侵害の事前確認（GitHub への push から 7 日の見送り、差分の危険箇所、作者と merge した人、advisory と報道）を挟んでから更新する。候補を表にして承認を得てから、dotfiles の worktree で lazy-lock.json を書き換えて PR を出し、merge のあとに restore する。Mason の npm のツールも、同じ確認のあと承認を得て入れ替える。「nvim のプラグインを更新」「LazyVim を更新」「Lazy update して」「lazy-lock を更新」「Mason のツールを更新」等で発動する。uv・mise・Homebrew のツールには使わない（`update-local-tools` を使う）。
 allowed-tools: Bash, Read, Edit, WebSearch, WebFetch, AskUserQuestion, Agent
 ---
 
@@ -16,15 +16,16 @@ allowed-tools: Bash, Read, Edit, WebSearch, WebFetch, AskUserQuestion, Agent
 - repo が archived や移管されていないか、候補が上流の正規の branch に載っているかを見る
 - advisory と報道を調べる。Mason で入れたツールは OSV と trivy で `MAL-` と脆弱性を見る
 
-結果を表で示し、承認を得たものだけ lock を書き換えて入れ替える。lock の変更は dotfiles のブランチに commit し、PR にする。
+結果を表で示し、承認を得たものだけ lock を書き換える。lock の変更は origin/main から切った dotfiles の worktree のブランチに commit し、PR にする。プラグインの入れ替えは、PR の merge のあとに `~/dotfiles` を pull してから行う。
 
 ## 守ること
 
 - 手順 1〜4 は読み取りだけ。承認の前にプラグインを入れ替えない。`:Lazy update`・`:Lazy sync`・`:Lazy` の画面の `U`・`S` を使わない（branch の先頭や最新の tag まで、確かめずに進む）
 - 入れ替えは、lock を書き換えてから `Lazy! restore` で行う。restore は lock の commit にだけ checkout する
 - 承認の範囲を広げない。承認後に候補が変わった（手順 1 をやり直した等）ら表を作り直す
-- main に直接 commit しない。ブランチを切って lock だけを commit し、PR にする。merge はしない
-- nvim を起動する前に、手順 1 の `MISSING` が空であること。spec を読み出したあとの起動（restore、`MasonInstall` など）では、spec にあって lock に無いプラグインも無いこと。起動時のインストール（前提の表）で、確かめていない commit が入るのを防ぐ
+- `~/dotfiles` の本体のブランチを切り替えず（main のまま）、本体で commit しない。origin/main から worktree を切り、そのブランチに lock だけを commit して PR にする。merge はしない
+- restore は PR の merge のあと（手順 7）、本体を pull してから行う。merge の前は、lock の検証（手順 5）だけを行う
+- nvim を起動する前に、手順 1 の `MISSING` が空であること（手順 7 では、承認した `新規プラグイン` だけは出てよい）。spec を読み出したあとの起動（restore、`MasonInstall` など）では、spec にあって lock に無いプラグインも無いこと。起動時のインストール（前提の表）で、確かめていない commit が入るのを防ぐ
 - Mason のツールは、手順 1〜6 では確かめるだけで入れ替えない。入れ替えは「Mason のツールの入れ替え」の節で、表と承認を別に取ってから行う
 
 ## When to Use This Skill
@@ -43,11 +44,12 @@ allowed-tools: Bash, Read, Edit, WebSearch, WebFetch, AskUserQuestion, Agent
 
 | 項目 | 事実 | 手順への影響 |
 |---|---|---|
-| 設定の場所 | `~/.config/nvim` は `~/dotfiles/configs/nvim` への symlink。lockfile は `~/.config/nvim/lazy-lock.json`（lazy.nvim の既定） | lock を書き換えると dotfiles の作業ツリーが変わる |
+| 設定の場所 | `~/.config/nvim` は `~/dotfiles/configs/nvim` への symlink。lockfile は `~/.config/nvim/lazy-lock.json`（lazy.nvim の既定） | restore は本体の lock を読み、本体の lock を書き直す。worktree の lock は nvim から見えないので、worktree で書き換えても入れ替わらない |
 | プラグインの場所 | `~/.local/share/nvim/lazy/<名前>`。lock の key がディレクトリ名 | `git fetch` と差分の確認はこのディレクトリで行う |
 | checker | `checker = { enabled = true, notify = false }`。lazy.nvim の checker は fetch して更新の有無を数えるだけで、入れ替えない | 「更新あり」の表示が出ても、それ自体は危険ではない |
 | `version` の指定 | `defaults.version = false` なので、多くは branch の先頭を追う。spec に `version = "*"` などがあるもの（例 LazyVim・lazy.nvim・blink.cmp）は最新の semver の tag を追う | 手順 1 で spec を読み、tag を追うものは tag を候補にする |
 | restore の中身 | `restore` は `update` に `lockfile = true` を付けたもの（`lua/lazy/manage/init.lua`）。fetch のあと lock の commit に checkout し、commit が変わったプラグインだけ build を走らせ、最後に lockfile を全プラグインの今の HEAD から書き直す | 名前を付けて restore しても、ほかのプラグインの HEAD が lock とずれていれば、そのずれが lock に書き込まれる。だから名前を付けずに全体を restore する |
+| lock の書式 | 書き直しは、名前の順（Lua の `table.sort`）に 1 行 1 プラグインの `  "<名前>": { "branch": "<branch>", "commit": "<sha>" }` を `{`・`}` で囲む（`lua/lazy/manage/lock.lua` の `update`） | 手順 5 で worktree の lock をこの書式で書く。同じ書式なら、手順 7 の restore のあと本体に差分が出ない |
 | 壊れた lock | lock が空や不正な JSON だと、lazy.nvim はエラーにせず lock 無しとして扱い、restore が branch の先頭まで進む（`lua/lazy/manage/lock.lua` の `pcall(vim.json.decode, ...)`） | restore の前に `jq` で lock を検証する |
 | build のフック | 入れ替えたときに走る。spec の `build`（`nvim-specs.tsv` の `build=` 列。例 `nvim-treesitter` の parser のビルド、`markdown-preview.nvim` のビルド済みバイナリの取得）と、プラグインの `build.lua`・`build/init.lua` | build があるプラグインと、spec を書いている LazyVim は、build まわりの差分を必ず読む |
 | 実行時のダウンロード | GitHub Release の成果物を実行時に落とすプラグインがある（例 blink.cmp は tag の release から fuzzy のバイナリを落とし、同じ release の `.sha256` と照合する。attestation は無い） | release の成果物を使うプラグインは、release の公開時刻も 7 日ルールにかける |
@@ -76,9 +78,9 @@ allowed-tools: Bash, Read, Edit, WebSearch, WebFetch, AskUserQuestion, Agent
 
 ## Execution Process
 
-シェルの変数は Bash の呼び出しをまたいで残らない。下のコードブロックは、使う変数（`LAZY`・`cutoff`・`LOCK`、プラグインごとの `n`・`d`・`repo`・`b`・`base`・`t7`・`cand`・`sha`・`from`・`to`、Mason のツールごとの `m`・`pkg`・`cur`・`cand`・`W`）をそのブロックの先頭で定義し直してから実行する。`cutoff` は最初に出した値をそのまま書き込み、呼び出しのたびに計算し直さない。
+シェルの変数は Bash の呼び出しをまたいで残らない。下のコードブロックは、使う変数（`LAZY`・`cutoff`・`LOCK`・`br`・`WT`、プラグインごとの `n`・`d`・`repo`・`b`・`base`・`t7`・`cand`・`sha`・`from`・`to`、Mason のツールごとの `m`・`pkg`・`cur`・`cand`・`W`）をそのブロックの先頭で定義し直してから実行する。`cutoff` は最初に出した値をそのまま書き込み、呼び出しのたびに計算し直さない。`br`・`WT` は手順 4 で `$TMPDIR/nvim-update-state.sh` に書き、使うブロックの先頭で `. "$TMPDIR/nvim-update-state.sh"; : "${WT:?}"` と読み込む（`br` は時刻から作るので計算し直すと別の名前になり、`WT` が空だと `git -C ""` が cwd の repo に向く）。
 
-dotfiles への `git` は、`~/dotfiles` を cwd にして `-C` を付けずに書いている（グローバルの CLAUDE.md の決まり）。lock は `~/.config/nvim` の symlink を通して必ず `~/dotfiles` の本体に書かれるので、始める前に次で cwd を確かめ、`OTHER` なら（別の repo、dotfiles の worktree、`~/dotfiles` の下のディレクトリなど）以降の dotfiles への `git` をすべて `git -C ~/dotfiles` に読み替える。プラグインのディレクトリへの `git -C "$d"` はそのまま使う。
+dotfiles への `git` は 2 か所に向く。本体（`~/dotfiles`。restore が読み書きする lock は `~/.config/nvim` の symlink を通してここにある）は `git -C ~/dotfiles`、手順 4 で作る worktree は `git -C "$WT"` と書いている。本体では fetch・status・pull・`worktree add` など読み取りと main の更新だけを行い、ブランチの切り替えと commit は worktree で行う。始める前に次で cwd を確かめ、`DOTFILES` なら `git -C ~/dotfiles` の `-C ~/dotfiles` を外す（cwd と同じ repo に `-C` を付けない、グローバルの CLAUDE.md の決まり）。プラグインのディレクトリへの `git -C "$d"` はそのまま使う。
 
 ```bash
 [ "$(pwd -P)" = "$(cd ~/dotfiles && pwd -P)" ] && echo DOTFILES || echo OTHER
@@ -96,13 +98,15 @@ jq -rn 'now - 168*3600 | todate'         # 168 時間前。以降のブロック
 dotfiles の状態と、基準にする lock（origin/main のもの）を取る。
 
 ```bash
-git fetch --quiet origin
-git status --short --branch
-git show origin/main:configs/nvim/lazy-lock.json > "$TMPDIR/nvim-lock-base.json"
+if [ "$(git -C ~/dotfiles branch --show-current)" = main ]; then git -C ~/dotfiles pull --ff-only; else echo NOT-MAIN; fi
+git -C ~/dotfiles status --short
+git -C ~/dotfiles show origin/main:configs/nvim/lazy-lock.json > "$TMPDIR/nvim-lock-base.json"
 ```
 
-- `configs/nvim/lazy-lock.json` 以外に変更があれば、手順 6 でブランチを切れないので、止めて報告する。`configs/nvim/lua` や `lazyvim.json` の変更は、lock に無いプラグインが spec に増えている恐れもある
-- lock の作業ツリーが origin/main と違うのは、誰かが `:Lazy update` などで入れ替えた跡のことが多い。下の「ずれ」で拾う
+- `NOT-MAIN` が出たとき、`pull --ff-only` が止まったときは、エラー処理の表に従って止める。本体を origin/main にそろえるのは、下で読む spec が本体のもので、worktree と基準は origin/main だから
+- ただし `pull` が「would be overwritten」で止まり、挙がったのが `configs/nvim/lazy-lock.json` だけなら、`git -C ~/dotfiles restore configs/nvim/lazy-lock.json` のあと pull し直してよい。本体の lock の変更は lazy.nvim が HEAD から書いたもので、HEAD はプラグインのディレクトリに残り、下の「ずれ」で拾える
+- `status` に `configs/nvim/` の lock 以外（`lua` や `lazyvim.json`）の変更が出たら止めて報告する。lock に無いプラグインが spec に増えている恐れがある。`configs/nvim/` の外の変更はこのスキルでは触らない
+- 本体の lock が origin/main と違うのは、誰かが `:Lazy update` などで入れ替えた跡のことが多い。下の「ずれ」で拾う
 
 全プラグインが入っているかを確かめてから、spec の `version`・`build` などを読む。`MISSING` が出たら、nvim を起動すると lock の commit で clone されるので、起動する前に持ち主に伝えて止める。
 
@@ -304,82 +308,141 @@ LazyVim が「見送り」なら、それが連れてくる `新規プラグイ�
   - 選択肢の label には、選んだときに起きることを書く（`blink.cmp: 上げる`、`LazyVim: cand に戻す` など）。選ばなかった項目が既定（上げない、基準を残す）になる向きにそろえる
 - 印 `ずれ` で承認しなかったものは基準の commit に戻ること、印 `基準が 168 時間未満` で戻すと選んだものは `cand` に戻ることを、承認の前に書いておく
 
-### 手順 4: dotfiles のブランチを用意する
+### 手順 4: dotfiles の worktree を用意する
 
 ```bash
-cp ~/dotfiles/configs/nvim/lazy-lock.json "$TMPDIR/nvim-lock-before.json"   # 入れ替える前の作業ツリーの lock を控える
-git restore configs/nvim/lazy-lock.json
-git switch main
-git pull --ff-only
-git switch -c chore/nvim-lazy-lock-$(date +%Y%m%d-%H%M)
+br=chore/nvim-lazy-lock-$(date +%Y%m%d-%H%M)
+WT=~/.herdr/worktrees/dotfiles/${br//\//-}
+printf 'br=%q\nWT=%q\n' "$br" "$WT" > "$TMPDIR/nvim-update-state.sh"
+git -C ~/dotfiles worktree add -b "$br" "$WT" origin/main
 ```
 
-- `switch` と `pull --ff-only` は、作業ツリーの lock に変更があると「would be overwritten」で止まるので、先に `restore` する。捨てるのは lazy.nvim が HEAD から書いた lock だけで、HEAD の状態は手順 1 で控えてある
-- ブランチ名は日付と時刻で分ける。同じ名前のブランチがあって `switch -c` が止まったら、前の PR が残っていないか `gh pr list -R capytan/dotfiles --head <名前>` で見て報告する
+- origin/main は手順 1 で pull 済み。worktree の lock は基準（`nvim-lock-base.json`）と同じになる
+- 本体は main のまま、lock も触らない。merge までは、本体の lock とプラグインの HEAD が今のまま（`ずれ` があればそのまま）なので、nvim はそのまま使える
+- ブランチ名は日付と時刻で分ける。同じ名前のブランチや worktree があって `worktree add` が止まったら、前の PR が残っていないか `gh pr list -R capytan/dotfiles --head "$br" --state all` で見て報告する
 
-### 手順 5: lock を書き換えて restore する
+### 手順 5: worktree の lock を書き換えて検証する（restore はしない）
 
-1. 承認したプラグインの行の `commit` を、Edit で候補の sha（40 桁）に書き換える。承認しなかった `ずれ` の行は基準のまま（`pull` 後の lock がもう基準）。戻すと選んだ `基準が 168 時間未満` の行は `cand` の sha に書き換える。承認した `新規プラグイン` は、`"<名前>": { "branch": "<既定の branch>", "commit": "<候補>" },` の行を名前の順の位置に足す（名前は repo 名。spec に `name =` があればそれ）
+1. 基準の lock に承認した変更をかけ、lazy.nvim の書式（前提の表）で worktree の lock に書く。`c` は、承認したプラグインの候補の sha と、戻すと選んだ `基準が 168 時間未満` の `cand` の sha（どちらも 40 桁）。承認しなかった `ずれ` の行は入れない（基準のまま）。`new` は承認した `新規プラグイン`（名前は repo 名。spec に `name =` があればそれ。branch は既定の branch）。名前の順に並べ直すので、書式は lazy.nvim が書き直すものと同じになる
+
+```bash
+. "$TMPDIR/nvim-update-state.sh"; : "${WT:?}"
+LOCK="$WT/configs/nvim/lazy-lock.json"
+jq -r --argjson c '{"<名前>": "<sha>", ...}' --argjson new '{"<名前>": {"branch": "<branch>", "commit": "<sha>"}, ...}' \
+  'reduce ($c | to_entries[]) as $e (.; .[$e.key].commit = $e.value) + $new | to_entries | sort_by(.key) | map("  \(.key | tojson): { \"branch\": \(.value.branch | tojson), \"commit\": \(.value.commit | tojson) }") | "{\n" + join(",\n") + "\n}"' \
+  "$TMPDIR/nvim-lock-base.json" > "$LOCK"
+```
+
 2. lock を検証する。key が基準と同じ（足した `新規プラグイン` を除く）で、変わったのが承認したものだけであることを見る
 
 ```bash
-LOCK=~/dotfiles/configs/nvim/lazy-lock.json
 jq -e 'type == "object" and length > 0' "$LOCK" >/dev/null && echo valid
 diff <(jq -S . "$TMPDIR/nvim-lock-base.json") <(jq -S . "$LOCK")
 ```
 
-3. 名前を付けずに全体を restore する。ずれのないプラグインは checkout されず、fetch だけが走る。restore は入っていないプラグインを入れないが、起動時のインストールが lock の commit で入れる（`新規プラグイン` は restore のための起動で入る）
+3. merge のあとの restore で動くプラグインを、今の HEAD と lock から出す。restore は lock の commit に checkout するので、HEAD と lock の commit が違うプラグインだけが動く
+
+```bash
+. "$TMPDIR/nvim-update-state.sh"; : "${WT:?}"
+LAZY=~/.local/share/nvim/lazy
+LOCK="$WT/configs/nvim/lazy-lock.json"
+jq -r 'to_entries[] | "\(.key)\t\(.value.branch)\t\(.value.commit)"' "$LOCK" | while IFS=$'\t' read -r n b c; do
+  d="$LAZY/$n"
+  [ -d "$d/.git" ] || { echo "NEW $n $c"; continue; }
+  h=$(git -C "$d" rev-parse HEAD)
+  [ "$h" = "$c" ] && continue
+  if git -C "$d" merge-base --is-ancestor "$c" "origin/$b" 2>/dev/null; then echo "MOVE $n ${h:0:8} -> ${c:0:8}"; else echo "NOT-ON-BRANCH $n $c"; fi
+done
+```
+
+- `MOVE` の行が、承認したプラグイン、承認しなかった `ずれ`（HEAD → 基準）、戻すと選んだ `基準が 168 時間未満` と過不足なく一致すること
+- `NEW` の行は、承認した `新規プラグイン` だけであること（入っていないので、起動時のインストールが lock の commit で入れる）
+- `NOT-ON-BRANCH` は、sha の書き間違いか、手順 1 のあとの force push。手順 6 に進まずに報告する
+- 一致しなければ手順 6 に進まずに報告する。この一覧が、手順 7 の HEAD の一致を見るときの予定になる
+
+### 手順 6: worktree で commit、push、PR
+
+1. `git -C "$WT" status --short` が `configs/nvim/lazy-lock.json` だけであることを確かめ、それだけを stage して commit する
+
+```bash
+. "$TMPDIR/nvim-update-state.sh"; : "${WT:?}"
+git -C "$WT" add configs/nvim/lazy-lock.json
+git -C "$WT" commit -m "chore(nvim): lazy-lock.json を更新する"
+git -C "$WT" push -u origin HEAD
+```
+
+2. PR 本文は PR テンプレートの見出しに従い、表の全文は貼らず、要点だけを書く
+
+- Summary: 基準時刻、上げたプラグインの数、7 日ルールと侵害の確認を通したこと
+- Test plan: 手順 5 の検証と、`MOVE`・`NEW` の一覧（restore と HEAD の一致は merge のあとに手順 7 で行う）
+- Review focus: 要判断で決めたもの、見送ったものと理由、Mason の `MAL` の有無
+- Merge and release notes: merge のあとに手順 7（本体の pull、restore、HEAD の一致の確認、worktree の片付け）を回すこと
+
+```bash
+gh pr create -R capytan/dotfiles --base main --head "$br" --title "chore(nvim): lazy-lock.json を更新する" --body-file "$TMPDIR/nvim-pr-body.md"
+```
+
+3. 報告する。上げるもの、見送ったものとその理由を表で書き、commit と PR を完全な URL で付ける。プラグインはまだ入れ替わっていないこと、merge のあとに手順 7 を回すことも伝える。`br`・`WT` と手順 5-3 の一覧も書いておく（手順 7 で使う）
+
+### 手順 7: merge のあとに restore する
+
+持ち主が PR を merge したと伝えたら回す。`$TMPDIR/nvim-update-state.sh` が無い（別の会話や再起動のあと）ときは、報告に書いた `br`・`WT` で書き直す。手順 5-3 の一覧も報告から使う。
+
+先に、PR が merge されたことと本体の状態だけを見る。`MERGED` でないとき、本体が main でないときは、ここで止めて報告する（下に進むと本体の lock を捨てる）。
+
+```bash
+. "$TMPDIR/nvim-update-state.sh"; : "${WT:?}"
+gh pr view "$br" -R capytan/dotfiles --json state,headRefOid --jq '"\(.state) \(.headRefOid)"'
+git -C ~/dotfiles status --short --branch
+```
+
+両方を満たしたら、本体を main の先頭にそろえる。
+
+```bash
+git -C ~/dotfiles restore configs/nvim/lazy-lock.json
+git -C ~/dotfiles pull --ff-only
+git -C ~/dotfiles diff --quiet <headRefOid> HEAD -- configs/nvim/lazy-lock.json && echo SAME-AS-PR
+```
+
+- `restore` するのは、本体の lock に lazy.nvim が HEAD から書いた変更（`ずれ`）があると `pull --ff-only` が「would be overwritten」で止まるため。捨てるのは lock だけで、HEAD の状態はプラグインのディレクトリに残っている
+- `SAME-AS-PR` が出なければ（merge のあとに main の lock がまた変わった）、restore せずに報告する
+
+守ることの nvim の起動の前の確認（手順 1 の `MISSING` と spec の確認を、pull したあとの本体の lock でやり直す）を行ってから、名前を付けずに全体を restore する。ずれのないプラグインは checkout されず、fetch だけが走る。restore は入っていないプラグインを入れないが、起動時のインストールが lock の commit で入れる（`新規プラグイン` は restore のための起動で入る）
+
+- `MISSING` には手順 5-3 の `NEW` が出る（lock の commit で入る）。`NEW` に無いものが出たら止める
 
 ```bash
 nvim --headless "+Lazy! restore" +qa > "$TMPDIR/nvim-restore.log" 2>&1; echo "exit=$?"
 sed 's/\x1b\[[0-9;]*m//g' "$TMPDIR/nvim-restore.log" | grep -E 'HEAD is now|build|[Ee]rror|[Ff]ailed'
 ```
 
-4. 全プラグインの HEAD が lock と一致するか、restore が lock を書き直したあとも中身が手順 5-1 と同じかを確かめる
+全プラグインの HEAD が lock と一致するか、restore が lock を書き直したあとも本体に差分が無いかを確かめる。
 
 ```bash
+LAZY=~/.local/share/nvim/lazy
+LOCK=~/dotfiles/configs/nvim/lazy-lock.json
 jq -r 'to_entries[] | "\(.key) \(.value.commit)"' "$LOCK" | while read -r n c; do
   [ "$(git -C "$LAZY/$n" rev-parse HEAD)" = "$c" ] || echo "MISMATCH $n"
 done
-git diff configs/nvim/lazy-lock.json
+git -C ~/dotfiles status --short
 ```
 
-restore は lock を lazy.nvim の書式で書き直すので、`git diff` は承認した行だけになる。`MISMATCH` が出たとき、承認していない key が増えたとき（lock に無いプラグインが起動で入った）は、手順 6 に進まずに報告する。
+- `HEAD is now` の出たプラグインが、手順 5-3 の `MOVE`・`NEW` と同じであること
+- `MISMATCH` が出たとき、`status` に差分が出たとき（書式の違いか、lock に無いプラグインが起動で入った）は、片付けに進まずに報告する。直すときは、本体ではなく新しい worktree で PR を作る
 
-### 手順 6: commit、push、PR
-
-1. `git status --short` が `configs/nvim/lazy-lock.json` だけであることを確かめ、それだけを stage して commit する
+片付ける。merge commit を pull してあるので `branch -d` で消せる。
 
 ```bash
-git add configs/nvim/lazy-lock.json
-git commit -m "chore(nvim): lazy-lock.json を更新する"
-git push -u origin HEAD
+. "$TMPDIR/nvim-update-state.sh"; : "${WT:?}"
+git -C ~/dotfiles worktree remove "$WT"
+git -C ~/dotfiles branch -d "$br"
 ```
 
-2. PR 本文は PR テンプレートの見出しに従い、表の全文は貼らず、要点だけを書く
-
-- Summary: 基準時刻、上げたプラグインの数、7 日ルールと侵害の確認を通したこと
-- Test plan: 手順 5 の HEAD の一致と、build が走ったプラグイン
-- Review focus: 要判断で決めたもの、見送ったものと理由、Mason の `MAL` の有無
-- Merge and release notes: merge 後の片付け（下）
-
-```bash
-gh pr create -R capytan/dotfiles --base main --title "chore(nvim): lazy-lock.json を更新する" --body-file "$TMPDIR/nvim-pr-body.md"
-```
-
-3. 報告する。更新したもの、見送ったものとその理由、失敗したものを表で書き、commit と PR を完全な URL で付ける。merge 後の片付けも伝える
-
-```bash
-git switch main
-git pull --ff-only
-git branch -d chore/nvim-lazy-lock-<日付>
-```
-
-merge までは `~/dotfiles` をこのブランチのままにしておく。main に戻すと lock が古い版になり、HEAD とずれる。
+報告する。入れ替えたもの、build が走ったプラグイン、失敗したものを表で書き、PR を完全な URL で付ける。
 
 ### Mason のツールの入れ替え（承認されたときだけ）
 
-手順 2-5 で `MAL` や脆弱性が出たツールを、確かめた版に入れ替える（または消す）。Mason のツールは `~/.local/share/nvim/mason` にあり、dotfiles の lock にも PR にも載らない。lock の流れ（手順 3〜6）とは表と承認を分け、承認されたものだけを入れ替える。lock の流れを回さずにこの節だけを頼まれたときも、手順 1 の `cutoff` と手順 2-5 を先に行う。
+手順 2-5 で `MAL` や脆弱性が出たツールを、確かめた版に入れ替える（または消す）。Mason のツールは `~/.local/share/nvim/mason` にあり、dotfiles の lock にも PR にも載らない。lock の流れ（手順 3〜7）とは表と承認を分け、承認されたものだけを入れ替える。lock の流れを回さずにこの節だけを頼まれたときも、手順 1 の `cutoff` と手順 2-5 を先に行う。
 
 対象は purl が `pkg:npm/` のツール。ほかの種類（`pkg:pypi/`・`pkg:gem/`・`pkg:golang/`・`pkg:github/` など）は確かめ方を決めていないので、表に「対象外（入れ替えの手順なし）」と書き、入れ替えない。
 
@@ -489,7 +552,7 @@ lock の表（手順 3）とは別に、次の列で表を出す。
 - 2-5 で当たった npm 以外のツールは、判定の列を「対象外（入れ替えの手順なし）」にして同じ表の下にまとめる。列は、ツール、種類（`gobinary`・`gemspec`・`python-pkg`）、件数（重さ別）、主なパッケージ（`stdlib@v1.24.0`、`nokogiri@1.19.3` など）。承認の選択肢には入れない
 - 公開からの時間は `jq -r --arg v "$cand" '(now - (.time[$v] | sub("\\.[0-9]+Z$"; "Z") | fromdateiso8601)) / 3600 | floor' "$TMPDIR/npm-$m.json"`（`update-local-tools` と同じ形）。npm の時刻はミリ秒つき（`...47.800Z`）で、`fromdateiso8601` がそのままでは読めないので `sub` で落とす
 - AskUserQuestion で承認を取る。選択肢と、要判断の multiSelect の分け方は手順 3 と同じ（「入れ替え可だけ実行」「入れ替え可と要判断を選んで実行」「やめる」）。label は `oxfmt: 0.74.0 に上げる`、`markdown-toc: 消す` のように、選んだときに起きることを書く
-- 消す行のうち `ensure_installed` に入っているものは、`MasonUninstall` だけでは次の起動で戻ることを承認の前に書き、`configs/nvim/lua/plugins/` で外す PR を別に作るかも聞く。その PR は手順 4・6 と同じく dotfiles のブランチで作る
+- 消す行のうち `ensure_installed` に入っているものは、`MasonUninstall` だけでは次の起動で戻ることを承認の前に書き、`configs/nvim/lua/plugins/` で外す PR を別に作るかも聞く。その PR は手順 4・6 と同じく dotfiles の worktree のブランチで作る
 
 #### M-4. 実行
 
@@ -532,11 +595,12 @@ npm_tree ~/.local/share/nvim/mason/packages/"$m"/package-lock.json | diff "$TMPD
 | activity が取れない（404、GitHub 以外の host） | その候補は「見送り（公開時刻不明）」 |
 | `git fetch` の失敗 | そのプラグインは「見送り（fetch 失敗）」としてエラーを原文で書く。ほかは続ける |
 | `MISSING` が出た、spec に lock に無いプラグインがある | nvim を起動せずに止めて報告する。入れるかどうかは持ち主に聞く |
-| `switch -c` が「already exists」で止まる | 同じ名前のブランチと PR の状態を見て報告する。ブランチは消さない |
-| lock の検証（`jq -e`）が通らない | restore を実行しない。`git diff` を見て直す |
-| restore の失敗（exit が 0 でない、ログに error） | ログを原文で伝えて止める。commit しない。戻すときは `git restore configs/nvim/lazy-lock.json` のあと、もう一度 `nvim --headless "+Lazy! restore" +qa` |
-| restore のあと HEAD が lock とずれる | どのプラグインかと両方の sha を伝えて止める。commit しない |
-| `pull --ff-only` が止まる | 作業ツリーの変更を `git status` で見て報告する。lock 以外の変更は捨てない |
+| 本体が main でない（`NOT-MAIN`） | ブランチを切り替えずに止めて報告する |
+| `worktree add` が「already exists」で止まる | 同じ名前のブランチ・worktree と PR の状態を見て報告する。ブランチと worktree は消さない |
+| lock の検証（`jq -e`、手順 5-3 の一覧）が通らない | commit しない。手順 5-1 の `c`・`new` を直して書き直す |
+| restore の失敗（exit が 0 でない、ログに error） | ログを原文で伝えて止める。本体で commit しない。原因を直してから、もう一度 `nvim --headless "+Lazy! restore" +qa`。前の版に戻すなら、戻す PR を手順 4〜6 で作り、merge のあとに手順 7 を回す |
+| restore のあと HEAD が lock とずれる | どのプラグインかと両方の sha を伝えて止める。本体で commit しない |
+| `pull --ff-only` が止まる | 本体の変更を `git -C ~/dotfiles status` で見て報告する。lock 以外の変更は捨てない |
 | `trivy: command not found`、trivy の DB の取得の失敗 | `trivy-mason.txt` が空でも「脆弱性なし」と書かない。エラーを原文で伝え、表に「trivy 未実行」と書く。入れ替えの後の比べ（M-5）もできないので、入れ替えは OSV の結果だけで決めてよいか持ち主に聞く |
 | `E492: Not an editor command: MasonInstall`（`MasonUninstall` も同じ） | mason.nvim が読み込まれていない。`-c "Lazy! load mason.nvim"` を前に置いてやり直す。exit が 0 でも失敗している |
 | `npm error code ETARGET`（`No matching version found for <pkg>@<版> with a date before ...`） | 指定した版か依存が 7 日ルールに引っかかった。その版は見送り、M-1 の候補を取り直す。前の版が残っていることを receipt で確かめる |
