@@ -20,6 +20,7 @@ brew "herdr"
 brew "gawk"
 brew "inetutils"
 brew "bitwarden-cli"
+brew "gemini-cli"
 
 # Modern CLI replacements
 brew "bat"       # cat with syntax highlighting
