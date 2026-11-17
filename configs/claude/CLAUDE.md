@@ -26,6 +26,11 @@
 - For local changes, use Edit instead of rewriting the whole file with Write. It saves output tokens and time, and the diff is easier to read
 - Don't guess about code you haven't opened. When the user points at a file, read it before answering
 
+## Code comments
+
+- Don't write comments that restate what the code already shows: what a line does, a paraphrase of a variable or function name, or what changed and when (that belongs in the commit message). Write a comment only for what the code can't tell the reader: the reason, a constraint, an assumption, or why an oddly written spot is that way
+- This applies to every comment you add when editing existing code too; don't bulk-delete the existing comments
+
 ## Hooks
 
 - A PreToolUse validator inspects Bash commands. deny: destructive operations (force-push / `+refspec`, `reset --hard`, `git clean -f`, `rm -rf`, `sed -i`, `gawk -i inplace`) and key/certificate paths (`id_rsa`, `*.pem`, `*.p12`, etc.). ask: destructive deletions (`git branch -D` and variants, `git update-ref -d`, `git worktree remove --force`, `rm -r`, `find -delete`/`-exec rm`, `rimraf`) and sensitive files (`.env`, anything under `~/.ssh`/`~/.aws`/`~/.kube`, `.netrc`, `*.tfvars`, etc.). The exhaustive list is the `SENSITIVE_PATHS` table in dotfiles `configs/claude/hooks/test-pretooluse-validate-command.sh`
