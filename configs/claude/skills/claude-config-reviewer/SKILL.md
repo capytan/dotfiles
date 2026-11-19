@@ -37,9 +37,8 @@ Reference files: `${CLAUDE_SKILL_DIR}/references/`
 
 ## Phase 0: Research — Investigate & Update Best Practices
 
-Always run research before reviewing — best practices evolve fast and the cost of
-checking is low compared to the risk of evaluating against stale criteria.
-Reference files live in the `references/` directory.
+Best practices evolve fast, so the freshness policy below decides when to research
+before reviewing. Reference files live in the `references/` directory.
 
 ### Freshness Policy
 
@@ -111,7 +110,7 @@ Also check `~/.claude/skills/*/SKILL.md`.
 ### Agent Definition Files
 
 ```bash
-find . -maxdepth 3 -path "*agents/*.md" 2>/dev/null | head -30
+find . -maxdepth 3 -path "*agents/*.md" ! -path "*/skills/*/agents/*" 2>/dev/null | head -30
 ```
 
 Also check `~/.claude/agents/*.md`.
@@ -141,7 +140,7 @@ Skip empty pools (mark as N/A in the report).
 For each non-empty pool, in a **single message with parallel Agent tool calls**:
 
 1. Read the assessor definition from this skill's `agents/` directory
-2. Compose the Agent tool prompt by combining the full assessor file content (role, criteria paths, process, output format), the list of file paths to review, and relevant Discovery context (file classifications, related settings)
+2. Compose the Agent tool prompt by combining the full assessor file content (role, criteria paths, process, output format), the list of file paths to review, and relevant Discovery context (file classifications, related settings). Replace `${CLAUDE_SKILL_DIR}` in the assessor content with the resolved absolute path — the subagent does not expand it
 3. Dispatch via Agent tool
 
 ### Assessors
@@ -244,7 +243,7 @@ Present each fix as a diff with per-section token impact quantified — full tem
 3. **Cite the basis** — reference the specific best practice for each fix
 4. **Quantify the impact** — every proposal includes line count and estimated token savings
 5. **Suggest modularization** — for CLAUDE.md: propose `.claude/rules/` extraction for sections over 30 lines
-6. **Show the end state** — present a complete rewrite of the proposed file
+6. **Show the end state** — for files under ~50 lines, present a complete rewrite of the proposed file; for longer files, the diffs are the end state
 7. **Preserve YAML frontmatter** — for SKILL.md and agent fixes, maintain frontmatter structure and `---` delimiters
 8. **Name changes require renames** — if `name` field changes, note that directory (skills) or file (agents) must also be renamed
 
@@ -255,7 +254,8 @@ See [references/claude-md-modularization-guide.md](references/claude-md-modulari
 | Method | Best For |
 |--------|----------|
 | `.claude/rules/*.md` | Rules that should always load (auto-loaded) |
-| `@path` in CLAUDE.md | Supplemental info needed only for specific tasks |
+| `paths:`-scoped `.claude/rules/*.md` or a skill | Info needed only for specific files or tasks |
+| `@path` in CLAUDE.md | Files that must always load (imports expand at launch; they don't defer context) |
 | Subdirectory CLAUDE.md | Package-specific info in monorepos |
 
 ---
