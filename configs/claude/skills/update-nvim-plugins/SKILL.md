@@ -27,6 +27,7 @@ allowed-tools: Bash, Read, Edit, WebSearch, WebFetch, AskUserQuestion, Agent
 - restore は PR の merge のあと（手順 7）、本体を pull してから行う。merge の前は、lock の検証（手順 5）だけを行う
 - nvim を起動する前に、手順 1 の `MISSING` が空であること（手順 7 では、承認した `新規プラグイン` だけは出てよい）。spec を読み出したあとの起動（restore、`MasonInstall` など）では、spec にあって lock に無いプラグインも無いこと。起動時のインストール（前提の表）で、確かめていない commit が入るのを防ぐ
 - Mason のツールは、手順 1〜6 では確かめるだけで入れ替えない。入れ替えは「Mason のツールの入れ替え」の節で、表と承認を別に取ってから行う
+- Mason の npm のツールを入れ替えるときは `npm_config_min_release_age=7` を必ず付ける（`npm_config_min_release_age=7 npm config get min-release-age` が 7 を返さなければ止める）。事前に木を作るときは `--ignore-scripts` を付ける
 
 ## When to Use This Skill
 
