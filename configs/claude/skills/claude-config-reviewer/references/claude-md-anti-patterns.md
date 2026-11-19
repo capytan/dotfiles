@@ -317,3 +317,10 @@ Content that only applies to a specific task or session.
 - References to "the current sprint" or "this PR"
 
 **Fix:** Move to a skill (SKILL.md) for on-demand loading, or use conversation context.
+
+## Not Findings — Platform Behavior `[official]`
+
+Do not flag these as CLAUDE.md anti-patterns:
+
+- `@path` inside a fenced code block or backtick-wrapped span: it is not parsed as an import, so a properly fenced example is not an accidental import
+- Path-scoped `.claude/rules/` brace patterns over budget (1,000 expanded patterns / 4 MiB per rule, used unexpanded so the literal braces match nothing) or an unparseable `[` bracket expression (that one pattern matches nothing): report as rule-authoring defects, not CLAUDE.md anti-patterns

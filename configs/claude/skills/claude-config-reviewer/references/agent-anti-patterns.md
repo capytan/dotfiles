@@ -288,3 +288,12 @@ System prompt lacks guidance for failure modes or unusual inputs.
 - No "if X is missing" or "if Y fails" conditional instructions
 
 **Fix:** Add an Edge Cases section covering: file not found, malformed input, empty content, and any domain-specific failure modes.
+
+## Not Findings — Platform Behavior `[official]`
+
+Do not flag these as anti-patterns:
+
+- Listing `Agent` in `tools` to delegate further. Nested spawning is allowed; the default depth budget is 3 (`CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH` changes it, concurrent cap 20), so chains assuming 4-5 levels are advisory only, not a deduction
+- A long-running orchestrator exhausting a per-session subagent budget (the 200-subagent cap was removed in v2.1.224)
+- No per-subagent thinking setting: subagents inherit the main conversation's extended-thinking config and no such field exists (v2.1.198)
+- `memory:` enabling Read/Write/Edit automatically (the docs define it; only note it on read-only agents)
