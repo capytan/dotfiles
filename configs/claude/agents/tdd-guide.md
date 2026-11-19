@@ -2,7 +2,7 @@
 name: tdd-guide
 color: yellow
 description: |
-  Test-Driven Development specialist enforcing write-tests-first methodology. Use PROACTIVELY when writing new features, fixing bugs, or refactoring code. Targets 80%+ coverage on new code.
+  Test-Driven Development specialist enforcing write-tests-first methodology. Use when the user asks for TDD or test-first work on a feature, bug fix, or refactor. Targets 80%+ coverage on new code.
 
   <example>
   Context: User wants to write tests before implementing a feature.
@@ -14,11 +14,11 @@ description: |
   </example>
 
   <example>
-  Context: The assistant is about to implement a new webhook handler feature.
-  user: "Implement the webhook handler for Stripe events"
+  Context: User asks for a new webhook handler feature, test-first.
+  user: "Implement the webhook handler for Stripe events with TDD"
   assistant: "Let me use the tdd-guide agent to establish failing tests for payload validation and retry logic before writing implementation code."
   <commentary>
-  Proactive trigger: auto-invoke before implementing features to enforce tests-first methodology.
+  TDD trigger: the user asks for test-first implementation of a feature.
   </commentary>
   </example>
 
@@ -91,6 +91,15 @@ Before picking a runner, read the nearest manifest (see the Language column belo
 ## Slow Test Suites (Integration / E2E)
 
 When the project's canonical test suite is too slow to drive the inner RED-GREEN loop, introduce a seam (interface / injected dependency) at the RED step and drive the cycle against a small in-memory double. Run the slow suite before considering the cycle complete — do not skip it.
+
+## Output Format
+
+Return:
+- Tests added (file:line) and whether each failed in RED for the expected reason
+- GREEN result: the exact test command and its exit code
+- Coverage for the changed code and the command that measured it
+- Files changed (implementation and tests)
+- Anything left failing or skipped, with the reason
 
 ## Edge Cases
 
