@@ -44,7 +44,7 @@ before reviewing. Reference files live in the `references/` directory.
 
 **Run Phase 0 whenever any reference file's `last_updated` is more than 1 day behind today.**
 
-Check every `references/*.md` file's `last_updated` field. If any file is >1 day stale, refresh all references in this pool (research is cheap to batch; selective refresh creates inconsistency). Set `last_updated: YYYY-MM-DD` to today on every file updated.
+Check every `references/*.md` file's `last_updated` field (`changelog.md` included). If any file is >1 day stale, refresh all references in this pool (research is cheap to batch; selective refresh creates inconsistency). Set `last_updated: YYYY-MM-DD` to today on every file updated.
 
 ### Research Steps
 
@@ -75,7 +75,8 @@ Read these six files — they are the inputs Phase 0 compares findings against:
 - Compare findings against those files
 - When official and community sources conflict, prioritize official but note the conflict
 - Propagate anything that changes scoring into the matching `*-quality-criteria.md` and `*-anti-patterns.md`, and into `references/cross-artifact-checks.md` when a Phase 3 check is affected
-- Set `last_updated` to today on **every** `references/*.md` file, including ones you did not otherwise change (the freshness policy checks all of them)
+- Record what changed as a new entry in the matching `## <file>.md` section of `references/changelog.md` (create the section, in alphabetical order, if the file has none), not inside the reference file itself (assessors read the criteria and anti-patterns files in full on every scoring run, so a changelog there costs tokens each time)
+- Set `last_updated` to today on **every** `references/*.md` file, including ones you did not otherwise change and `changelog.md` (the freshness policy checks all of them)
 
 ### Recording Rules
 
@@ -264,12 +265,13 @@ See [references/claude-md-modularization-guide.md](references/claude-md-modulari
 
 Evaluation criteria and templates. Updated during Phase 0 research.
 
-Each pool has 4-5 references; suffix indicates which phase opens it (`*-official-best-practices.md` / `*-community-practices.md` for **Phase 0**; `*-quality-criteria.md` / `*-anti-patterns.md` for **Phase 2**; `claude-md-modularization-guide.md` for **Phase 4 CLAUDE.md fixes**):
+Each pool has 4-5 references; suffix indicates which phase opens it (`*-official-best-practices.md` / `*-community-practices.md` for **Phase 0**; `*-quality-criteria.md` / `*-anti-patterns.md` for **Phase 2**; `claude-md-modularization-guide.md` for **Phase 4 CLAUDE.md fixes**; `changelog.md` for **Phase 0** recording only):
 
 - `references/claude-md-*.md` — CLAUDE.md pool (5 files)
 - `references/skill-*.md` — SKILL.md pool (4 files)
 - `references/agent-*.md` — Agent pool (4 files)
 - [references/cross-artifact-checks.md](references/cross-artifact-checks.md) — **Phase 3** validations
+- [references/changelog.md](references/changelog.md) — **Phase 0** change history of every reference file (one section per file)
 - [references/phase4-fix-format.md](references/phase4-fix-format.md) — **Phase 4** fix-proposal template & worked example
 
 ---
@@ -278,7 +280,7 @@ Each pool has 4-5 references; suffix indicates which phase opens it (`*-official
 
 Rules for updating this skill's references (content rules live in Phase 0 Recording Rules):
 
-1. **Show the diff** — record what changed in each reference's `## Changelog` section
+1. **Show the diff** — record what changed in the reference's section of `references/changelog.md` (never add a `## Changelog` section to the reference file itself)
 2. **Preserve custom criteria** — items not found in official docs (e.g., behavioral impact assessment) are tagged `[custom]` and retained
 3. **Official wins on conflict** — but confirm with the user before removing custom criteria
 4. **Update all artifact types** — when researching, check for updates across CLAUDE.md, SKILL.md, and agent best practices
