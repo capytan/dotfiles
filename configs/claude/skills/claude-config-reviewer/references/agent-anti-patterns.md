@@ -48,7 +48,7 @@ The refusal above has a blind spot the errors page spells out: "If you leave the
 
 ### Agent File That Never Loads `[official]` (added 2026-09-04; extended 2026-09-16)
 
-These defects make Claude Code skip the file entirely, so the agent silently doesn't exist. The official list ("Subagent files Claude Code skips", https://code.claude.com/docs/en/sub-agents, retrieved 2026-09-16) is: no `name`; opening `---` not on line 1; `name` starting with `-` or containing `:`; `name` without `description`; YAML that doesn't parse. None is reported in the session — only the debug log (`--debug`).
+These defects make Claude Code skip the file entirely, so the agent silently doesn't exist. The official list ("Subagent files Claude Code skips", https://code.claude.com/docs/en/sub-agents, retrieved 2026-09-16) is: no `name`; opening `---` not on line 1; `name` starting with `-` or containing `:`; `name` without `description`; YAML that doesn't parse. Before v2.1.327 none is reported in the session — only the debug log (`--debug`); from v2.1.327 `/status` lists broken agent files (see the note below).
 
 1. **`name` contains `:`** — reserved for plugin-scoped identifiers ("Claude Code doesn't load a file whose name contains one and logs an error to the debug log"; behavior since v2.1.218). Plugin scope prefixes (`my-plugin:reviewer`) are assigned by the loader, never written in `name`.
 2. **`name` starts with `-`** (added 2026-09-16) — same treatment: "skips the file and writes an error to the debug log".

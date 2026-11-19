@@ -601,6 +601,8 @@ Two reviewer facts: (1) a body that chains `cd somewhere` in one Bash call and e
 
 **Update 2026-10-28**: "Compaction triggers as the subagent's own context window fills, and `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` applies to subagents as well." Per-agent override: "To make one subagent compact earlier than it otherwise would, set `autoCompactWindow` in its frontmatter to a token count from `100000` to `1000000`" (v2.1.296; see the Frontmatter Reference row for the `200k` pitfall) — https://code.claude.com/docs/en/sub-agents (retrieved 2026-10-28)
 
+**Update 2026-11-19**: the range is now "a token count of `100000` or more" with no stated upper bound, and since v2.1.312 the field also lowers a window set by `CLAUDE_CODE_AUTO_COMPACT_WINDOW` (the lowest value wins); the env var no longer overrides it. See the Frontmatter Reference row — https://code.claude.com/docs/en/sub-agents (retrieved 2026-11-19)
+
 ### Nesting Limit `[official]`
 
 > "Subagents cannot spawn other subagents. If your workflow requires nested delegation, use Skills or chain subagents from the main conversation."
