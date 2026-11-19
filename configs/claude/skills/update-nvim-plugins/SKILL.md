@@ -33,7 +33,7 @@ allowed-tools: Bash, Read, Edit, WebSearch, WebFetch, AskUserQuestion, Agent
 発動する依頼:
 - 「nvim のプラグインを更新」「LazyVim を更新」「Lazy update して」「lazy-lock を更新」
 - 「`:Lazy` で更新が出ている」「プラグインを最新に」
-- 「Mason のツールを更新」「Mason のツールの脆弱性を消して」→ 手順 1 の `cutoff`、手順 2-5、「Mason のツールの入れ替え」の節だけを回す
+- 「Mason のツールを更新」「Mason のツールの脆弱性を消して」→ 手順 1 の `cutoff`、手順 2-5、「Mason のツールの入れ替え」の節だけを回す（`references/plugin-checks.md` は冒頭の `cutoff` と 2-5 の節だけを読む）
 
 使わないケース:
 - uv・mise・Homebrew のツール → `update-local-tools`
@@ -78,7 +78,9 @@ allowed-tools: Bash, Read, Edit, WebSearch, WebFetch, AskUserQuestion, Agent
 
 ## Execution Process
 
-シェルの変数は Bash の呼び出しをまたいで残らない。下のコードブロックは、使う変数（`LAZY`・`cutoff`・`LOCK`・`br`・`WT`、プラグインごとの `n`・`d`・`repo`・`b`・`base`・`t7`・`cand`・`sha`・`from`・`to`、Mason のツールごとの `m`・`pkg`・`cur`・`cand`・`W`）をそのブロックの先頭で定義し直してから実行する。`cutoff` は最初に出した値をそのまま書き込み、呼び出しのたびに計算し直さない。`br`・`WT` は手順 4 で `$TMPDIR/nvim-update-state.sh` に書き、使うブロックの先頭で `. "$TMPDIR/nvim-update-state.sh"; : "${WT:?}"` と読み込む（`br` は時刻から作るので計算し直すと別の名前になり、`WT` が空だと `git -C ""` が cwd の repo に向く）。
+手順 1・2 のコマンドは `${CLAUDE_SKILL_DIR}/references/plugin-checks.md`、Mason の入れ替えは `${CLAUDE_SKILL_DIR}/references/mason.md` にある。jq と gh の長いパイプラインは `${CLAUDE_SKILL_DIR}/scripts/` の script にしてあり、cwd に関わらず `bash "${SKILL_DIR:?}/scripts/<名前>.sh"` で呼ぶ。`SKILL_DIR` は `${CLAUDE_SKILL_DIR}`（references の中では展開されないので、ここに書かれた値を使う）。
+
+シェルの変数は Bash の呼び出しをまたいで残らない。コードブロックは、使う変数（`SKILL_DIR`・`LAZY`・`cutoff`・`LOCK`・`br`・`WT`、プラグインごとの `n`・`d`・`repo`・`b`・`base`・`t7`・`cand`・`sha`・`from`・`to`、Mason のツールごとの `m`・`pkg`・`cur`・`cand`・`W`）をそのブロックの先頭で定義し直してから実行する。`cutoff` は最初に出した値をそのまま書き込み、呼び出しのたびに計算し直さない。`br`・`WT` は手順 4 で `$TMPDIR/nvim-update-state.sh` に書き、使うブロックの先頭で `. "$TMPDIR/nvim-update-state.sh"; : "${WT:?}"` と読み込む（`br` は時刻から作るので計算し直すと別の名前になり、`WT` が空だと `git -C ""` が cwd の repo に向く）。
 
 dotfiles への `git` は 2 か所に向く。本体（`~/dotfiles`。restore が読み書きする lock は `~/.config/nvim` の symlink を通してここにある）は `git -C ~/dotfiles`、手順 4 で作る worktree は `git -C "$WT"` と書いている。本体では fetch・status・pull・`worktree add` など読み取りと main の更新だけを行い、ブランチの切り替えと commit は worktree で行う。始める前に次で cwd を確かめ、`DOTFILES` なら `git -C ~/dotfiles` の `-C ~/dotfiles` を外す（cwd と同じ repo に `-C` を付けない、グローバルの CLAUDE.md の決まり）。プラグインのディレクトリへの `git -C "$d"` はそのまま使う。
 
@@ -88,100 +90,18 @@ dotfiles への `git` は 2 か所に向く。本体（`~/dotfiles`。restore �
 
 ### 手順 1: 候補の収集（読み取りのみ）
 
-基準時刻と、その 168 時間前を取る。
+コマンドと見方は `references/plugin-checks.md` の「手順 1」を Read してから回す。流れは次のとおり。
 
-```bash
-jq -rn 'now | todate'                    # 基準時刻（表に書く）
-jq -rn 'now - 168*3600 | todate'         # 168 時間前。以降のブロックで cutoff='<この値>' として使う
-```
-
-dotfiles の状態と、基準にする lock（origin/main のもの）を取る。
-
-```bash
-if [ "$(git -C ~/dotfiles branch --show-current)" = main ]; then git -C ~/dotfiles pull --ff-only; else echo NOT-MAIN; fi
-git -C ~/dotfiles status --short
-git -C ~/dotfiles show origin/main:configs/nvim/lazy-lock.json > "$TMPDIR/nvim-lock-base.json"
-```
-
-- `NOT-MAIN` が出たとき、`pull --ff-only` が止まったときは、エラー処理の表に従って止める。本体を origin/main にそろえるのは、下で読む spec が本体のもので、worktree と基準は origin/main だから
-- ただし `pull` が「would be overwritten」で止まり、挙がったのが `configs/nvim/lazy-lock.json` だけなら、`git -C ~/dotfiles restore configs/nvim/lazy-lock.json` のあと pull し直してよい。本体の lock の変更は lazy.nvim が HEAD から書いたもので、HEAD はプラグインのディレクトリに残り、下の「ずれ」で拾える
-- `status` に `configs/nvim/` の lock 以外（`lua` や `lazyvim.json`）の変更が出たら止めて報告する。lock に無いプラグインが spec に増えている恐れがある。`configs/nvim/` の外の変更はこのスキルでは触らない
-- 本体の lock が origin/main と違うのは、誰かが `:Lazy update` などで入れ替えた跡のことが多い。下の「ずれ」で拾う
-
-全プラグインが入っているかを確かめてから、spec の `version`・`build` などを読む。`MISSING` が出たら、nvim を起動すると lock の commit で clone されるので、起動する前に持ち主に伝えて止める。
-
-```bash
-LAZY=~/.local/share/nvim/lazy
-jq -r 'keys[]' "$TMPDIR/nvim-lock-base.json" | while read -r n; do [ -d "$LAZY/$n/.git" ] || echo "MISSING $n"; done
-nvim --headless +'lua local C=require("lazy.core.config"); for n,p in pairs(C.plugins) do local v=p.version; if v==nil and p.branch==nil then v=C.options.defaults.version end; io.stdout:write(("%s\t%s\tversion=%s tag=%s commit=%s pin=%s build=%s\n"):format(n, p.url or "local", tostring(v), tostring(p.tag), tostring(p.commit), tostring(p.pin), type(p.build)=="function" and "function" or tostring(p.build))) end' +qa > "$TMPDIR/nvim-specs.tsv"
-```
-
-- `version` が `*` などの文字列なら tag を追う。`tag`・`commit`・`pin` があるものは lazy.nvim が update で動かさないので、対象から外して表に参考で書く
-- `nvim-specs.tsv` にあって lock に無いプラグインがあれば止めて報告する（起動で branch の先頭が入った恐れがある）
-
-プラグインごとに fetch し、168 時間前の branch の先頭を activity API で取る。activity は新しい順に返る（`direction` の既定が `desc`）ので、`timestamp` が `cutoff` 以前の最初の 1 件が 168 時間前の先頭になる。`gh api --paginate` はページごとに出力するので、`head -1` が閉じると次の書き込みで止まり、残りのページは取らない（全ページを取るのは、当たる行が無いときだけ）。
-
-```bash
-jq -r 'to_entries[] | "\(.key)\t\(.value.branch)\t\(.value.commit)"' "$TMPDIR/nvim-lock-base.json" |
-while IFS=$'\t' read -r n b base; do
-  d="$LAZY/$n"
-  git -C "$d" fetch --quiet --tags origin </dev/null || { printf '%s\tFETCH-FAILED\n' "$n"; continue; }
-  repo=$(git -C "$d" remote get-url origin | sed -E 's#^https://github.com/##; s#\.git$##')
-  t7=$(gh api "repos/$repo/activity?ref=refs/heads/$b&per_page=100" --paginate \
-    --jq ".[] | select(.activity_type != \"branch_deletion\" and .timestamp <= \"$cutoff\") | \"\(.after) \(.timestamp) \(.activity_type)\"" </dev/null | head -1)
-  printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$n" "$repo" "$b" "$base" "$(git -C "$d" rev-parse HEAD)" "$t7"
-done > "$TMPDIR/nvim-candidates.tsv"
-```
-
-各行（名前、repo、branch、基準、HEAD、168 時間前の先頭とその時刻）から候補 `cand` を決める。`d`・`b`・`base`・`t7`（先頭の sha）はその行の値。
-
-- `nvim-specs.tsv` の `version=` が `false` か `nil` なら branch を追う。`cand=$t7`
-- それ以外（`*` など）は tag を追う。`t7` の行はそのまま使わず、下で出た tag の commit を `cand`、その branch を `b` にする。branch の先頭で候補を判定しない（tag を打つ前の commit まで候補になる）
-
-```bash
-for rb in $(git -C "$d" branch -r --format='%(refname:lstrip=3)' | grep -xE "$b|v?[0-9]+(\.([0-9]+|x))*|stable|release/.*"); do
-  tip=$(gh api "repos/$repo/activity?ref=refs/heads/$rb&per_page=100" --paginate \
-    --jq ".[] | select(.activity_type != \"branch_deletion\" and .timestamp <= \"$cutoff\") | .after" </dev/null | head -1)
-  [ -n "$tip" ] || continue
-  tag=$(git -C "$d" tag --merged "$tip" --sort=-v:refname 2>/dev/null | grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+$' | head -1)
-  [ -n "$tag" ] && echo "$tag $(git -C "$d" rev-parse "$tag^{commit}") $rb"
-done | sort -rV | head -1   # tag、cand、b の順
-```
-
-- tag を見る branch は、lock の branch と、リリース用の branch（`v1`・`v14`・`1.x` のような版の名前、`stable`、`release/...`。blink.cmp は `v1` に tag を打つ）に絞る。bot の一時の branch（`create-pull-request/patch`、`release-please--*` など）や PR の branch は、短命で 7 日ルールの判定に向かないので見ない
-- branch ごとに 168 時間前の先頭が含む最新の tag を出し、その中で版が最も新しいものを取る。基準を含まない tag も出るので、基準が新しすぎるときも 168 時間前の時点の tag がわかる
-- `cand` と `b` が決まったら、branch を追うものと同じく次で判定する
-
-```bash
-git -C "$d" merge-base --is-ancestor "$cand" "origin/$b" || echo "上流の branch に載っていない（force push）"
-if [ "$base" = "$cand" ]; then echo "候補なし"
-elif git -C "$d" merge-base --is-ancestor "$base" "$cand"; then echo "候補あり"
-elif git -C "$d" merge-base --is-ancestor "$cand" "$base"; then echo "基準が 168 時間未満"
-else echo "別の系統（止めて報告）"; fi
-git -C "$d" log --format='%h %cI %an <%ae> | %s' "$base..$cand"       # 上げる範囲
-git -C "$d" log --format='%h %cI %an | %s' "$cand..origin/$b" | head  # 168 時間未満で見送る範囲（参考）
-```
-
-- release の成果物を実行時に落とすプラグイン（例 blink.cmp）は `gh api "repos/$repo/releases/tags/<tag>" --jq .published_at` も 168 時間以上前か見る。足りなければ一つ前の tag に下げる
-- HEAD が基準と違うプラグインには印 `ずれ` を付け、HEAD も表に書く。HEAD の commit も上げる範囲と同じく手順 2 で確かめる（`base..HEAD`）
-- `t7` が空（168 時間前以前の activity が取れない）、tag を追うもので tag が 1 つも出ないなら「公開時刻不明」。基準と branch の先頭が同じなら「候補なし」、違えば「見送り（公開時刻不明）」
-- `基準が 168 時間未満` が出たら印を付ける。手順 2 の範囲は手順 2 の冒頭のとおり
-- `別の系統`（メジャーの branch が分かれたときなど）は止めて報告する
-
-経過時間の列と印 `基準が 168 時間未満` の行には、その commit が branch に届いた時刻が要る。branch を追うものの `cand` は `t7` の行に時刻がある。tag を追うものの `cand` と基準は、`sha` に入れて次で取る。新しい activity から順に、`after` が `sha` を含むあいだ時刻を出し、含まなくなったところで止めて、最後に出た時刻（最も古い、届いた時刻）を使う。まとめて push された中ほどの commit も、そのまとめの activity の時刻になる。
-
-```bash
-gh api "repos/$repo/activity?ref=refs/heads/$b&per_page=100" --paginate \
-  --jq '.[] | select(.activity_type != "branch_deletion") | "\(.after) \(.timestamp)"' </dev/null |
-while read -r a ts; do git -C "$d" merge-base --is-ancestor "$sha" "$a" 2>/dev/null || break; echo "$ts"; done | tail -1
-```
-
-- `while` が止まると `gh` も止まるので、必要なページだけを取る
-- force push で一度消えて戻った commit や、ローカルに無い `after`（force push で消えた commit）に当たると、そこで止まって新しい側の時刻になる（遅い側に倒れる）。空なら「届いた時刻不明」と書く
+1. 基準時刻と、その 168 時間前（`cutoff`）を取る
+2. 本体（`~/dotfiles`）を main のまま pull し、`status` を見て、origin/main の lock を基準（`$TMPDIR/nvim-lock-base.json`）として書き出す
+3. 全プラグインが入っているか（`MISSING`）を確かめてから、spec の `version`・`build` などを `$TMPDIR/nvim-specs.tsv` に書き出す
+4. `scripts/collect-candidates.sh` で、プラグインごとに fetch し、168 時間前の branch の先頭を activity API で取る
+5. branch を追うものは 168 時間前の先頭を、tag を追うものはリリース用の branch も見て 168 時間前の時点の最新の安定版の tag を `cand` にし、「候補なし」「候補あり」「基準が 168 時間未満」「別の系統」に分ける。印 `ずれ` と公開時刻不明もここで付ける
+6. 表に書く経過時間のために、候補（と印 `基準が 168 時間未満` の基準）が branch に届いた時刻を `scripts/arrival-time.sh` で取る
 
 ### 手順 2: 侵害の事前確認（候補ごと）
 
-下のコマンドは、確かめる範囲を `$from..$to` で書いている。行ごとに次で決める（1 行に範囲が 2 つあれば両方にかける）。
+確かめる範囲を `$from..$to` で書く。行ごとに次で決める（1 行に範囲が 2 つあれば両方にかける）。
 
 | 行 | `from` | `to` |
 |---|---|---|
@@ -196,91 +116,13 @@ while read -r a ts; do git -C "$d" merge-base --is-ancestor "$sha" "$a" 2>/dev/n
 - 持ち主が、この範囲（`cand..base`）のプラグインの差分と作者は別の確認（前の回のこのスキルの手順 2 など）で読んだと言ったときは、2-2 と 2-3 を省いてよい。lock の sha の変更だけを見た PR のレビューは、プラグインの差分を読んだことにならないので当たらない。そのときも 2-1 と 2-4 は行う。force push・移管と advisory・報道は、差分を読んだあとにも起きるので、読んだ時点の確認では足りない
 - 省いたときは、表の差分の危険箇所と作者・merge の列に「持ち主が確認済み（<いつ、何で>）」と書く
 
-#### 2-1. repo の状態と上流
+2-1〜2-5 のコマンドと見方は `references/plugin-checks.md` の「手順 2」を Read する。サブエージェントにはこのファイルのパスと、2-1〜2-4 の節だけを読めばよいことを渡す（2-5 は全体で 1 回だけ回す）。
 
-```bash
-gh api "repos/$repo" --jq '"\(.full_name) archived=\(.archived)"'
-gh api "repos/$repo/activity?ref=refs/heads/$b&activity_type=force_push&per_page=100" --paginate --jq '.[] | "\(.timestamp) \(.actor.login) \(.before[0:8])..\(.after[0:8])"'
-```
-
-- `full_name` が spec の URL（`$TMPDIR/nvim-specs.tsv`）と違えば、移管か改名。印 `移管` を付けて要判断
-- archived なら印 `archived`。上げる commit が無いはずなので、あれば見送り
-- 範囲の期間に force push があれば印 `force push` を付けて要判断。範囲の期間は、`from` の commit の committer date より後を目安にする（日時が偽られていても、拾う範囲が広がるだけ）
-- `git -C "$d" remote get-url origin` が spec の URL と違えば見送り（入っているものが spec の repo ではない）
-
-#### 2-2. 差分の危険箇所
-
-差分は fetch 済みのローカルで取り、ファイルに一度だけ書き出して読む。
-
-```bash
-git -C "$d" diff --numstat "$from..$to" | awk '$1 == "-" { print "binary:", $3 } END { print NR, "files" }'
-git -C "$d" diff --name-only "$from..$to" | grep -E '(^|/)(build\.lua|build/|Makefile|[^/]*\.rockspec|install[^/]*|package\.json|Cargo\.toml)|\.(sh|ps1|py|js|ts)$'
-git -C "$d" diff "$from..$to" > "$TMPDIR/nvim-diff-$n.patch"
-grep -nE '^\+.*(os\.execute|io\.popen|vim\.system|vim\.fn\.system|jobstart|termopen|uv\.spawn|loop\.spawn|loadstring|[^.a-z_]load\(|dofile|curl|wget|https?://|base64|(\\x[0-9a-fA-F]{2}){8})' "$TMPDIR/nvim-diff-$n.patch"
-grep -E '^\+' "$TMPDIR/nvim-diff-$n.patch" | awk 'length > 400 { print substr($0, 1, 200) "..." }'
-```
-
-見る箇所:
-- build のフック: プラグインの `build.lua`・`build/init.lua`・`Makefile`・rockspec・install 系のスクリプト。LazyVim は spec の `build =` の行と、`ensure_installed`（Mason で次の起動時に入るツールが増える）
-- LazyVim が新しく使うプラグイン: 下のコマンドで増えた `"owner/repo"` を拾う。lock に無いものは、起動時に branch の先頭で入ってしまうので、印 `新規プラグイン` を付けて候補に足す。基準は無いので、手順 1 と同じく 168 時間前の先頭を候補にし、2-1〜2-4 を repo 全体（差分ではなく、候補の commit の中身と作者の顔ぶれ）にかける
-
-```bash
-git -C "$LAZY/LazyVim" diff "$from..$to" -- lua/lazyvim/plugins | grep -oE '^\+.*"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+"' | grep -oE '"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+"' | sort -u
-```
-- 外部の実行と動的なコードの読み込み: `os.execute`、`io.popen`、`vim.system`、`vim.fn.system`、`jobstart`、`termopen`、`uv.spawn`、`load`/`loadstring`、`dofile`
-- ダウンロード: `curl`・`wget`・新しい URL
-- 難読化: 長い base64、`\x` の羅列、極端に長い 1 行
-- バイナリの追加
-
-grep に当たった行は、前後を `git -C "$d" diff "$from..$to" -- <file>` で読み、目的の説明がつくか（commit message、PR、既存のコードの延長か）を判断する。説明のつかないものは見送り。差分が大きい（300 ファイル超）ときは上の箇所だけを読み、表に「危険箇所のみ確認」と書く。
-
-#### 2-3. 作者と merge した人
-
-作者はローカルの履歴で見る（compare API は 250 commit までしか返さない）。`from` より前の履歴に email が一度も無い作者を「初めての作者」とする。commit の日時は使わない。
-
-```bash
-git -C "$d" log --format='%ae' "$from" | sort -u > "$TMPDIR/nvim-known-$n.txt"
-git -C "$d" log --format='%h %ae %an | %ce | %s' "$from..$to" |
-  awk 'NR == FNR { known[$1]; next } !($2 in known) { print "初めて:", $0 }' "$TMPDIR/nvim-known-$n.txt" -
-gh api "repos/$repo/commits/<sha>/pulls" --jq '.[] | "#\(.number) \(.user.login)"'
-gh pr view <number> -R "$repo" --json author,mergedBy,mergedAt --jq '"\(.author.login) merged_by=\(.mergedBy.login) \(.mergedAt)"'
-```
-
-- 初めての作者の commit は、上の 2-2 に当たらなくても差分を読む。その commit の PR を引き、merge した人が maintainer（これまで merge してきた人）かを見る
-- maintainer 以外が直接 push した commit（PR が無く、committer が見慣れない人）は印 `直接 push` を付けて要判断
-- `github-actions[bot]` の docs 生成（`chore(build): auto-generated vimdocs` など）は、差分が `doc/` だけなら問題なしとしてよい
-
-#### 2-4. advisory と報道
-
-```bash
-gh api "repos/$repo/security-advisories?per_page=10" --jq '.[] | "\(.ghsa_id) \(.severity) \(.published_at) \(.summary)"'
-```
-
-- WebSearch で `<repo> neovim plugin compromised OR malicious OR "supply chain"` を調べる。出典が 1 つしかない主張や、時期の合わない記事は「未確認」として表の注記に書く
-- Neovim のプラグインは GitHub Advisory Database の ecosystem に無いので、repo の advisory と報道で見る
-
-#### 2-5. Mason のツール（ここでは入れ替えない）
-
-ツールそのものの purl を OSV に、ツールのディレクトリの中身を `trivy rootfs` にかける。rootfs は入っているパッケージのメタデータ（`node_modules/<pkg>/package.json`、`specifications/<gem>.gemspec`、`site-packages/<pkg>.dist-info`。以下「メタデータの置き場所」）と Go のバイナリを読み、lock は読まない。`trivy fs` は Go のバイナリと gemspec を読まないので使わない。
-
-```bash
-jq -n '[inputs | (.source.id // .primary_source.id) | select(startswith("pkg:")) | sub("#.*$"; "")] | {queries: map({package: {purl: .}})}' ~/.local/share/nvim/mason/packages/*/mason-receipt.json > "$TMPDIR/osv-q.json"
-curl -s -X POST -d @"$TMPDIR/osv-q.json" https://api.osv.dev/v1/querybatch |
-  jq -r --slurpfile q "$TMPDIR/osv-q.json" '.results | to_entries[] | select(.value.vulns) | "\($q[0].queries[.key].package.purl) \([.value.vulns[].id] | join(","))"'
-trivy rootfs --scanners vuln --format json --quiet ~/.local/share/nvim/mason/packages/ 2> "$TMPDIR/trivy-mason.err" |
-  jq -r '.Results[]? | .Target as $t | .Type as $ty | .Vulnerabilities[]? | (.PkgPath // $t) as $p | "\($p | split("/")[0]) \($ty) \($p) \(.PkgName)@\(.InstalledVersion) \(.VulnerabilityID) \(.Severity) fixed=\(.FixedVersion)"' | sort -u > "$TMPDIR/trivy-mason.txt"
-awk '{ print $1, $2 }' "$TMPDIR/trivy-mason.txt" | sort | uniq -c   # ツールと種類ごとの件数
-```
-
-- 各行は、ツール（Mason の名前）、種類（`node-pkg`・`gemspec`・`python-pkg`・`gobinary`）、パス、パッケージ@版、id、重さ、修正版。Go のバイナリは Target、それ以外は `PkgPath` の先頭がツールの名前になる
-- `trivy-mason.err` が空でなければ、下のエラー処理の表の trivy の行に従う
-
-- `MAL-` で始まる id があるツールは、表の下に印 `MAL` で目立たせ、下の「Mason のツールの入れ替え」で消すか入れ替えるかを聞く
-- `GHSA-`・`CVE-` などの脆弱性は参考として書き、入れ替えるかは下の節で聞く。purl が `pkg:npm/` でないツール（Go のバイナリ、gem、pypi など）の行は、M-3 の表の下に「対象外」としてまとめ、報告に残す
-- `pkg:github/`・`pkg:generic/` の purl（codelldb、golangci-lint など）は OSV に無く空で返るので、「OSV の対象外」とまとめて書く
-- パスがメタデータの置き場所でない行（gem や npm のパッケージに同梱されたテスト用の `package.json` など）は、入っているものではない。その名前と版が `<ツール>/package-lock.json`・`<ツール>/specifications`・`site-packages` に無ければ誤検知として数えない
-- `gobinary` の行は、バイナリに埋め込まれたモジュールと、ビルドに使った Go（`stdlib`）の版で判定したもの。ツールがその箇所を呼ぶかは分からない。直すには上流が新しい Go でビルドし直した版が要る
-- 2-2 で LazyVim の `ensure_installed` に増えたツールがあれば、その名前も書く（次の起動で Mason が最新版を入れる）
+- 2-1. repo の状態と上流: archived、移管・改名、force push、origin が spec の URL と同じか
+- 2-2. 差分の危険箇所: build のフック、LazyVim が新しく使うプラグイン（印 `新規プラグイン`）、外部の実行と動的なコードの読み込み、ダウンロード、難読化、バイナリ
+- 2-3. 作者と merge した人: 初めての作者の commit を読み、merge した人が maintainer かを見る。印 `直接 push`
+- 2-4. advisory と報道: repo の advisory と WebSearch
+- 2-5. Mason のツール（ここでは入れ替えない）: purl を OSV に、ツールのディレクトリを `trivy rootfs` にかける
 
 #### 判定
 
@@ -299,7 +141,7 @@ LazyVim が「見送り」なら、それが連れてくる `新規プラグイ�
 | プラグイン | 基準 → 候補 | 経過時間 | commit 数 | 差分の危険箇所 | 作者・merge | advisory・報道 | 印 | 判定 |
 |---|---|---|---|---|---|---|---|---|
 
-- 基準 → 候補は短い sha（tag を追うものは tag 名も）。経過時間は候補が branch に届いた時刻（手順 1）から `190 時間（7.9 日）` のように書く。印 `基準が 168 時間未満` の行は、基準が届いた時刻（手順 1 の届いた時刻のコマンドを `sha=$base` で）からの時間も書く。時間は `jq -rn --arg t '<timestamp>' '(now - ($t | fromdateiso8601)) / 3600 | floor'` で出す
+- 基準 → 候補は短い sha（tag を追うものは tag 名も）。経過時間は候補が branch に届いた時刻（手順 1）から `190 時間（7.9 日）` のように書く。印 `基準が 168 時間未満` の行は、基準が届いた時刻（手順 1 の `arrival-time.sh` に基準の sha を渡して）からの時間も書く。時間は `bash "${SKILL_DIR:?}/scripts/hours-since.sh" '<timestamp>'` で出す
 - 印 `ずれ` の行は HEAD も書き、HEAD が候補の先にあるなら「HEAD は 168 時間未満、候補まで戻す」と書く
 - 候補なしのプラグインは載せない。見送りは理由を判定の列に書く
 - 表の下に Mason の結果（`MAL` と脆弱性のあるものだけ）を書く。入れ替えはこの承認に含めず、「Mason のツールの入れ替え」で別に聞く
@@ -328,9 +170,8 @@ git -C ~/dotfiles worktree add -b "$br" "$WT" origin/main
 ```bash
 . "$TMPDIR/nvim-update-state.sh"; : "${WT:?}"
 LOCK="$WT/configs/nvim/lazy-lock.json"
-jq -r --argjson c '{"<名前>": "<sha>", ...}' --argjson new '{"<名前>": {"branch": "<branch>", "commit": "<sha>"}, ...}' \
-  'reduce ($c | to_entries[]) as $e (.; .[$e.key].commit = $e.value) + $new | to_entries | sort_by(.key) | map("  \(.key | tojson): { \"branch\": \(.value.branch | tojson), \"commit\": \(.value.commit | tojson) }") | "{\n" + join(",\n") + "\n}"' \
-  "$TMPDIR/nvim-lock-base.json" > "$LOCK"
+bash "${SKILL_DIR:?}/scripts/write-lock.sh" "$TMPDIR/nvim-lock-base.json" \
+  '{"<名前>": "<sha>", ...}' '{"<名前>": {"branch": "<branch>", "commit": "<sha>"}, ...}' > "$LOCK"
 ```
 
 2. lock を検証する。key が基準と同じ（足した `新規プラグイン` を除く）で、変わったのが承認したものだけであることを見る
@@ -344,15 +185,7 @@ diff <(jq -S . "$TMPDIR/nvim-lock-base.json") <(jq -S . "$LOCK")
 
 ```bash
 . "$TMPDIR/nvim-update-state.sh"; : "${WT:?}"
-LAZY=~/.local/share/nvim/lazy
-LOCK="$WT/configs/nvim/lazy-lock.json"
-jq -r 'to_entries[] | "\(.key)\t\(.value.branch)\t\(.value.commit)"' "$LOCK" | while IFS=$'\t' read -r n b c; do
-  d="$LAZY/$n"
-  [ -d "$d/.git" ] || { echo "NEW $n $c"; continue; }
-  h=$(git -C "$d" rev-parse HEAD)
-  [ "$h" = "$c" ] && continue
-  if git -C "$d" merge-base --is-ancestor "$c" "origin/$b" 2>/dev/null; then echo "MOVE $n ${h:0:8} -> ${c:0:8}"; else echo "NOT-ON-BRANCH $n $c"; fi
-done
+bash "${SKILL_DIR:?}/scripts/lock-moves.sh" "$WT/configs/nvim/lazy-lock.json"
 ```
 
 - `MOVE` の行が、承認したプラグイン、承認しなかった `ずれ`（HEAD → 基準）、戻すと選んだ `基準が 168 時間未満` と過不足なく一致すること
@@ -407,7 +240,7 @@ git -C ~/dotfiles diff --quiet <headRefOid> HEAD -- configs/nvim/lazy-lock.json 
 - `restore` するのは、本体の lock に lazy.nvim が HEAD から書いた変更（`ずれ`）があると `pull --ff-only` が「would be overwritten」で止まるため。捨てるのは lock だけで、HEAD の状態はプラグインのディレクトリに残っている
 - `SAME-AS-PR` が出なければ（merge のあとに main の lock がまた変わった）、restore せずに報告する
 
-守ることの nvim の起動の前の確認（手順 1 の `MISSING` と spec の確認を、pull したあとの本体の lock でやり直す）を行ってから、名前を付けずに全体を restore する。ずれのないプラグインは checkout されず、fetch だけが走る。restore は入っていないプラグインを入れないが、起動時のインストールが lock の commit で入れる（`新規プラグイン` は restore のための起動で入る）
+守ることの nvim の起動の前の確認（手順 1 の `MISSING` と spec の確認を、pull したあとの本体の lock でやり直す）を行ってから、名前を付けずに全体を restore する。ずれのないプラグインは checkout されず、fetch だけが走る。restore は入っていないプラグインを入れないが、起動時のインストールが lock の commit で入れる（`新規プラグイン` は restore のための起動で入る）。
 
 - `MISSING` には手順 5-3 の `NEW` が出る（lock の commit で入る）。`NEW` に無いものが出たら止める
 
@@ -442,150 +275,9 @@ git -C ~/dotfiles branch -d "$br"
 
 ### Mason のツールの入れ替え（承認されたときだけ）
 
-手順 2-5 で `MAL` や脆弱性が出たツールを、確かめた版に入れ替える（または消す）。Mason のツールは `~/.local/share/nvim/mason` にあり、dotfiles の lock にも PR にも載らない。lock の流れ（手順 3〜7）とは表と承認を分け、承認されたものだけを入れ替える。lock の流れを回さずにこの節だけを頼まれたときも、手順 1 の `cutoff` と手順 2-5 を先に行う。
+手順 2-5 で `MAL` や脆弱性が出たツールを、確かめた版に入れ替える（または消す）。lock の流れ（手順 3〜7）とは表と承認を分け、承認されたものだけを入れ替える。lock の流れを回さずにこの節だけを頼まれたときも、手順 1 の `cutoff` と手順 2-5 を先に行う。
 
-対象は purl が `pkg:npm/` のツール。ほかの種類（`pkg:pypi/`・`pkg:gem/`・`pkg:golang/`・`pkg:github/` など）は確かめ方を決めていないので、表に「対象外（入れ替えの手順なし）」と書き、入れ替えない。
-
-| 項目 | 事実 | 手順への影響 |
-|---|---|---|
-| Mason の npm | `mason-core/installer/managers/npm.lua` は `npm install <pkg>@<版>` を呼ぶだけで、lock を持たない。推移的な依存はその場で最新に解決され、install のスクリプトも走る | 事前に一時ディレクトリで同じ木を作って確かめ、本番の後に木が一致するかを見る |
-| `min-release-age` | npm の設定で、単位は日（npm の `@npmcli/config` の definitions）。指定した版や依存がそれより新しいと `ETARGET` で止まる。環境変数 `npm_config_min_release_age` は Mason が起動する npm にも届く | 事前の木と本番の両方に `npm_config_min_release_age=7` を付ける。推移的な依存にも 7 日ルールがかかる。知らない npm は警告だけ出して無視するので、M-2 と M-4 の前に `npm_config_min_release_age=7 npm config get min-release-age` が `7` を返すことを確かめ、返さなければ止める |
-| registry | npm の registry が npmjs 以外を向いている Mac がある（例 `configs/takumi-guard/setup-anon.sh` の Takumi Guard） | 確かめるための照会（packument、attestations、integrity、`npm diff`、`npm audit signatures`）は、いつも `registry.npmjs.org` に向ける |
-| mason.nvim の読み込み | LazyVim は mason.nvim を遅延して読み込む。doc の形 `nvim --headless -c "MasonInstall ..." -c qall` だけだと `E492: Not an editor command: MasonInstall` で失敗し、exit は 0 のまま | `MasonInstall`・`MasonUninstall` の前に `Lazy! load mason.nvim` を置き、結果はログで見る |
-| `ensure_installed` | LazyVim の extra などの `ensure_installed` に入っているツールは、`MasonUninstall` しても次の起動で入り直す | 消すには `configs/nvim/lua/plugins/` で外す変更（dotfiles の PR）が要る（例 markdown-toc は `markdown.lua` で外した） |
-
-#### M-1. 候補の版
-
-ツールごとに、Mason の名前（`MasonInstall` に渡す）、npm のパッケージ名、今の版を receipt から取る。npm 以外は `対象外` と purl を出すので、2-5 で当たったものは表に「対象外（入れ替えの手順なし）」で載せる。
-
-```bash
-jq -r '(.source.id // .primary_source.id // "") as $id | if ($id | startswith("pkg:npm/")) then .name + " " + ($id | sub("^pkg:npm/"; "") | sub("%40"; "@") | sub("@(?<v>[^@]+)$"; " \(.v)")) else .name + " 対象外 " + $id end' ~/.local/share/nvim/mason/packages/*/mason-receipt.json
-```
-
-候補は、`cutoff`（手順 1）以前に npm に公開された安定版（`X.Y.Z`、pre-release を除く）のうち、版が最も新しいもの。`m`・`pkg`・`cur` は上の行の値。
-
-```bash
-curl -s "https://registry.npmjs.org/$pkg" > "$TMPDIR/npm-$m.json"
-jq -r --arg c "$cutoff" '.time as $t | .versions | keys[] | select(test("^[0-9]+\\.[0-9]+\\.[0-9]+$") and $t[.] <= $c)' "$TMPDIR/npm-$m.json" | sort -V | tail -1
-```
-
-- 候補が `cur` と同じなら「候補なし」。`cur` より古ければ、今の版が 168 時間未満で入っているので印 `今の版が 168 時間未満` を付けて要判断
-- 候補で目的の脆弱性が消えるかは、M-2 の木の OSV で見る。直接の版で直らず、推移的な依存（例 markdownlint-cli2 の中の re2js）の版で直るものもある
-- 消すだけ（`MAL` のツールなど）の行は候補を取らず、M-2 を省いて M-3 に進む
-
-#### M-2. 確認（候補ごと）
-
-公開時刻、公開者、maintainers、install のスクリプトを、今の版から候補までの全部の版（公開の順）で比べる。間の版の変更も候補の差分に入るので、両端だけで見ない。
-
-```bash
-jq -r --arg a "$cur" --arg b "$cand" '.time as $t | ([$t[$a], $t[$b]] | sort) as [$lo, $hi] | [.versions[]] |
-  "before=\(map(select($t[.version] < $lo) | ._npmUser.name) | unique | join(","))",
-  (.[] | select($t[.version] >= $lo and $t[.version] <= $hi) | "\(.version) published=\($t[.version]) npmUser=\(._npmUser.name) maintainers=\([(.maintainers // [])[].name] | join(",")) scripts=\(.scripts // {} | with_entries(select(.key | test("install"))) | keys | join(","))")' "$TMPDIR/npm-$m.json"
-```
-
-`before=` は範囲より前の公開者。範囲の端は公開の順に並べるので、候補が今の版より古いとき（`今の版が 168 時間未満`）も出る。
-
-- 範囲の中で公開者が変わったとき、今の版より前の公開者に無い（初めての作者）とき、maintainers が増減したときは印 `公開者の変化` を付けて要判断
-- `preinstall`・`install`・`postinstall` が候補で増えたら印 `install のスクリプト` を付け、中身を読む
-
-provenance を見て、上流の tag の commit と照合する。
-
-```bash
-curl -s "https://registry.npmjs.org/-/npm/v1/attestations/$pkg@$cand" |
-  jq -r '.attestations[]? | select(.predicateType == "https://slsa.dev/provenance/v1") | .bundle.dsseEnvelope.payload | @base64d | fromjson | .predicate.buildDefinition | "\(.externalParameters.workflow.repository) \(.externalParameters.workflow.ref) \(.resolvedDependencies[0].digest.gitCommit)"'
-gh api "repos/<owner>/<repo>/commits/<tag>" --jq .sha   # 上の commit と同じか
-```
-
-- repository が `npm-$m.json` の `.repository.url` と同じ owner/repo で（`git+` と `.git` を除き、大文字と小文字を区別せずに比べる。例 `git+https://github.com/biomejs/biome.git` と `https://github.com/biomejs/biome` は同じ）、ref が候補の tag、commit が tag の commit と一致することを見る
-- 前の版に provenance があって候補に無いときは印 `provenance なし` を付けて要判断。もともと無いパッケージは、tag と版の対応（GitHub の release、CHANGELOG）を見て表に「provenance なし（前から）」と書く
-
-範囲の差分を tarball で取り、危険箇所を 2-2 と同じ見方で読む。
-
-```bash
-npm diff --registry=https://registry.npmjs.org/ --diff="$pkg@$cur" --diff="$pkg@$cand" > "$TMPDIR/npm-diff-$m.patch"
-grep -nE '^\+.*(child_process|execSync|spawn\(|exec\(|eval\(|new Function|https?://|base64|(\\x[0-9a-fA-F]{2}){8})' "$TMPDIR/npm-diff-$m.patch"
-grep -E '^\+' "$TMPDIR/npm-diff-$m.patch" | awk 'length > 400 { print substr($0, 1, 200) "..." }'
-```
-
-- 見る箇所は、install・postinstall のスクリプト、外部の実行、ダウンロード、難読化。bundle された `dist/` は長い行が多いので、当たった行の前後を読み、上流の tag の同じ変更で説明がつくかを見る
-- advisory は `gh api "advisories?ecosystem=npm&affects=$pkg@$cand&per_page=10" --jq '.[] | "\(.ghsa_id) \(.type) \(.severity) \(.summary)"'`、報道は 2-4 と同じく WebSearch で `<pkg> npm compromised OR malicious OR "supply chain"` を調べる
-
-推移的な依存の木を、一時ディレクトリで本番と同じ条件（7 日ルール、Mason の `install-strategy=shallow`、receipt の `extra_packages`）で作る。`--ignore-scripts` で install のスクリプトは走らせない。先に、npm が `min-release-age` を知っていることを確かめる（上の表）。
-
-```bash
-extra=$(jq -r '(.source.raw.extra_packages // []) | join(" ")' ~/.local/share/nvim/mason/packages/"$m"/mason-receipt.json)
-W=$(mktemp -d)
-(cd "$W" && npm_config_min_release_age=7 npm install --ignore-scripts --install-strategy=shallow "$pkg@$cand" $extra)
-npm_tree() { jq -r '.packages | to_entries[] | select(.key != "") | "\(.value.name // (.key | sub(".*node_modules/"; ""))) \(.value.version) \(.value.integrity // "-")"' "$1" | sort -u; }   # 名前 版 integrity（alias は本当の名前）
-npm_tree "$W/package-lock.json" > "$TMPDIR/npm-tree-$m.txt"
-npm_tree ~/.local/share/nvim/mason/packages/"$m"/package-lock.json | diff - "$TMPDIR/npm-tree-$m.txt"   # 今の木から増えた・変わった依存
-jq -Rn '{queries: [inputs | split(" ") | {package: {ecosystem: "npm", name: .[0]}, version: .[1]}]}' "$TMPDIR/npm-tree-$m.txt" > "$TMPDIR/osv-tree-$m.json"
-curl -s -X POST -d @"$TMPDIR/osv-tree-$m.json" https://api.osv.dev/v1/querybatch |
-  jq -r --slurpfile q "$TMPDIR/osv-tree-$m.json" '.results | to_entries[] | select(.value.vulns) | "\($q[0].queries[.key].package.name)@\($q[0].queries[.key].version) \([.value.vulns[].id] | join(","))"'
-jq -r '.packages | to_entries[] | select(.value.hasInstallScript) | .key' "$W/package-lock.json"
-awk '$3 != "-"' "$TMPDIR/npm-tree-$m.txt" | xargs -P 8 -n 3 sh -c 'r=$(curl -sf "https://registry.npmjs.org/$0/$1" | jq -r ".dist.integrity // \"none\""); if [ -z "$r" ]; then echo "FETCH-FAILED $0@$1"; elif [ "$r" = none ]; then echo "NO-INTEGRITY $0@$1"; elif [ "$r" != "$2" ]; then echo "INTEGRITY-MISMATCH $0@$1"; fi'
-(cd "$W" && npm audit signatures --registry=https://registry.npmjs.org/)
-```
-
-- `extra` の中身は今の版の receipt のもの。Mason の registry で候補の版の `extra_packages` が変わっていれば、それに合わせる
-- 今の木から増えた・変わった依存（上の `diff` の `>` の行）のうち、この Mac に入ったもの（`$W/node_modules` の下にあるもの。lock は別の OS の optional のバイナリも並べる）は本番で新しく入る。その全部に、上の公開者と maintainers の比べ（`$TMPDIR/npm-$m.json` の代わりにその依存の packument）をかける。そのうちツールが実行するコードを持つもの（biome・oxfmt・oxlint の `@biomejs/cli-darwin-arm64`・`@oxfmt/binding-darwin-arm64` のような platform 別のバイナリ、本体が呼ぶ実装のパッケージ）には、provenance と `npm diff` もかける
-- 木の OSV に `MAL-` があれば見送り。目的の脆弱性の id が残っていれば印 `脆弱性が残る` を付けて要判断
-- `hasInstallScript` の依存は、本番では install のスクリプトが走る。今の木に無かったものは、そのパッケージの scripts を読む
-- `FETCH-FAILED` は registry の一時的な失敗（429 など）。その行だけやり直す
-- `INTEGRITY-MISMATCH` が出たら見送り。`npm audit signatures` が署名や attestation の失敗を出したら見送り
-- `NO-INTEGRITY` は registry に `dist.integrity` が無い古いパッケージ。`curl -s "https://registry.npmjs.org/$n/$v" | jq -r .dist.shasum` と、lock の `sha1-` の値（base64）を hex にしたもの（`echo '<base64>' | base64 -d | xxd -p`）を比べる
-- `W` の中身は消さずに残してよい（`$TMPDIR` の下）。M-5 で `npm-tree-$m.txt` と比べる
-
-#### M-3. 表と承認
-
-lock の表（手順 3）とは別に、次の列で表を出す。
-
-| ツール | 今の版 → 候補 | 公開からの時間 | 解消する脆弱性 | 公開者・maintainers | provenance・署名 | 差分の危険箇所 | 依存の木 | 印 | 判定 |
-|---|---|---|---|---|---|---|---|---|---|
-
-| 判定 | 条件 |
-|---|---|
-| 入れ替え可 | 168 時間以上、公開者と maintainers に変化なし、provenance が上流の tag の commit と一致（前から無いものは tag と版の対応が取れる）、integrity と署名が通る、危険箇所に異常なし、木に `MAL-` なし、advisory・報道なし |
-| 見送り | 168 時間未満、`INTEGRITY-MISMATCH`、署名の失敗、説明のつかない差分、木に `MAL-`、advisory・侵害報道がある |
-| 要判断 | `今の版が 168 時間未満`、`公開者の変化`、`install のスクリプト`、`provenance なし`、`脆弱性が残る`、メジャー跨ぎ、消す（`ensure_installed` に入っているものは PR が要る） |
-
-- 2-5 で当たった npm 以外のツールは、判定の列を「対象外（入れ替えの手順なし）」にして同じ表の下にまとめる。列は、ツール、種類（`gobinary`・`gemspec`・`python-pkg`）、件数（重さ別）、主なパッケージ（`stdlib@v1.24.0`、`nokogiri@1.19.3` など）。承認の選択肢には入れない
-- 公開からの時間は `jq -r --arg v "$cand" '(now - (.time[$v] | sub("\\.[0-9]+Z$"; "Z") | fromdateiso8601)) / 3600 | floor' "$TMPDIR/npm-$m.json"`（`update-local-tools` と同じ形）。npm の時刻はミリ秒つき（`...47.800Z`）で、`fromdateiso8601` がそのままでは読めないので `sub` で落とす
-- AskUserQuestion で承認を取る。選択肢と、要判断の multiSelect の分け方は手順 3 と同じ（「入れ替え可だけ実行」「入れ替え可と要判断を選んで実行」「やめる」）。label は `oxfmt: 0.74.0 に上げる`、`markdown-toc: 消す` のように、選んだときに起きることを書く
-- 消す行のうち `ensure_installed` に入っているものは、`MasonUninstall` だけでは次の起動で戻ることを承認の前に書き、`configs/nvim/lua/plugins/` で外す PR を別に作るかも聞く。その PR は手順 4・6 と同じく dotfiles の worktree のブランチで作る
-
-#### M-4. 実行
-
-承認したものだけを、7 日ルールの環境変数を付けて入れ替える。複数のツールは 1 回の `MasonInstall` に並べてよい。headless の `MasonInstall` は終わるまで待つ。
-
-先に、npm が `min-release-age` を知っていること（上の表）と、守ることの nvim の起動の前の確認を行う。
-
-```bash
-npm_config_min_release_age=7 nvim --headless -c "Lazy! load mason.nvim" -c "MasonInstall <m>@<cand> ..." -c qall > "$TMPDIR/mason-install.log" 2>&1; echo "exit=$?"
-sed 's/\x1b\[[0-9;]*m//g' "$TMPDIR/mason-install.log" | grep -E 'Installing|installed|failed|[Ee]rror|E492|ETARGET|aborted'
-```
-
-消すと承認したものは、同じく mason.nvim を読み込んでから消す。
-
-```bash
-nvim --headless -c "Lazy! load mason.nvim" -c "MasonUninstall <m> ..." -c qall 2>&1 | sed 's/\x1b\[[0-9;]*m//g'
-```
-
-- exit が 0 でも失敗していることがある（`E492` など）。ログで各ツールの成否を見る
-- 失敗したツールは前の版が残る（receipt が変わらない）。M-5 で receipt を見て確かめる
-
-#### M-5. 入れ替え後の確認
-
-receipt の版と、入った後の木が M-2 の事前の木と一致するかを見る。`npm_tree` は M-2 の定義をこのブロックの先頭に置き直す。
-
-```bash
-jq -r '.source.id' ~/.local/share/nvim/mason/packages/"$m"/mason-receipt.json
-npm_tree ~/.local/share/nvim/mason/packages/"$m"/package-lock.json | diff "$TMPDIR/npm-tree-$m.txt" - && echo SAME
-```
-
-- 差が出たら（事前の確認のあとに依存の新しい版が 7 日を越えた等）、増えた・変わった依存を M-2 と同じく OSV・integrity・install のスクリプトにかけて報告する
-- 手順 2-5 の OSV と trivy をかけ直す。trivy の出力先は `$TMPDIR/trivy-mason-after.txt`・`trivy-mason-after.err` に変え（同じ名前だと前の結果を上書きする）、`diff "$TMPDIR/trivy-mason.txt" "$TMPDIR/trivy-mason-after.txt"` で目的の脆弱性が減ったことを確かめる
-- 報告には、入れ替えたもの（版の前後）、消したもの、見送ったものと理由、減った脆弱性と残った脆弱性を表で書く。`ensure_installed` から外す PR を作ったときは完全な URL を付ける
+始めるときに `references/mason.md` を Read し、M-1〜M-5（候補の版、確認、表と承認、実行、入れ替え後の確認）とそのエラー処理に従う。対象は purl が `pkg:npm/` のツールだけ。
 
 ## エラー処理
 
@@ -601,10 +293,3 @@ npm_tree ~/.local/share/nvim/mason/packages/"$m"/package-lock.json | diff "$TMPD
 | restore の失敗（exit が 0 でない、ログに error） | ログを原文で伝えて止める。本体で commit しない。原因を直してから、もう一度 `nvim --headless "+Lazy! restore" +qa`。前の版に戻すなら、戻す PR を手順 4〜6 で作り、merge のあとに手順 7 を回す |
 | restore のあと HEAD が lock とずれる | どのプラグインかと両方の sha を伝えて止める。本体で commit しない |
 | `pull --ff-only` が止まる | 本体の変更を `git -C ~/dotfiles status` で見て報告する。lock 以外の変更は捨てない |
-| `trivy: command not found`、trivy の DB の取得の失敗 | `trivy-mason.txt` が空でも「脆弱性なし」と書かない。エラーを原文で伝え、表に「trivy 未実行」と書く。入れ替えの後の比べ（M-5）もできないので、入れ替えは OSV の結果だけで決めてよいか持ち主に聞く |
-| `E492: Not an editor command: MasonInstall`（`MasonUninstall` も同じ） | mason.nvim が読み込まれていない。`-c "Lazy! load mason.nvim"` を前に置いてやり直す。exit が 0 でも失敗している |
-| `npm error code ETARGET`（`No matching version found for <pkg>@<版> with a date before ...`） | 指定した版か依存が 7 日ルールに引っかかった。その版は見送り、M-1 の候補を取り直す。前の版が残っていることを receipt で確かめる |
-| `Neovim is exiting while packages are still installing` と `Installation was aborted` | mason.nvim を読み込んだときに `ensure_installed` の入っていないツールの install が始まり、`qall` で止まった。止まったツールの名前を報告し、入れるかを持ち主に聞く。`MasonInstall` に並べたツールがこの中に出たら、先に `ensure_installed` の側が入れ始めて待たれなかったので、M-5 で receipt を見てから入れ替えをやり直す |
-| `MasonUninstall` したツールが次の起動で戻る | `ensure_installed` に入っている。`configs/nvim/lua/plugins/` で外す PR を作るかを持ち主に聞く |
-| `INTEGRITY-MISMATCH`、`npm audit signatures` の失敗 | 入れ替えない。どのパッケージかと、registry の値を原文で伝えて止める |
-| 入れ替え後の木が事前の木と違う | 差の依存を M-2 と同じく確かめて報告する。`MAL-` があれば `MasonUninstall` を勧める |
