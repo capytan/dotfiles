@@ -68,6 +68,8 @@ python3 ${CLAUDE_SKILL_DIR}/scripts/build_prompt.py --spacing none --type "PR �
 - exit 2: 文章が空か、区切りの `<<<本文ここまで>>>` を含んでいる。クリップボードは変えない
 - exit 3: 認証情報らしい文字列か「極秘」を見つけた。クリップボードは変えない。stderr に出た行を示して手順 2 に戻る
 
+`/tmp/gemini-proofread-input.md` に書き出したときは、exit のコードに関わらず、スクリプトが終わったら `rm -f /tmp/gemini-proofread-input.md` で消す。校正する本文が `/tmp` に残らないようにするため。
+
 ### 5. 会話に短く示す
 
 プロンプト全体は会話に出さない。スクリプトの stdout（文字数、種類、スペースの設定、対象の文章の頭）を示し、次の一手として「gemini.google.com に貼り、返ってきた「## 校正後」のコードブロックをコピーして使う」と添える。Gemini の結果はそのまま使わず、元の文と diff で突き合わせてから使うことも添える。

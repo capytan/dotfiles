@@ -163,6 +163,7 @@ Claude Code はユーザーに「〜しますか？」と確認を求めるこ�
 1. `reports/` ディレクトリが存在しない場合は Bash で `mkdir -p reports` を実行
 2. Write ツールを使って `reports/prompt-review-YYYY-MM-DD.md` に書き出す（YYYY-MM-DD は実行日）
 3. レポート生成後、ファイルパスをユーザーに通知する
+4. `rm -f /tmp/prompt-review-data.json` で収集データを消す。対話履歴の本文とシークレットの候補が `/tmp` に残らないようにするため。ステップ1 のフォールバックで止めたときも消す
 
 ### 記述上の注意
 
