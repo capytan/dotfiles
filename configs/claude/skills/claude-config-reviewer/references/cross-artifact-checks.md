@@ -3,13 +3,13 @@
 > Referenced during Phase 3 (Report) for Cross-Artifact Summary.
 > These checks detect issues spanning multiple configuration artifact types.
 
-last_updated: 2026-10-28
+last_updated: 2026-11-19
 
 ---
 
 ## Contents
 
-- Check Categories 1-24: Reference Existence, Description Consistency, Circular References, Tool Consistency, Stale References, Subagent Skill-Preload Validity, Duplicate Agent Names, Skill/Bundled-Skill Name Collision, Agent `background: true`, Unresolvable Agent `tools` List, Non-Preloadable Bundled Skills, Stale `/agents` Wizard Guidance, Body Step Requires an Unavailable Tool, Skill Portability (conditional), Personal-Skill Availability in Cloud Contexts, Pool-Wide Agent Description Token Budget, Subagent Model Env Override, `omitClaudeMd` vs CLAUDE.md-Dependent Agent Body, Rules Reachability (symlinks + compaction), Command-Level Restriction in Agent `disallowedTools`, Frontmatter Hooks Trust/Lifetime Asymmetry, CLAUDE.md ↔ AGENTS.md Coexistence, Model-Era Instruction Sweep, CLAUDE.md Git/PR Rules vs Built-In Git Instructions
+- Check Categories 1-25: Reference Existence, Description Consistency, Circular References, Tool Consistency, Stale References, Subagent Skill-Preload Validity, Duplicate Agent Names, Skill/Bundled-Skill Name Collision, Agent `background: true`, Unresolvable Agent `tools` List, Non-Preloadable Bundled Skills, Stale `/agents` Wizard Guidance, Body Step Requires an Unavailable Tool, Skill Portability (conditional), Personal-Skill Availability in Cloud Contexts, Pool-Wide Agent Description Token Budget, Subagent Model Env Override, `omitClaudeMd` vs CLAUDE.md-Dependent Agent Body, Rules Reachability (symlinks + compaction), Command-Level Restriction in Agent `disallowedTools`, Frontmatter Hooks Trust/Lifetime Asymmetry, CLAUDE.md ↔ AGENTS.md Coexistence, Model-Era Instruction Sweep, CLAUDE.md Git/PR Rules vs Built-In Git Instructions, Unattended Skills vs `Skill()` Allow Rules
 - Severity Classification (per-check severity table)
 - Changelog
 
@@ -169,6 +169,13 @@ last_updated: 2026-10-28
 - "Check whether your instruction competes with guidance Claude Code adds on its own. If your CLAUDE.md sets commit or pull request rules, turn off the built-in ones with `includeGitInstructions` and set the attribution text with `attribution`." (https://code.claude.com/docs/en/memory#claude-isnt-following-my-claude-md, retrieved 2026-10-28)
 - Detection: if any CLAUDE.md/rules file (or auto-memory note) sets commit-message, PR-body, or attribution/footer rules, read the effective settings.json chain for `includeGitInstructions` and `attribution`. Flag Minor when a CLAUDE.md attribution rule ("no Generated-with footer") has no matching `attribution` setting, or detailed commit/PR format rules coexist with `includeGitInstructions` unset/true. Pass when the setting matches the prose.
 
+---
+
+### 25. Unattended Skills vs `Skill()` Allow Rules `[official]` (2026-11-19)
+[A skill meant to run from `/loop` or a scheduled task stalls on a permission prompt if it declares `allowed-tools` or hooks and has no `Skill(name)` allow rule]
+- "scheduled tasks and `/loop` … ask before running a skill that declares `allowed-tools` or hooks; add `Skill(name)` to `permissions.allow` to run it unattended" (https://code.claude.com/docs/en/changelog, v2.1.325, retrieved 2026-11-19)
+- Detection: for each skill whose body/description says it runs from `/loop` or a scheduled task and that declares `allowed-tools` or `hooks`, check that a settings file in scope has `Skill(<name>)` in `permissions.allow`. Missing → Minor.
+
 ## Severity Classification
 
 | Check | Severity if Failed |
@@ -196,6 +203,7 @@ last_updated: 2026-10-28
 | CLAUDE.md ↔ AGENTS.md Coexistence | Major when AGENTS.md-only rules are silently unread; Minor for prose pointer / SessionStart-print duplicate |
 | Model-Era Instruction Sweep | Major for any reasoning-reproduction instruction; Minor for cross-layer duplication or contradiction of overhead instructions |
 | CLAUDE.md Git/PR Rules vs Built-In Git Instructions | Minor (competing guidance; fix in settings) |
+| Unattended Skills vs `Skill()` Allow Rules | Minor (unattended run stalls on a prompt) |
 
 ---
 
@@ -211,3 +219,4 @@ last_updated: 2026-10-28
 - 2026-09-24: Refreshed from pool research against code.claude.com/docs/en/{memory,skills,sub-agents,best-practices}, the platform per-model prompting pages (Opus 5, Opus 5.5, Fable 5, Fable 5.1), the Anthropic "new rules of context engineering for Claude 5" blog, and changelog v2.1.274–v2.1.281 (retrieved 2026-09-24). **Check 22 (new)**: CLAUDE.md ↔ AGENTS.md coexistence — native AGENTS.md reading (v2.1.277) is suppressed by any CLAUDE.md/.claude/CLAUDE.md/CLAUDE.local.md on the path unless imported or `claude-md-and-agents-md` is set in user/`--settings`/managed settings; Major when AGENTS.md-only rules go unread, Minor for prose pointers / SessionStart-print duplicates; Check 18 extended to AGENTS.md. **Check 23 (new)**: Model-era instruction sweep across CLAUDE.md + skills + agents with a grep recipe (wmedia.es method) and per-type exemptions; any reasoning-reproduction instruction Major (`reasoning_extraction` refusal on Fable 5/5.1 and Opus 5.5, the default Opus since v2.1.280), cross-layer duplication/contradiction Minor. Contents line and severity table updated. All existing checks re-verified; no severity changes. last_updated bumped to 2026-09-24.
 - 2026-10-28 (CLAUDE.md pool): Refreshed against code.claude.com/docs/en/{memory,best-practices} + changelog v2.1.282–v2.1.311 (retrieved 2026-10-28). **Check 19 severity split**: outside-tree rules symlinks are approval-gated since v2.1.284 (no longer silently unloaded) — Major now only for `paths:`-scoped linked rules, network-path symlinks, or on-demand rules over the new per-file character limit (v2.1.309); Minor for unscoped outside-tree symlinks and non-`paths` frontmatter keys (`paths` is the only field read). **Check 23 extended** with "think hard / be thorough / keep going / don't be lazy" (official "What you can stop doing") and `/doctor prompt-audit` (v2.1.283) as the automated sweep. **Check 24 (new)**: CLAUDE.md git/PR/attribution rules vs `includeGitInstructions`/`attribution` settings (Minor). Contents line and severity table updated. last_updated bumped to 2026-10-28.
 - 2026-10-28 (SKILL.md pool): **Check 8** — `simplify` added to the bundled-name list; new bullet: a model-invocable local `verify`/`simplify` skill is auto-run by the commit instructions before each non-docs/tests commit (v2.1.286) — flag slow/side-effecting ones and duplicate "run verify before committing" text (Minor). **Check 23** — skill triage exemption: emphasis inside `description`/`when_to_use` is routing text (official prompt-audit trigger-vs-behavior split) and doesn't count toward cross-layer emphasis findings. No severity-table change.
+- 2026-11-19: Refreshed from pool research against code.claude.com/docs/en/{memory,best-practices,skills,sub-agents} + changelog v2.1.312–v2.1.328 (retrieved 2026-11-19). **Check 25 (new)**: Unattended Skills vs `Skill()` Allow Rules — since v2.1.325, scheduled tasks and `/loop` ask before running a skill that declares `allowed-tools` or hooks unless `Skill(name)` is in `permissions.allow`; Minor. Checks 1–24 unchanged: the CLAUDE.md and Agent pools proposed no cross-artifact edits.
