@@ -1,7 +1,7 @@
 ---
 name: security-reviewer
 description: |
-  Security vulnerability specialist for deep security audits. Use when critical security issues are found by other reviewers, when reviewing authentication/authorization code, handling secrets, or auditing input validation. Escalation target for language-specific reviewers.
+  Security vulnerability specialist for deep security audits. Use when critical security issues are found by other reviewers, when reviewing authentication/authorization code, handling secrets, or auditing input validation. Escalation target for language-specific reviewers. For a full codebase audit or pen test, use the `security-audit` skill; for a quick review of the pending diff, use `/security-review`.
 
   <example>
   Context: The java-reviewer found a critical SQL injection vulnerability and escalated.
@@ -31,6 +31,7 @@ description: |
   </example>
 tools: ["Read", "Grep", "Glob", "Bash"]
 model: opus
+effort: high
 color: red
 ---
 
