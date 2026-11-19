@@ -9,8 +9,10 @@
 > - `[community:mid]` = GitHub 10-50 stars, verified in a tech blog
 > - `[community:low]` = Individual report, unverified but reasonable (reference only, not in scoring)
 
-last_updated: 2026-10-28
+last_updated: 2026-11-19
 sources:
+  - https://www.geeky-gadgets.com/anthropic-claude-code-workflow/
+  - https://repowise.dev/blog/guides/claude-md-agents-md-guide
   - https://max.nardit.com/articles/prompt-audit-claude-md
   - https://arte.itlibra.com/en/articles/claude-code-doctor-prompt-audit
   - https://www.alexdunlop.com/writing/claude-md-best-practices
@@ -130,7 +132,9 @@ After correcting Claude: "Update your CLAUDE.md so you don't repeat this." Claud
 > Source: https://institute.sfeir.com/en/claude-code/claude-code-memory-system-claude-md/tips/ (retrieved 2026-03-29; **no longer on the page as of 2026-09-16**)
 > Re-sourced 2026-09-16: https://dev.to/nishilbhave/claudemd-best-practices-the-complete-2026-guide-435j (2026-05-29, edited 2026-07-09) lists "Style rules enforced by linters" and "Rules a formatter handles deterministically" under Exclude. Consistent with the official "Code style rules that differ from defaults" Include row and the hooks-for-formatting guidance.
 
-#### The exact test command is the single highest-ROI line `[community:mid]`
+#### The exact test command is the single highest-ROI line `[community:mid]` → now `[official]`
+
+> **Promoted 2026-11-19**: best-practices now says "If your repo already has one of these, the single most useful line in your `CLAUDE.md` is the command that runs it." — https://code.claude.com/docs/en/best-practices (retrieved 2026-11-19). Scoring weight now comes from the official source (criterion B).
 
 > Include the "Exact test command" — identified as the "single highest-ROI line"; write rules in imperative language ("Use Pest" rather than "we generally prefer").
 
@@ -359,6 +363,18 @@ Strengthens the "move on-demand knowledge to skills, not CLAUDE.md" recommendati
 
 No Zenn/Qiita article dated October 2026 on CLAUDE.md authoring surfaced (search 2026-10-28); the newest JA items (kanrinin-blog, ~2026-10-12) restate the official "add a rule after correcting twice" loop. No change.
 
+### Nov 2026 Survey (added 2026-11-19)
+
+#### Anthropic engineer talk: drop emphatic rules, audit against the current model `[community:mid]`
+
+> Lydia Hallie (Anthropic) via a Nate Herk video, as written up by Geeky Gadgets: "Keep CLAUDE.md focused on information Claude cannot infer from the code"; "emphatic rules can work against strong models"; run `/doctor prompt-audit` to find instructions the model no longer needs; "audit CLAUDE.md and skills against the model you use". Unneeded material "takes up space" and can make the model drift and make more tool calls. No line limit is given.
+
+> Source: https://www.geeky-gadgets.com/anthropic-claude-code-workflow/ (published 2026-11-18, retrieved 2026-11-19); underlying video https://youtu.be/8Pg6G5h05hk. Tagged `[community:mid]`, not `[semi-official]`: these are second-hand paraphrases, not her own post. Every point restates the official best-practices page, so it adds no scoring weight.
+
+#### Nov 2026 EN/JA sources
+
+Repowise "CLAUDE.md vs AGENTS.md" (updated 2026-11-17), xtrusio (citing the official page as read 2026-11-03), dev.to mohd_yusufkhan, and Qiita future_ta (Nov 2026, beginner rules intro) all restate official guidance: under 200 lines, the check command as the most useful line, hooks for must-happen rules, `@AGENTS.md` import with Claude-only lines below it, and removing the SessionStart-print hook. No new practice. No Reddit r/ClaudeAI thread from Nov 2026 on CLAUDE.md surfaced in search.
+
 ---
 
 ## Incorporation into Scoring Criteria
@@ -380,6 +396,7 @@ When a community insight is reflected in `claude-md-quality-criteria.md`, record
 | 2026-09-24 | Grep CLAUDE.md + agents + skills for verify/double-check leftovers (detection method for official Opus 5 guidance) | A. model-era workarounds (detection); cross-artifact check 23 | `[community:mid]` (deduction itself is `[official]`) |
 | 2026-09-24 | All-caps CRITICAL/MUST/ALWAYS over-trigger on Claude 5 models | F. Emphasis Overuse (corroboration only) | `[community:mid]` |
 | 2026-10-28 | Incident/history records flagged by prompt-audit: relocate rather than delete when they encode a reproducible failure | F. Stale Information (Fix note) | `[community:mid]` |
+| 2026-11-19 | Exact test/check command is the most useful line (community tie-breaker → now official) | B. Commands & Workflows (missing check command caps B at 10) | `[official]` (was `[community:mid]`) |
 
 ---
 
@@ -398,6 +415,8 @@ Insights found during research but not adopted, for reasons such as:
 | 2026-09-24 | "Claude Code reads CLAUDE.md, not AGENTS.md — the 'reads it as a fallback' claim is wrong" (yurukusa gist, #6235 cluster); older Zenn articles saying AGENTS.md is unsupported | **Stale since v2.1.277** — official memory page now documents native AGENTS.md reading. Do not cite as a reason to require a CLAUDE.md/symlink, except on Bedrock/Vertex/Foundry or flag-fetch-disabled sessions | https://gist.github.com/yurukusa/d36197848911f025add142abefcde685 |
 | 2026-09-24 | "When an instruction has two readings, list both and pick one" as a CLAUDE.md rule | Conflicts with official Fable 5.1 scope block ("implement the reading … most directly support, state that assumption … don't build for the other readings") — the official form wins | https://note.com/gaku_tachibana/n/n46a0dfd9ee1e |
 | 2026-10-28 | "File length, rule position, and file arrangement did not change rule-following" (Damon McMillan, arXiv 2605.10039, 1,650 sessions, via Alex Dunlop 2026-08-12) | `[community:low]` — single-author non-peer-reviewed preprint, TypeScript/single-turn only; **conflicts with official** "Longer files consume more context and reduce adherence". Official wins; line-count schedule unchanged | https://www.alexdunlop.com/writing/claude-md-best-practices |
+| 2026-11-19 | CLAUDE.md as a "routing map" to wikis, brand assets and finance files (non-code knowledge-work use) | `[community:low]`: second-hand paraphrase from a video write-up; out of scope for code-repo CLAUDE.md scoring | https://www.geeky-gadgets.com/anthropic-claude-code-workflow/ |
+| 2026-11-19 | Keep AGENTS.md under Codex's 32 KiB combined default when it is shared with Codex | About OpenAI Codex, not Claude Code; the Claude-side limits (under 200 lines, 4 MiB, on-demand per-file limits) already apply | https://repowise.dev/blog/guides/claude-md-agents-md-guide |
 | 2026-09-16 | Rules with `paths:` in `~/.claude/rules/` are ignored (GitHub #21858) | Issue is closed with no fix version stated; the memory page documents user-level rules without a `paths` restriction, so treat as "verify with `InstructionsLoaded`" rather than a rule. Recorded as a caveat in the modularization guide, not adopted for scoring | https://github.com/anthropics/claude-code/issues/21858 |
 
 ---
@@ -419,3 +438,4 @@ Insights found during research but not adopted, for reasons such as:
 - 2026-08-12: Freshness re-run (18 days stale). Community sources re-checked (mcp.directory "Claude Code Best Practices: From Vibe Coding to Agentic Engineering (2026)", SmartScope advanced-practices article, Totalum skills-vs-hooks-vs-subagents guide; `[community:mid]` or better). **No new practices worth adopting.** The dominant 2026 framing is a surface-selection decision tree - "if a rule must be enforced, use hooks or permissions; if it's contextual knowledge, use skills; if it's a delegation boundary, use subagents; if it's always-on project guidance, keep it short in CLAUDE.md" - which matches guidance already recorded here and in the modularization guide. last_updated bumped to 2026-08-12.
 - 2026-09-24: Freshness re-run (8 days stale). Surveyed Sep 2026 EN/JA sources on Claude 5-generation CLAUDE.md pruning and the v2.1.277 AGENTS.md support (wmedia.es, MindStudio 2026-09-11, charlesjones.dev, explainx.ai, Gaku Tachibana note 2026-09-02, gihyo.jp 2026-09-19, The Register / InfoWorld / DevOps.com / Publickey, yurukusa gist, Uravation/Serverworks JA guides). No Zenn article dated late September 2026 on CLAUDE.md authoring surfaced; no Opus 5.5-specific CLAUDE.md article found (model released 2026-09-22). **Added** a "Claude 5-Generation Pruning" subsection: grep-based verify/double-check sweep over CLAUDE.md + agents + skills (`[community:mid]`, detection method for the official Opus 5 deduction); all-caps emphasis over-triggers (`[community:mid]`, corroborates official Emphasis Overuse); "think carefully" removal (`[community:low]`, restates official Opus 5.5); model-routing rules example (`[community:low]`). **Added** AGENTS.md news-coverage entry (`[community:mid]`, Thariq Shihipar quote `[semi-official]`). **Rejected**: the "Claude Code does not read AGENTS.md" claim (stale since v2.1.277) and "list both readings" (conflicts with official Fable 5.1 scope block). The Anthropic "new rules of context engineering" blog is official and lives in official-best-practices. last_updated bumped to 2026-09-24.
 - 2026-10-28: Freshness re-run. Surveyed Oct 2026 EN/JA sources on `/doctor prompt-audit` (v2.1.283) and the rewritten official best-practices page. **Added** "`/doctor prompt-audit` Field Reports": what it flags/keeps (max.nardit.com 2026-10-05, `[community:mid]`, corroborated by 3+ blogs) and a hands-on run recommending relocating incident records rather than deleting them (arte.itlibra.com 2026-10-03, `[community:mid]`, reflected as a Fix note under Stale Information). **Rejected** the McMillan arXiv 2605.10039 "length/position don't matter" finding (`[community:low]`, conflicts with official). No October 2026 Zenn/Qiita CLAUDE.md article surfaced. last_updated bumped to 2026-10-28.
+- 2026-11-19: Freshness re-run. Surveyed Nov 2026 EN/JA sources (Geeky Gadgets 2026-11-18 write-up of Anthropic engineer Lydia Hallie's advice, repowise 2026-11-17, xtrusio, dev.to, Qiita future_ta). **Promoted** "exact test command is the highest-ROI line" to `[official]` (best-practices: "the single most useful line in your `CLAUDE.md` is the command that runs it"); it now drives a B cap in quality-criteria. **Added** a "Nov 2026 Survey" subsection: the Hallie write-up (`[community:mid]`, second-hand; restates official, no scoring weight) and a no-new-practice note for the other sources. **Deferred**: CLAUDE.md as a "routing map" for non-code knowledge work (`[community:low]`), Codex's 32 KiB AGENTS.md ceiling (another tool). No Nov 2026 Reddit thread or new Zenn article surfaced. last_updated bumped to 2026-11-19.

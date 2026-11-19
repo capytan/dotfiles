@@ -9,7 +9,7 @@
 > - `[community:mid]` = GitHub 10-50 stars, verified in a tech blog
 > - `[community:low]` = Individual report, unverified but reasonable (reference only)
 
-last_updated: 2026-10-28
+last_updated: 2026-11-19
 
 ---
 
@@ -24,6 +24,7 @@ last_updated: 2026-10-28
 - Curate Aggressively: 8-12 Skills, Monthly Audit
 - Pruning with `/skill-doctor` (Sep 2026)
 - Early `/doctor prompt-audit` Reports (Oct 2026)
+- Retiring Skills, Anti-Triggers, and the `verify` Name (Nov 2026)
 - Frontmatter Field Inventory: 20 Claude Code Fields vs 6 Spec Fields
 - CLAUDE.md = Always-On, Skills = On-Demand (Mental Model)
 - Evaluation-Driven Skill Creation
@@ -144,6 +145,19 @@ Conflict with official: getclaudeskills states the minimum version as v2.1.261; 
 Takeaway for assessors (not scored): on already-curated configs the audit's yield is mostly stale facts/drift, not emphasis. Treat it as a complement to this reviewer, not a substitute.
 
 > Sources: https://max.nardit.com/articles/prompt-audit-claude-md (retrieved 2026-10-28); https://arte.itlibra.com/en/articles/claude-code-doctor-prompt-audit (retrieved 2026-10-28)
+
+## Retiring Skills, Anti-Triggers, and the `verify` Name (Nov 2026)
+
+`[community:high]` FlorianBruniaux/claude-code-ultimate-guide (GitHub, ~6.5k stars; `guide/learning-path/05-skills.md`, last changed 2026-09-30, not captured by earlier runs):
+- "Do not archive a retired skill under `.claude/skills/`, because nested discovery can keep it visible." Keep retired skills in git history, or move them outside discovered skill directories with a dated retirement note. The mechanism is not stated in the official docs (official nested discovery covers `.claude/skills` folders in subdirectories), so the reason is unverified; the advice itself is harmless.
+- Write the description "as a routing rule": what the skill does, when to use it, and "Important anti-triggers when adjacent tasks belong elsewhere". Echoes the existing `[community:low]` "Do NOT use for…" item with a stronger source; still not a deduction for absence.
+- On `/skill-doctor`: "Treat an unused flag as a review signal, not an automatic deletion order." Consistent with the official file and the getclaudeskills caution above.
+
+> Source: https://github.com/FlorianBruniaux/claude-code-ultimate-guide/blob/main/guide/learning-path/05-skills.md (retrieved 2026-11-19; star count via GitHub API)
+
+`[community:low]` skills-hub.ai ("Name a Skill verify and Claude Code Will Run It Before Committing", 2026): if an existing skill called `verify` does something else, rename it to a scoped name (e.g. `verify-pipeline`) and keep `verify` for the repo's commit check. Consistent with the official v2.1.286 behavior and the 2026-11-16 Anthropic verification post (both in the official file). Retrieved 2026-11-19 via search snippet only.
+
+> Source: https://skills-hub.ai/blog/claude-code-verify-skill-name-convention-2026 (search snippet, 2026-11-19)
 
 ## Frontmatter Field Inventory: 20 Claude Code Fields vs 6 Spec Fields
 
@@ -288,3 +302,4 @@ Consolidated from the sources above:
 - 2026-08-12: Freshness re-run (18 days stale). Community sources re-checked (Totalum "Claude Code Skills in 2026", agensi.io "SKILL.md Format Specification", mcp.directory best-practices roundup, SmartScope advanced-practices article; `[community:mid]` or better). **No new practices worth adopting.** Surveyed guidance restates what is already recorded: specific over generic descriptions ("Check for SQL injection" beats "check for security issues"), one concrete example over three paragraphs of prose, numbered steps for procedures, explicit negative boundaries (what the skill must *not* do), a body kept near ~1,500 words, and helper files referenced by relative path. Caveat recorded for assessors: several community posts still describe a `tools:` allowlist field on SKILL.md - the correct field names are `allowed-tools` / `disallowed-tools`; official wins. last_updated bumped to 2026-08-12.
 - 2026-09-24: Freshness re-run (8 days stale). Surveyed Sep 2026 skill/subagent write-ups (wmedia.es, Kevin Welter, Nimbalyst, alexop.dev, Serverworks, Uravation) plus the official Claude 5 prompting pages. No Zenn/Qiita skill-authoring article dated after 2026-09-16 surfaced. **Conflict recorded (official wins)**: skill-creator's "pushy descriptions" (`[semi-official]`) vs the official prompting guide's overtriggering warning ("dial back any aggressive language", "'If in doubt, use [tool]' will cause overtriggering") — resolution: keep specific trigger contexts, drop blanket pushiness; propagated as an advisory temper on the Supplementary "Pushy descriptions" note in skill-quality-criteria.md (no weight change). **Added**: "Do NOT use for…" negative-boundary line (`[community:low]`), verify/double-check grep sweep over skills (`[community:mid]`, detection method for the new official Minor). "Don't railroad" now has official backing (Anthropic blog). last_updated bumped to 2026-09-24.
 - 2026-10-28: Freshness re-run (34 days stale). Surveyed Oct 2026 EN/JA sources: `/doctor prompt-audit` write-ups (max.nardit.com 2026-10-05, arte.itlibra.com 2026-10-03/23, plus juliangoldie/claudecodeclub/deepseekartifacts roundups), RJC "Claude Code Skillsの作り方" (verified on v2.1.292, `[community:low]`), anotete beginner guide, and re-hits of SIOS/cryptul/Zenn acntechjp/ar-aca. **One section added**: "Early `/doctor prompt-audit` Reports" (`[community:low]`). JA posts restate recorded consensus (description is the trigger, one skill one purpose, 500-line ceiling, `name` optional/defaults to folder). **No scoring changes from community sources.** The 2026-09-24 pushy-vs-overtriggering conflict is now resolved by an official source (prompt-audit: calibrated urgency is allowed in `description` routing text) — recorded in the official file and criteria. last_updated bumped to 2026-10-28.
+- 2026-11-19: Freshness re-run (22 days stale). Surveyed Nov 2026 EN/JA sources: Taskade/Fastero/designrevision/neuraltrust/heybento skill roundups, JA guides (ai-revolution.co.jp 2026-10, SIOS, cryptul, ar-aca, webdesign-programming), Hacker News / skills-hub.ai / agentspulse coverage of the 2026-11-16 Anthropic verification post. No Zenn/Qiita skill-authoring article dated after 2026-10-28 surfaced; most posts restate recorded consensus (500 lines, description as trigger, one skill one job, `${CLAUDE_SKILL_DIR}`, `/skill-doctor` + `skillOverrides`). **One section added**: "Retiring Skills, Anti-Triggers, and the `verify` Name" — FlorianBruniaux guide (`[community:high]`, ~6.5k stars; file last changed 2026-09-30, missed by earlier runs) and skills-hub.ai (`[community:low]`). **No scoring changes from community sources**; the anti-trigger advice strengthens the existing advisory "Do NOT use for…" item but stays non-deducting. last_updated bumped to 2026-11-19.
