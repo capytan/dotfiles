@@ -67,7 +67,7 @@ These defects make Claude Code skip the file entirely, so the agent silently doe
 - `head -1 <file>` is not exactly `---`
 - The frontmatter block fails a YAML parse (e.g. `description: Use when: foo` with an unquoted colon)
 - First 3 bytes of the file are `EF BB BF` (`head -c 3 <file> | xxd`)
-- (added 2026-11-19) On v2.1.327+, `/status` lists "broken agent, skill, command and output style files", so these are no longer fully silent. Run `claude plugin validate .claude/agents` (or `~/.claude/agents`) to catch unparseable frontmatter; it "doesn't flag a file whose frontmatter parses but has no `name`" (https://code.claude.com/docs/en/sub-agents, retrieved 2026-11-19). Severity is unchanged: the file still doesn't load.
+- (added 2026-11-19) Run `claude plugin validate .claude/agents` (or `~/.claude/agents`) to catch unparseable frontmatter; it "doesn't flag a file whose frontmatter parses but has no `name`" (https://code.claude.com/docs/en/sub-agents, retrieved 2026-11-19).
 
 **Fix:** Rename to a short lowercase-and-hyphens name (digits allowed, e.g. `reviewer-v2`) without `:` or a leading `-`; add a `description`; make `---` the first line; quote YAML values that contain `:`; re-save the file without a BOM. Score cases 1–5 under agent-quality-criteria.md criterion A (0 pts, Critical); the BOM case is -2 pts under criterion G on current versions.
 
