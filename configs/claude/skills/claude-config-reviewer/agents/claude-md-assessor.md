@@ -3,8 +3,8 @@ You are a CLAUDE.md quality assessor. Score each file against the official crite
 ## Setup
 
 Read these reference files before starting:
-- Scoring rubric: `~/.claude/skills/claude-config-reviewer/references/claude-md-quality-criteria.md`
-- Anti-patterns: `~/.claude/skills/claude-config-reviewer/references/claude-md-anti-patterns.md`
+- Scoring rubric: `${CLAUDE_SKILL_DIR}/references/claude-md-quality-criteria.md`
+- Anti-patterns: `${CLAUDE_SKILL_DIR}/references/claude-md-anti-patterns.md`
 
 ## Input
 

@@ -44,7 +44,7 @@ uv・mise・Homebrew で入れたツールと zeno.zsh を更新する前に、�
 | mise の検証設定 | aqua の cosign/slsa/github_attestations/minisign、github の attestations/slsa、`node.verify` が有効 | mise ツールの署名は mise がインストール時に検証する。表には「mise が検証」と書く |
 | mise config | `~/.config/mise/config.toml` は `~/dotfiles/configs/mise/config.toml` への symlink。全ツールを完全な版で固定している | `mise outdated` は `--bump` を付けないと何も出ない |
 | global の config の差し替え | `MISE_GLOBAL_CONFIG_FILE` は global の config を 1 つのファイルに置き換え、`mise use -g` はそのファイルに書く。ただし `$HOME` の下を cwd にすると、`~/.config/mise/config.toml` は project の config として読まれ、global より強い（mise の doc「Configuration」） | `mise use -g` は cwd を `/` にし、`MISE_GLOBAL_CONFIG_FILE` を worktree の config に向けて呼び、その変更を PR にする。ツールはその場で入るが、本体の config は古い版のままなので、新しい版が効くのは merge のあとに本体を pull してから |
-| uv tool の Python | mise の Python（例 `~/.local/share/mise/installs/python/3.13.3`）で入れた uv tool は、その Python が消えると "environment not found" で壊れる | uv tool は `--managed-python --python 3.14` を付けて uv が管理する安定版の Python で入れ、mise の Python から切り離す。参照先は `$(uv tool dir)/X/pyvenv.cfg` の `home` で分かる |
+| uv tool の Python | mise の Python（例 `~/.local/share/mise/installs/python/3.13.3`）で入れた uv tool は、その Python が消えると "environment not found" で壊れる | uv tool は `--managed-python --python <PYVER>`（手順 1 で決める minor）を付けて uv が管理する安定版の Python で入れ、mise の Python から切り離す。参照先は `$(uv tool dir)/X/pyvenv.cfg` の `home` で分かる |
 | zeno.zsh | `~/.local/share/zeno` の git clone。上流に tag も release も無いので、`~/dotfiles/install.sh` の `ZENO_COMMIT`（40 桁の sha）で固定している。`install.sh` は clone と、その commit への checkout しかしない | 更新は checkout と、worktree の `install.sh` の `ZENO_COMMIT` の書き換えで行い、PR にする。merge までに本体の `install.sh` を実行すると、古い commit に戻る |
 
 ## 版の上げ方のルール
@@ -62,6 +62,8 @@ uv・mise・Homebrew で入れたツールと zeno.zsh を更新する前に、�
 
 ## Execution Process
 
+ツールの種類ごとの収集のコマンドと注意は `${CLAUDE_SKILL_DIR}/references/` の `uv.md`・`mise.md`・`brew.md`・`zeno.md` にある。対象に入る種類のファイルだけを、手順 1 の前に Read する。繰り返し使う jq と gh のパイプラインは `${CLAUDE_SKILL_DIR}/scripts/` の script にしてあり、cwd に関わらず `bash "${SKILL_DIR:?}/scripts/<名前>.sh"` で呼ぶ。`SKILL_DIR` は `${CLAUDE_SKILL_DIR}`（references の中では展開されないので、ここに書かれた値を使う）で、使うブロックの先頭で定義し直す。
+
 dotfiles への `git` は 2 か所に向く。本体（`~/dotfiles`。`~/.config/mise/config.toml` は symlink でここの config を指す）は `git -C ~/dotfiles`、手順 4 で作る worktree は `git -C "$WT"` と書いている。本体では fetch・status・pull・`worktree add` など読み取りと main の更新だけを行い、ブランチの切り替えと commit は worktree で行う。始める前に次で cwd を確かめ、`DOTFILES` なら `git -C ~/dotfiles` の `-C ~/dotfiles` を外す（cwd と同じ repo に `-C` を付けない、グローバルの CLAUDE.md の決まり）。シェルの変数は Bash の呼び出しをまたいで残らない。`br`・`WT` は手順 4 で `$TMPDIR/local-tools-state.sh` に書き、使うブロックの先頭で `. "$TMPDIR/local-tools-state.sh"; : "${WT:?}"` と読み込む（`br` は時刻から作るので計算し直すと別の名前になり、`WT` が空だと `git -C ""` が cwd の repo に向く）。
 
 始める前に本体を origin/main にそろえる。
@@ -77,122 +79,19 @@ git -C ~/dotfiles status --short
 
 ### 手順 1: 候補の収集（読み取りのみ）
 
-基準時刻を `date -u +%Y-%m-%dT%H:%M:%SZ` で取って表に書く。経過時間は公開時刻（UTC の ISO 8601）から次の式で計算する。小数秒付き（`.389957Z`、`.0Z`）の時刻もそのまま渡せる。
+基準時刻を `date -u +%Y-%m-%dT%H:%M:%SZ` で取って表に書く。経過時間は公開時刻（UTC の ISO 8601）から `bash "${SKILL_DIR:?}/scripts/hours-since.sh" '<published_at>'` で出す。小数秒付き（`.389957Z`、`.0Z`）の時刻もそのまま渡せる。
 
-```bash
-jq -rn --arg t '<published_at>' '(now - ($t | sub("\\.[0-9]+Z$"; "Z") | fromdateiso8601)) / 3600 | floor'
-```
+uv 管理の Python の minor（以下 `<PYVER>`）は、uv tool の候補があるときに `bash "${SKILL_DIR:?}/scripts/uv-python-minor.sh"` で決める（入っている uv 管理の安定版のうち最新の minor）。安定版が 1 つも入っていなくて失敗したとき、より新しい minor の安定版が出ているときは、使う minor を表に `Python の minor` の行として出し、承認を取ってから変える。
 
-#### uv 本体
+種類ごとに、references の「手順 1」に従って候補を集める。
 
-```bash
-command uv --version
-command uv self update --dry-run
-gh api 'repos/astral-sh/uv/releases?per_page=10' --jq '.[] | select(.prerelease|not) | "\(.tag_name) \(.published_at)"'
-```
-
-`uv self update` には `--exclude-newer` が無い。公開時刻は GitHub Release で確かめ、168 時間以上たった最新の版を候補にする。
-
-#### uv tool
-
-```bash
-command uv tool list --outdated --show-version-specifiers
-command uv tool dir
-```
-
-- `warning: Tool \`X\` environment not found` が出た tool は「壊れている」として候補に入れる。今の版は `$(uv tool dir)/X/lib/python*/site-packages/` の `*.dist-info` 名から、使っている index は `$(uv tool dir)/X/uv-receipt.toml` の `[tool.options]` から読む
-- 候補版は PyPI の公開日で決める（`--outdated` は 168 時間未満の版も出すため）
-- `$(uv tool dir)/X/pyvenv.cfg` の `home` が uv の Python（`$(command uv python dir)` の下）でない tool は、印 `mise の Python` を付けて表に出す。手順 4 で `--managed-python` を付けて入れ直す
-- 入れ直しや更新の候補があれば、使う uv 管理の Python も調べる。`command uv python find 3.14 --managed-python` が安定版を返さなければ、手順 4 の前準備で入れる版（`command uv python list 3.14 --managed-python` の最新の安定版）を、ビルドごと候補に入れる。ビルドは python-build-standalone のリリースで、URL の `releases/download/<tag>/` から tag が分かる
-
-```bash
-command uv python list 3.14.<patch> --managed-python --output-format json | jq -r '.[] | "\(.key) \(.url // .path)"'
-gh api repos/astral-sh/python-build-standalone/releases/tags/<tag> --jq '"\(.tag_name) \(.published_at)"'
-```
-
-```bash
-curl -s https://pypi.org/pypi/<name>/json | jq -r '.releases | to_entries | map(select(.value|length>0) | {v:.key, t:(.value|map(.upload_time_iso_8601)|min)}) | sort_by(.t) | .[-5:][] | "\(.v) \(.t)"'
-```
-
-#### mise 本体
-
-```bash
-mise --version
-mise doctor | grep -E '^(version|self_update_available):'
-command -v mise; brew --prefix
-gh api 'repos/jdx/mise/releases?per_page=10' --jq '.[] | select(.prerelease|not) | "\(.tag_name) \(.published_at)"'
-```
-
-- `self_update_available: yes` で、パスが `$(brew --prefix)` の下でなければ standalone。`mise self-update` で更新する
-- brew 経由なら mise は brew の formula として扱い、下の Homebrew の流れに入れる
-
-#### mise のツール
-
-```bash
-mise outdated --global --bump -J
-```
-
-出たツールごとに、版の上げ方のルールに沿ったメジャー内の候補を取る。
-
-```bash
-mise latest node@24 --minimum-release-age 7d      # メジャー内（node 24.x）
-mise latest python@3.14 --minimum-release-age 7d  # python・ruby は minor 内
-mise latest tflint@0 --minimum-release-age 7d     # 0.x は先頭番号の 0 内
-mise latest gcloud --minimum-release-age 7d       # gcloud は例外で範囲を付けない
-mise ls-remote node@24 -J | jq -r '.[-5:][] | "\(.version) \(.created_at)"'   # 公開日の確認
-```
-
-`--minimum-release-age` は範囲指定にだけ効き、固定版の `--bump` には効かない。だから `mise upgrade --bump` は使わず、上で選んだ版を手順 4 で `mise use -g` に渡す。`bump` 列がメジャーを跨ぐものは「メジャー跨ぎ、対象外」として表に参考で載せる（gcloud は除く）。
-
-#### Homebrew
-
-最初に `brew update` でメタデータをそろえる（ツールは更新しない）。以降は `HOMEBREW_NO_AUTO_UPDATE=1` を付け、確認した版と実際に入る版がずれないようにする。
-
-```bash
-brew update
-HOMEBREW_NO_AUTO_UPDATE=1 brew outdated --json=v2 > "$TMPDIR/brew-outdated.json"
-brew info --json=v2 --installed | jq -r '.formulae[] | select(any(.installed[]; .installed_on_request)) | .full_name' > "$TMPDIR/brew-onreq.txt"
-jq -r '.formulae[].name' "$TMPDIR/brew-outdated.json" | grep -xFf "$TMPDIR/brew-onreq.txt"    # 自分で入れた formula
-jq -r '.casks[] | "\(.name) \(.installed_versions|join(",")) -> \(.current_version)"' "$TMPDIR/brew-outdated.json"
-HOMEBREW_NO_AUTO_UPDATE=1 brew outdated --vulnerable <自分で入れた outdated formula ...>    # 現行版に既知の脆弱性があるもの
-```
-
-- `--vulnerable` は名前を付けずに呼ぶと、走査できない formula が 1 つでもあると `Error: Incomplete vulnerability scan for: ...` で止まる。候補の名前を渡す。候補自体が走査できなければ表の advisory 列に「OSV 走査不可」と書く
-
-- `brew list --installed-on-request` は tap の formula を短い名前（`supabase`）で返し、`brew outdated` は完全名（`supabase/tap/supabase`）で返すので突き合わせに使わない。上の `brew info --json=v2` の `full_name` で突き合わせる
-- 巻き込まれる依存は dry-run で洗い出す。対象に挙げていないパッケージが出たら、それが巻き込み依存
-
-```bash
-HOMEBREW_NO_AUTO_UPDATE=1 brew upgrade --dry-run --formula <自分で入れた outdated formula ...>
-```
-
-#### zeno.zsh
-
-基準 `base` は `install.sh` の `ZENO_COMMIT`。168 時間前の main の先頭を activity API で取る。activity は新しい順に返るので、`timestamp` が `cutoff` 以前の最初の 1 件が候補 `cand` とその公開時刻になる。
-
-```bash
-Z=~/.local/share/zeno
-cutoff=$(jq -rn 'now - 168*3600 | todate')
-base=$(git -C ~/dotfiles show origin/main:install.sh | sed -nE 's/^ZENO_COMMIT="([0-9a-f]{40})"$/\1/p')
-git -C "$Z" fetch --quiet origin main
-[ "$(git -C "$Z" rev-parse --is-shallow-repository)" = true ] && git -C "$Z" fetch --quiet --unshallow origin    # 古い install.sh の --depth 1 の clone
-git -C "$Z" rev-parse HEAD    # base と違えば印 `ずれ`
-gh api "repos/yuki-yano/zeno.zsh/activity?ref=refs/heads/main&per_page=100" --paginate \
-  --jq ".[] | select(.activity_type != \"branch_deletion\" and .timestamp <= \"$cutoff\") | \"\(.after) \(.timestamp) \(.activity_type)\"" </dev/null | head -1
-```
-
-```bash
-cand=<上の 1 列目>
-git -C "$Z" merge-base --is-ancestor "$cand" origin/main || echo "上流の main に載っていない（force push。止めて報告）"
-if [ "$base" = "$cand" ]; then echo "候補なし"
-elif git -C "$Z" merge-base --is-ancestor "$base" "$cand"; then echo "候補あり"
-elif git -C "$Z" merge-base --is-ancestor "$cand" "$base"; then echo "基準が 168 時間未満"
-else echo "別の系統（止めて報告）"; fi
-git -C "$Z" log --format='%h %an <%ae> | %s' "$base..$cand"    # 上げる範囲
-```
-
-- activity の行が出なければ公開時刻不明。基準と main の先頭（`origin/main`）が同じなら「候補なし」、違えば「見送り（公開時刻不明）」
-- `基準が 168 時間未満` は、7 日ルールを通らずに入った commit が `ZENO_COMMIT` にあるということ。印を付けて `cand..base` を手順 2 にかけ、戻すかは承認のときに選ぶ
+| 種類 | reference | 見るもの |
+|---|---|---|
+| uv 本体 | `uv.md` | GitHub Release（`uv self update` に `--exclude-newer` が無いため） |
+| uv tool、uv 管理の Python | `uv.md` | `uv tool list --outdated`、壊れた tool、印 `mise の Python`、PyPI の公開日、python-build-standalone のビルド |
+| mise 本体、mise のツール | `mise.md` | インストールの経路（standalone か brew か）、`mise outdated --bump`、メジャー内の候補 |
+| Homebrew | `brew.md` | `brew update` のあと `HOMEBREW_NO_AUTO_UPDATE=1` で outdated、自分で入れた formula、`--vulnerable`、巻き込まれる依存 |
+| zeno.zsh | `zeno.md` | `ZENO_COMMIT` と、activity API の 168 時間前の main の先頭 |
 
 ### 手順 2: 侵害の事前確認（候補ごと）
 
@@ -202,7 +101,7 @@ git -C "$Z" log --format='%h %an <%ae> | %s' "$base..$cand"    # 上げる範囲
 
 #### 2-1. 公開日
 
-公開時刻を取り、手順 1 の式で経過時間を出す。
+公開時刻を取り、手順 1 の `hours-since.sh` で経過時間を出す。
 
 | 対象 | 取り方 |
 |---|---|
@@ -213,9 +112,7 @@ git -C "$Z" log --format='%h %an <%ae> | %s' "$base..$cand"    # 上げる範囲
 | brew formula・cask | tap の commit 日。パスは `brew info --json=v2 <name>` の `.ruby_source_path`、repo は `.tap`（`homebrew/core` → `Homebrew/homebrew-core`、`<o>/<r>` → `<o>/homebrew-<r>`） |
 | zeno.zsh | 手順 1 の activity の `timestamp`。commit の日時は使わない |
 
-```bash
-gh api 'repos/Homebrew/homebrew-core/commits?path=Formula/p/pipx.rb&per_page=1' --jq '.[0] | "\(.commit.committer.date) \(.commit.message|split("\n")[0])"'
-```
+brew の tap の commit 日の取り方は `brew.md` にある。
 
 #### 2-2. advisory と報道
 
@@ -235,17 +132,11 @@ gh api 'advisories?ecosystem=pip&affects=<name>&per_page=10' --jq '.[] | "\(.ghs
 | uv 本体 | 一時ディレクトリに成果物を落として `gh attestation verify <file> --repo astral-sh/uv`。成功すれば signer は `astral-sh/uv/.github/workflows/release.yml` |
 | mise 本体 | `mise self-update` が置き換え前に署名を検証する。追加で確かめるなら uv と同じく `gh attestation verify <file> --repo jdx/mise` |
 | mise ツール | mise がインストール時に検証（aqua・github backend の attestation/slsa/cosign/minisign、`node.verify`）。表には「mise が検証」 |
-| uv 管理の Python のビルド | リリースの asset の digest で GitHub attestation を引く（表の下のコマンド）。1 件以上あれば「attestation あり」 |
+| uv 管理の Python のビルド | リリースの asset の digest で GitHub attestation を引く（`uv.md` のコマンド）。1 件以上あれば「attestation あり」 |
 | uv tool | PyPI の provenance を `curl -s -H 'Accept: application/vnd.pypi.integrity.v1+json' https://pypi.org/integrity/<name>/<version>/<file>/provenance` で取る。404 なら「provenance なし（PyPI の hash のみ）」 |
 | brew formula | 手順 4 で `HOMEBREW_VERIFY_ATTESTATIONS=1` を付ける（homebrew/core と対応 tap の bottle）。それ以外の tap は「formula の sha256 のみ」 |
 | brew cask | cask に書かれた sha256 を brew が照合する。`sha256 :no_check` の cask は表で目立たせる |
 | zeno.zsh | 署名は無い。表には「署名なし（commit で固定）」 |
-
-```bash
-# <file> は手順 1 の URL の末尾（%2B は + に戻す）
-h=$(gh api repos/astral-sh/python-build-standalone/releases/tags/<tag> --jq '.assets[] | select(.name=="<file>") | .digest' | cut -d: -f2)
-gh api "repos/astral-sh/python-build-standalone/attestations/sha256:$h" --jq '.attestations | length'
-```
 
 一時ディレクトリは `mktemp -d` で作り、検証が終わったらファイルを消してから `rmdir` する。落とした成果物は実行しない。
 
@@ -254,7 +145,7 @@ gh api "repos/astral-sh/python-build-standalone/attestations/sha256:$h" --jq '.a
 全候補で現在の版から候補の版までの compare を取り、危険箇所に絞って読む。
 
 ```bash
-gh api 'repos/<o>/<r>/compare/<cur_tag>...<new_tag>?per_page=100' --paginate --jq '.files[].filename' | sort -u
+bash "${SKILL_DIR:?}/scripts/compare-risky.sh" <o>/<r> <cur_tag> <new_tag>
 ```
 
 見る箇所:
@@ -263,14 +154,10 @@ gh api 'repos/<o>/<r>/compare/<cur_tag>...<new_tag>?per_page=100' --paginate --j
 - 依存の追加（`Cargo.toml`、`pyproject.toml`、`package.json`、`go.mod` の新しい依存）
 - 難読化・base64（長い base64 文字列、`eval`、`exec(`、`\x` の羅列）
 
-```bash
-gh api 'repos/<o>/<r>/compare/<cur>...<new>?per_page=100' --paginate --jq '.files[] | select(.filename|test("^\\.github/workflows/(release|publish|sign|build)")) | "=== \(.filename)\n\(.patch // "(no patch)")"' | grep -E '^===|^\+.*(curl|wget|base64|eval|uses: |secrets\.|https?://)'
-```
-
+- script は、変更ファイルの一覧と、release・publish・sign・build 系の workflow の差分のうち上の危険箇所に当たる行を出す
 - 差分が大きい（数千 commit、300 ファイル超）ときは上の危険箇所だけを読み、表に「危険箇所のみ確認」と書く
 - ソース非公開（1password-cli、cursor など）や upstream の repo が分からないものは「コード確認不可」と書く
-- brew の revision だけの更新（`2.1.1` → `2.1.1_1`）は upstream のコードが同じなので、tap の formula の差分だけを見る
-- zeno.zsh は tag が無いので、fetch 済みのローカルで `git -C ~/.local/share/zeno diff "$base..$cand"` を読む。上の箇所に加えて、シェル関数（`zeno.zsh`、`shells/zsh/`、`bin/`）、Deno の import（`src/deps.ts` などの `jsr:`・`npm:`・URL の追加と版の変更）、`deno run`・`deno cache` のフラグを見る。範囲の期間に main への force push が無いかも `gh api "repos/yuki-yano/zeno.zsh/activity?ref=refs/heads/main&activity_type=force_push&per_page=100" --paginate --jq '.[] | "\(.timestamp) \(.actor.login) \(.before[0:8])..\(.after[0:8])"'` で確かめ、あれば要判断
+- brew の revision だけの更新は `brew.md`、zeno.zsh のコード確認は `zeno.md` の「手順 2-4」に従う
 
 #### 判定
 
@@ -292,10 +179,10 @@ gh api 'repos/<o>/<r>/compare/<cur>...<new>?per_page=100' --paginate --jq '.file
 - 経過時間は `155 時間（6.5 日）` のように時間と日数を並べて書く。基準時刻も表の上に書く
 - 種類（uv 本体・uv tool・uv 管理の Python・mise 本体・mise ツール・brew formula・brew cask・巻き込み依存・zeno.zsh）ごとに見出しで分ける
 - zeno.zsh の行は、現在 → 候補を commit の短い sha で書く
-- uv 管理の Python の行は、ツール名に `cpython-3.14.<patch>+<tag>`、コード確認に「対象外（CPython のビルド）」と書く
+- uv 管理の Python の行は、ツール名に `cpython-<PYVER>.<patch>+<tag>`、コード確認に「対象外（CPython のビルド）」と書く
 - 候補なしのツールは載せない。見送りは理由を判定の列に書く
 - 表のあとに AskUserQuestion で承認を取る。最初の質問の選択肢は「更新可だけ実行」「更新可と要判断を選んで実行」「やめる」
-- 「要判断を選んで実行」なら、要判断の項目を multiSelect で選ばせる。AskUserQuestion は 1 問に選択肢 2〜4 個、1 回の呼び出しに 4 問までなので、問いの数を件数 ÷ 4 の切り上げにして、件数の差が 1 以内になるよう均等に分け（5 件は 3 + 2）、5 問目からは次の呼び出しで聞く。こう分ければ 1 件だけの問いはできない。全体で 1 件なら multiSelect を使わず、その項目を変えるか既定のままにするかの 2 択にする（label の書き方は下と同じ）
+- 「要判断を選んで実行」なら、要判断の項目を multiSelect で選ばせる。選択肢が 1 つだけの問いを作らないよう、AskUserQuestion の上限（1 問に選択肢 2〜4 個、1 回に 4 問）の中で項目を問いに均等に分け、4 問を超える分は次の呼び出しで聞く（全体で 1 件なら、変えるか既定のままかの 2 択にする）
   - 選択肢の label には、選んだときに起きることを書く（`node: 24.1.0 に上げる`、`ruff: 入れ直す` など）。選ばなかった項目が既定（上げない、入れ直さない）になる向きにそろえる
 
 ### 手順 4: 承認分だけ更新する
@@ -321,30 +208,13 @@ git -C ~/dotfiles worktree add -b "$br" "$WT" origin/main
 | mise ツール | `. "$TMPDIR/local-tools-state.sh"; : "${WT:?}"; (cd / && MISE_GLOBAL_CONFIG_FILE="$WT/configs/mise/config.toml" mise use -g <tool>@<version>)`（ツールごと） |
 | brew formula | `HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_VERIFY_ATTESTATIONS=1 brew upgrade --formula <names>` |
 | brew cask | `HOMEBREW_NO_AUTO_UPDATE=1 brew upgrade --cask <names>` |
-| uv tool の前準備（安定版の Python） | 下の「uv tool の Python をそろえる」を参照 |
-| uv tool（メジャー内の更新） | `uv tool upgrade <name> --managed-python --python 3.14 --exclude-newer "7 days"` |
-| uv tool（メジャー内に固定したい） | `uv tool install '<name>>=<cur>,<<next_major>' --managed-python --python 3.14 --exclude-newer "7 days"` |
-| 壊れた uv tool、印 `mise の Python` の uv tool | `uv tool install <name> --reinstall --managed-python --python 3.14 --exclude-newer "7 days"`。receipt に index があれば `--default-index <url>` を付ける。メジャー跨ぎを避けるなら上の範囲指定を使う |
+| uv tool の前準備（安定版の Python） | `uv.md` の「手順 4: uv tool の Python をそろえる」を参照 |
+| uv tool（メジャー内の更新） | `uv tool upgrade <name> --managed-python --python <PYVER> --exclude-newer "7 days"` |
+| uv tool（メジャー内に固定したい） | `uv tool install '<name>>=<cur>,<<next_major>' --managed-python --python <PYVER> --exclude-newer "7 days"` |
+| 壊れた uv tool、印 `mise の Python` の uv tool | `uv tool install <name> --reinstall --managed-python --python <PYVER> --exclude-newer "7 days"`。receipt に index があれば `--default-index <url>` を付ける。メジャー跨ぎを避けるなら上の範囲指定を使う |
 | zeno.zsh | `git -C ~/.local/share/zeno checkout --quiet --detach <cand>` が通ってから、`$WT/install.sh` の `ZENO_COMMIT` を `cand` の 40 桁の sha に Edit で書き換える（checkout が失敗したら書き換えずに止める） |
 
-- uv tool は `uv`（safe-chain 経由）で呼ぶ。`command uv` にしない
-- `--managed-python` は uv が管理する Python だけを使い、mise の Python を使わない。実行後に `$(uv tool dir)/<name>/pyvenv.cfg` の `home` が `$(command uv python dir)` の下の安定版（alpha・beta・rc でない）になったことを確かめる
-
-#### uv tool の Python をそろえる
-
-uv は条件に合う pre-release（例 `cpython-3.14.0a6`）が入っていると、安定版を取りに行かずにそれを使う（uv のドキュメント「Python versions」）。`uv python install 3.14` も、条件に合う版が入っていれば何もせずに終わる。だから uv tool を入れる前に、安定版を版まで指定して入れる。
-
-```bash
-command uv python list 3.14 --managed-python        # 入っている版と、取得できる安定版（<download available>）を見る
-command uv python find 3.14 --managed-python        # 今 3.14 で選ばれる版
-```
-
-- `find` が pre-release を返したら、`list` に出る最新の安定版を `uv python install 3.14.<patch>` で入れる（この操作も承認の範囲に入れる）。入れたあと `find` が安定版を返すことを確かめる。安定版と pre-release が両方あれば、uv は安定版を選ぶ
-- `find` が安定版を返すなら、前準備は要らない
-- mise の Python を参照したままの tool には `uv tool upgrade` を使わず、`--reinstall` で入れ直す（環境を作り直して参照先を切り替えるため）
-- `--exclude-newer "7 days"` は推移依存にも効く。推移依存の個別確認はしない
-- mise の `npm:` と `pypi:` backend の推移依存は、mise の `minimum_release_age`（config の tool option で `7d`）で守る。個別確認はしない。npm: は mise 内蔵の aube が、pypi: は uv の `--exclude-newer` が依存の解決にこの cutoff をかける（mise の公式ドキュメント）。ツール本体の固定版には効かないので、本体は手順 1〜3 で確かめる
-- `mise use -g` は tool option（`minimum_release_age`、azure-cli の `dependency_prereleases`・`with`）を残したまま `version` だけを書き換える。commit 前に `git -C "$WT" diff configs/mise/config.toml` で、変わったのが版だけであることを確かめる。`git -C ~/dotfiles status --short` に config が出たら（`MISE_GLOBAL_CONFIG_FILE` を付け忘れて本体に書いた）、止めて報告する
+- uv tool の呼び方は `uv.md` の「手順 4」に従う。mise の config の書き換えと推移的な依存の扱いは `mise.md` の「手順 4」に従う
 
 ### 手順 5: worktree で commit、push、PR と報告
 

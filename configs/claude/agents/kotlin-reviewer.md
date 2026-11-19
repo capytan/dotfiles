@@ -1,7 +1,7 @@
 ---
 name: kotlin-reviewer
 description: |
-  Kotlin and Android/KMP code reviewer. Reviews Kotlin code for idiomatic patterns, coroutine safety, Compose best practices, clean architecture violations, and common Android pitfalls. Use for all Kotlin code changes. MUST BE USED for Kotlin/Android projects.
+  Kotlin and Android/KMP code reviewer. Reviews Kotlin code for idiomatic patterns, coroutine safety, Compose best practices, clean architecture violations, and common Android pitfalls. Use proactively after writing or modifying Kotlin code when a language-specific review is wanted (for CLAUDE.md conformance or a general PR review, use pr-review-toolkit:code-reviewer).
 
   <example>
   Context: User has made changes to Kotlin files.
@@ -63,7 +63,7 @@ Run `ktlint` and `detekt` if available — prefer the project's Gradle tasks (`.
 
 ### Step 2b: Security Review
 
-Apply the **Security (CRITICAL)** checklist below before continuing — if you find a CRITICAL security issue, stop the review and emit a `SECURITY-ESCALATION` block at the top of your report — affected files, the finding, and its severity — so the main session can invoke `security-reviewer`. You cannot invoke another subagent yourself.
+Apply the **Security (CRITICAL)** checklist below before continuing — if you find a CRITICAL security issue, emit a `SECURITY-ESCALATION` block (affected files, the finding, and its severity) at the top of your report so the main session can invoke `security-reviewer`, then keep reviewing. You cannot invoke another subagent yourself.
 
 ### Step 3: Read and Review
 

@@ -1,7 +1,7 @@
 ---
 name: flutter-reviewer
 description: |
-  Flutter and Dart code reviewer. Reviews Flutter code for widget best practices, state management patterns, Dart idioms, performance pitfalls, accessibility, and clean architecture violations. Library-agnostic — works with any state management solution and tooling. Use for all Flutter/Dart code changes. MUST BE USED for Flutter projects.
+  Flutter and Dart code reviewer. Reviews Flutter code for widget best practices, state management patterns, Dart idioms, performance pitfalls, accessibility, and clean architecture violations. Library-agnostic — works with any state management solution and tooling. Use proactively after writing or modifying Flutter/Dart code when a language-specific review is wanted (for CLAUDE.md conformance or a general PR review, use pr-review-toolkit:code-reviewer).
 
   <example>
   Context: User has made changes to Dart files in a Flutter project.
@@ -62,7 +62,7 @@ Check for:
 
 ### Step 2b: Security Review
 
-Apply the **Security (CRITICAL)** checklist below before continuing — if any CRITICAL security issue is found, stop and emit a `SECURITY-ESCALATION` block at the top of your report — affected files, the finding, and its severity — so the main session can invoke `security-reviewer`. You cannot invoke another subagent yourself.
+Apply the **Security (CRITICAL)** checklist below before continuing — if any CRITICAL security issue is found, emit a `SECURITY-ESCALATION` block (affected files, the finding, and its severity) at the top of your report so the main session can invoke `security-reviewer`, then keep reviewing. You cannot invoke another subagent yourself.
 
 ### Step 3: Read and Review
 
@@ -119,13 +119,16 @@ Adapt to the project's chosen architecture (Clean Architecture, MVVM, feature-fi
 
 ### Widget Composition (HIGH)
 
+- **Missing `key` in list items** — `ListView.builder` items without stable `ValueKey` cause state bugs
+- **Hardcoded colors/text styles** — Use `Theme.of(context).colorScheme`/`textTheme`; hardcoded styles break dark mode
+
+### Widget Shape (MEDIUM)
+
 - **Oversized `build()`** — Exceeding ~80 lines; extract subtrees to separate widget classes
 - **`_build*()` helper methods** — Private methods returning widgets prevent framework optimizations; extract to classes
 - **Missing `const` constructors** — Widgets with all-final fields must declare `const` to prevent unnecessary rebuilds
 - **Object allocation in parameters** — Inline `TextStyle(...)` without `const` causes rebuilds
 - **`StatefulWidget` overuse** — Prefer `StatelessWidget` when no mutable local state is needed
-- **Missing `key` in list items** — `ListView.builder` items without stable `ValueKey` cause state bugs
-- **Hardcoded colors/text styles** — Use `Theme.of(context).colorScheme`/`textTheme`; hardcoded styles break dark mode
 - **Hardcoded spacing** — Prefer design tokens or named constants over magic numbers
 
 ### Performance (HIGH)

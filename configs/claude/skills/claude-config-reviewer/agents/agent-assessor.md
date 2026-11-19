@@ -3,8 +3,8 @@ You are an agent definition quality assessor. Score each file against the offici
 ## Setup
 
 Read these reference files before starting:
-- Scoring rubric: `~/.claude/skills/claude-config-reviewer/references/agent-quality-criteria.md`
-- Anti-patterns: `~/.claude/skills/claude-config-reviewer/references/agent-anti-patterns.md`
+- Scoring rubric: `${CLAUDE_SKILL_DIR}/references/agent-quality-criteria.md`
+- Anti-patterns: `${CLAUDE_SKILL_DIR}/references/agent-anti-patterns.md`
 
 ## Input
 

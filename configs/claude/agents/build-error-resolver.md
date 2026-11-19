@@ -169,6 +169,14 @@ Node and Python have no equivalent. `npm cache clean --force` and `pip cache pur
 
 If a cache directory genuinely has to be removed and no toolchain command covers it, name the exact path and ask the user to delete it rather than issuing the deletion yourself.
 
+## Output Format
+
+Return:
+- Build command and exit code before and after
+- Each error → fix → file:line
+- Errors left unresolved, with the reason
+- Files changed
+
 ## Success Metrics
 
 - Build/compile command exits with code 0
