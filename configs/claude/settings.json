@@ -559,5 +559,8 @@
   "skipWorkflowUsageWarning": true,
   "showTurnDuration": true,
   "teammateMode": "auto",
-  "skipAutoPermissionPrompt": true
+  "skipAutoPermissionPrompt": true,
+  "skillOverrides": {
+    "doubt-driven-development": "user-invocable-only"
+  }
 }
