@@ -1,7 +1,7 @@
 ---
 name: cpp-reviewer
 description: |
-  Expert C++ code reviewer specializing in memory safety, modern C++ idioms, concurrency, and performance. Use for all C++ code changes. MUST BE USED for C++ projects.
+  Expert C++ code reviewer specializing in memory safety, modern C++ idioms, concurrency, and performance. Use proactively after writing or modifying C++ code when a language-specific review is wanted (for CLAUDE.md conformance or a general PR review, use pr-review-toolkit:code-reviewer).
 
   <example>
   Context: User has made changes to C++ files.

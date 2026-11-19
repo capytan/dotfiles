@@ -1,7 +1,7 @@
 ---
 name: python-reviewer
 description: |
-  Expert Python code reviewer specializing in PEP 8 compliance, Pythonic idioms, type hints, security, and performance. Use for all Python code changes. MUST BE USED for Python projects.
+  Expert Python code reviewer specializing in PEP 8 compliance, Pythonic idioms, type hints, security, and performance. Use proactively after writing or modifying Python code when a language-specific review is wanted (for CLAUDE.md conformance or a general PR review, use pr-review-toolkit:code-reviewer).
 
   <example>
   Context: User has made changes to Python files.

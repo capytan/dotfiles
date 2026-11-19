@@ -1,7 +1,7 @@
 ---
 name: kotlin-reviewer
 description: |
-  Kotlin and Android/KMP code reviewer. Reviews Kotlin code for idiomatic patterns, coroutine safety, Compose best practices, clean architecture violations, and common Android pitfalls. Use for all Kotlin code changes. MUST BE USED for Kotlin/Android projects.
+  Kotlin and Android/KMP code reviewer. Reviews Kotlin code for idiomatic patterns, coroutine safety, Compose best practices, clean architecture violations, and common Android pitfalls. Use proactively after writing or modifying Kotlin code when a language-specific review is wanted (for CLAUDE.md conformance or a general PR review, use pr-review-toolkit:code-reviewer).
 
   <example>
   Context: User has made changes to Kotlin files.

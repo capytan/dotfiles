@@ -1,7 +1,7 @@
 ---
 name: typescript-reviewer
 description: |
-  Expert TypeScript/JavaScript code reviewer specializing in type safety, async correctness, Node/web security, and idiomatic patterns. Use for all TypeScript and JavaScript code changes. MUST BE USED for TypeScript/JavaScript projects.
+  Expert TypeScript/JavaScript code reviewer specializing in type safety, async correctness, Node/web security, and idiomatic patterns. Use proactively after writing or modifying TypeScript and JavaScript code when a language-specific review is wanted (for CLAUDE.md conformance or a general PR review, use pr-review-toolkit:code-reviewer).
 
   <example>
   Context: User has made changes to TypeScript or JavaScript files.

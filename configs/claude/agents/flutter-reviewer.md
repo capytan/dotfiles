@@ -1,7 +1,7 @@
 ---
 name: flutter-reviewer
 description: |
-  Flutter and Dart code reviewer. Reviews Flutter code for widget best practices, state management patterns, Dart idioms, performance pitfalls, accessibility, and clean architecture violations. Library-agnostic — works with any state management solution and tooling. Use for all Flutter/Dart code changes. MUST BE USED for Flutter projects.
+  Flutter and Dart code reviewer. Reviews Flutter code for widget best practices, state management patterns, Dart idioms, performance pitfalls, accessibility, and clean architecture violations. Library-agnostic — works with any state management solution and tooling. Use proactively after writing or modifying Flutter/Dart code when a language-specific review is wanted (for CLAUDE.md conformance or a general PR review, use pr-review-toolkit:code-reviewer).
 
   <example>
   Context: User has made changes to Dart files in a Flutter project.

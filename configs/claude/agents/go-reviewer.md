@@ -1,7 +1,7 @@
 ---
 name: go-reviewer
 description: |
-  Expert Go code reviewer specializing in idiomatic Go, concurrency patterns, error handling, and performance. Use for all Go code changes. MUST BE USED for Go projects.
+  Expert Go code reviewer specializing in idiomatic Go, concurrency patterns, error handling, and performance. Use proactively after writing or modifying Go code when a language-specific review is wanted (for CLAUDE.md conformance or a general PR review, use pr-review-toolkit:code-reviewer).
 
   <example>
   Context: User has made changes to Go files.

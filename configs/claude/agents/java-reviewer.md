@@ -1,7 +1,7 @@
 ---
 name: java-reviewer
 description: |
-  Expert Java and Spring Boot code reviewer specializing in layered architecture, JPA patterns, security, and concurrency. Use for all Java code changes. MUST BE USED for Spring Boot projects.
+  Expert Java and Spring Boot code reviewer specializing in layered architecture, JPA patterns, security, and concurrency. Use proactively after writing or modifying Java code when a language-specific review is wanted (for CLAUDE.md conformance or a general PR review, use pr-review-toolkit:code-reviewer).
 
   <example>
   Context: User has made changes to Java files.

@@ -1,7 +1,7 @@
 ---
 name: ruby-reviewer
 description: |
-  Expert Ruby and Rails code reviewer specializing in idiomatic Ruby, Rails conventions, security, and performance. Use for all Ruby code changes. MUST BE USED for Ruby projects.
+  Expert Ruby and Rails code reviewer specializing in idiomatic Ruby, Rails conventions, security, and performance. Use proactively after writing or modifying Ruby code when a language-specific review is wanted (for CLAUDE.md conformance or a general PR review, use pr-review-toolkit:code-reviewer).
 
   <example>
   Context: User has made changes to Ruby files.
