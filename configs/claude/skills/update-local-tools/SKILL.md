@@ -44,7 +44,7 @@ uv・mise・Homebrew で入れたツールと zeno.zsh を更新する前に、�
 | mise の検証設定 | aqua の cosign/slsa/github_attestations/minisign、github の attestations/slsa、`node.verify` が有効 | mise ツールの署名は mise がインストール時に検証する。表には「mise が検証」と書く |
 | mise config | `~/.config/mise/config.toml` は `~/dotfiles/configs/mise/config.toml` への symlink。全ツールを完全な版で固定している | `mise outdated` は `--bump` を付けないと何も出ない |
 | global の config の差し替え | `MISE_GLOBAL_CONFIG_FILE` は global の config を 1 つのファイルに置き換え、`mise use -g` はそのファイルに書く。ただし `$HOME` の下を cwd にすると、`~/.config/mise/config.toml` は project の config として読まれ、global より強い（mise の doc「Configuration」） | `mise use -g` は cwd を `/` にし、`MISE_GLOBAL_CONFIG_FILE` を worktree の config に向けて呼び、その変更を PR にする。ツールはその場で入るが、本体の config は古い版のままなので、新しい版が効くのは merge のあとに本体を pull してから |
-| uv tool の Python | mise の Python（例 `~/.local/share/mise/installs/python/3.13.3`）で入れた uv tool は、その Python が消えると "environment not found" で壊れる | uv tool は `--managed-python --python 3.14` を付けて uv が管理する安定版の Python で入れ、mise の Python から切り離す。参照先は `$(uv tool dir)/X/pyvenv.cfg` の `home` で分かる |
+| uv tool の Python | mise の Python（例 `~/.local/share/mise/installs/python/3.13.3`）で入れた uv tool は、その Python が消えると "environment not found" で壊れる | uv tool は `--managed-python --python <PYVER>`（手順 1 で決める minor）を付けて uv が管理する安定版の Python で入れ、mise の Python から切り離す。参照先は `$(uv tool dir)/X/pyvenv.cfg` の `home` で分かる |
 | zeno.zsh | `~/.local/share/zeno` の git clone。上流に tag も release も無いので、`~/dotfiles/install.sh` の `ZENO_COMMIT`（40 桁の sha）で固定している。`install.sh` は clone と、その commit への checkout しかしない | 更新は checkout と、worktree の `install.sh` の `ZENO_COMMIT` の書き換えで行い、PR にする。merge までに本体の `install.sh` を実行すると、古い commit に戻る |
 
 ## 版の上げ方のルール
@@ -80,6 +80,8 @@ git -C ~/dotfiles status --short
 ### 手順 1: 候補の収集（読み取りのみ）
 
 基準時刻を `date -u +%Y-%m-%dT%H:%M:%SZ` で取って表に書く。経過時間は公開時刻（UTC の ISO 8601）から `bash "${SKILL_DIR:?}/scripts/hours-since.sh" '<published_at>'` で出す。小数秒付き（`.389957Z`、`.0Z`）の時刻もそのまま渡せる。
+
+uv 管理の Python の minor（以下 `<PYVER>`）は、uv tool の候補があるときに `bash "${SKILL_DIR:?}/scripts/uv-python-minor.sh"` で決める（入っている uv 管理の安定版のうち最新の minor）。安定版が 1 つも入っていなくて失敗したとき、より新しい minor の安定版が出ているときは、使う minor を表に `Python の minor` の行として出し、承認を取ってから変える。
 
 種類ごとに、references の「手順 1」に従って候補を集める。
 
@@ -177,7 +179,7 @@ bash "${SKILL_DIR:?}/scripts/compare-risky.sh" <o>/<r> <cur_tag> <new_tag>
 - 経過時間は `155 時間（6.5 日）` のように時間と日数を並べて書く。基準時刻も表の上に書く
 - 種類（uv 本体・uv tool・uv 管理の Python・mise 本体・mise ツール・brew formula・brew cask・巻き込み依存・zeno.zsh）ごとに見出しで分ける
 - zeno.zsh の行は、現在 → 候補を commit の短い sha で書く
-- uv 管理の Python の行は、ツール名に `cpython-3.14.<patch>+<tag>`、コード確認に「対象外（CPython のビルド）」と書く
+- uv 管理の Python の行は、ツール名に `cpython-<PYVER>.<patch>+<tag>`、コード確認に「対象外（CPython のビルド）」と書く
 - 候補なしのツールは載せない。見送りは理由を判定の列に書く
 - 表のあとに AskUserQuestion で承認を取る。最初の質問の選択肢は「更新可だけ実行」「更新可と要判断を選んで実行」「やめる」
 - 「要判断を選んで実行」なら、要判断の項目を multiSelect で選ばせる。AskUserQuestion は 1 問に選択肢 2〜4 個、1 回の呼び出しに 4 問までなので、問いの数を件数 ÷ 4 の切り上げにして、件数の差が 1 以内になるよう均等に分け（5 件は 3 + 2）、5 問目からは次の呼び出しで聞く。こう分ければ 1 件だけの問いはできない。全体で 1 件なら multiSelect を使わず、その項目を変えるか既定のままにするかの 2 択にする（label の書き方は下と同じ）
@@ -207,9 +209,9 @@ git -C ~/dotfiles worktree add -b "$br" "$WT" origin/main
 | brew formula | `HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_VERIFY_ATTESTATIONS=1 brew upgrade --formula <names>` |
 | brew cask | `HOMEBREW_NO_AUTO_UPDATE=1 brew upgrade --cask <names>` |
 | uv tool の前準備（安定版の Python） | `uv.md` の「手順 4: uv tool の Python をそろえる」を参照 |
-| uv tool（メジャー内の更新） | `uv tool upgrade <name> --managed-python --python 3.14 --exclude-newer "7 days"` |
-| uv tool（メジャー内に固定したい） | `uv tool install '<name>>=<cur>,<<next_major>' --managed-python --python 3.14 --exclude-newer "7 days"` |
-| 壊れた uv tool、印 `mise の Python` の uv tool | `uv tool install <name> --reinstall --managed-python --python 3.14 --exclude-newer "7 days"`。receipt に index があれば `--default-index <url>` を付ける。メジャー跨ぎを避けるなら上の範囲指定を使う |
+| uv tool（メジャー内の更新） | `uv tool upgrade <name> --managed-python --python <PYVER> --exclude-newer "7 days"` |
+| uv tool（メジャー内に固定したい） | `uv tool install '<name>>=<cur>,<<next_major>' --managed-python --python <PYVER> --exclude-newer "7 days"` |
+| 壊れた uv tool、印 `mise の Python` の uv tool | `uv tool install <name> --reinstall --managed-python --python <PYVER> --exclude-newer "7 days"`。receipt に index があれば `--default-index <url>` を付ける。メジャー跨ぎを避けるなら上の範囲指定を使う |
 | zeno.zsh | `git -C ~/.local/share/zeno checkout --quiet --detach <cand>` が通ってから、`$WT/install.sh` の `ZENO_COMMIT` を `cand` の 40 桁の sha に Edit で書き換える（checkout が失敗したら書き換えずに止める） |
 
 - uv tool の呼び方は `uv.md` の「手順 4」に従う。mise の config の書き換えと推移的な依存の扱いは `mise.md` の「手順 4」に従う

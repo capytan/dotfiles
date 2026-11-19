@@ -24,7 +24,7 @@ mise outdated --global --bump -J
 
 ```bash
 mise latest node@24 --minimum-release-age 7d      # メジャー内（node 24.x）
-mise latest python@3.14 --minimum-release-age 7d  # python・ruby は minor 内
+mise latest python@<今の minor> --minimum-release-age 7d  # python・ruby は minor 内
 mise latest tflint@0 --minimum-release-age 7d     # 0.x は先頭番号の 0 内
 mise latest gcloud --minimum-release-age 7d       # gcloud は例外で範囲を付けない
 mise ls-remote node@24 -J | jq -r '.[-5:][] | "\(.version) \(.created_at)"'   # 公開日の確認
