@@ -69,10 +69,12 @@ Escalate these per step 4 of the invocation sequence above.
 - **Mutex misuse**: Not using `defer mu.Unlock()`
 
 ### HIGH -- Code Quality
+- **Package-level variables**: Mutable global state
+
+### MEDIUM -- Code Shape
 - **Large functions**: Over 50 lines
 - **Deep nesting**: More than 4 levels
 - **Non-idiomatic**: `if/else` instead of early return
-- **Package-level variables**: Mutable global state
 - **Interface pollution**: Defining unused abstractions
 
 ### MEDIUM -- Performance

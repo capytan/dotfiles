@@ -64,7 +64,6 @@ Escalate these per step 4 of the invocation sequence above.
 - **Wrong HTTP status**: Returning `200 OK` with null body instead of `404`, or missing `201` on creation
 
 ### HIGH -- Spring Boot Architecture
-- **Field injection**: `@Autowired` on fields is a code smell — constructor injection is required
 - **Business logic in controllers**: Controllers must delegate to the service layer immediately
 - **`@Transactional` on wrong layer**: Must be on service layer, not controller or repository
 - **Missing `@Transactional(readOnly = true)`**: Read-only service methods must declare this
@@ -82,6 +81,7 @@ Escalate these per step 4 of the invocation sequence above.
 - **Blocking `@Scheduled`**: Long-running scheduled methods that block the scheduler thread
 
 ### MEDIUM -- Java Idioms and Performance
+- **Field injection**: `@Autowired` on fields — prefer constructor injection
 - **String concatenation in loops**: Use `StringBuilder` or `String.join`
 - **Raw type usage**: Unparameterised generics (`List` instead of `List<T>`)
 - **Missed pattern matching**: `instanceof` check followed by explicit cast — use pattern matching (Java 16+)

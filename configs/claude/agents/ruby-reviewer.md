@@ -79,11 +79,7 @@ You are an expert Ruby code reviewer specializing in idiomatic Ruby, Rails best 
 
 ### HIGH (Code Quality)
 
-- **Large methods** (>20 lines for Ruby, idiomatic standard is shorter than other languages)
-- **Deep nesting** (>3 levels) — Extract methods or use guard clauses
-- **God class** — Class with too many responsibilities (>200 lines)
 - **Monkey patching** — Reopening core classes without justification
-- **Missing frozen_string_literal** — Missing `# frozen_string_literal: true` magic comment
 - **Mutable constants** — Constants containing mutable objects without `.freeze`
 
 ### HIGH (Concurrency)
@@ -91,6 +87,13 @@ You are an expert Ruby code reviewer specializing in idiomatic Ruby, Rails best 
 - **Thread-unsafe code** — Mutable class variables, global state mutation
 - **Missing mutex** — Shared state access without synchronization
 - **Database connection leaks** — Manual connection checkout without ensure block
+
+### MEDIUM (Code Shape)
+
+- **Large methods** (>20 lines for Ruby, idiomatic standard is shorter than other languages)
+- **Deep nesting** (>3 levels) — Extract methods or use guard clauses
+- **God class** — Class with too many responsibilities (>200 lines)
+- **Missing frozen_string_literal** — Missing `# frozen_string_literal: true` magic comment
 
 ### MEDIUM (Idiomatic Ruby)
 

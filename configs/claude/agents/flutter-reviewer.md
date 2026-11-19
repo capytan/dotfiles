@@ -119,13 +119,16 @@ Adapt to the project's chosen architecture (Clean Architecture, MVVM, feature-fi
 
 ### Widget Composition (HIGH)
 
+- **Missing `key` in list items** — `ListView.builder` items without stable `ValueKey` cause state bugs
+- **Hardcoded colors/text styles** — Use `Theme.of(context).colorScheme`/`textTheme`; hardcoded styles break dark mode
+
+### Widget Shape (MEDIUM)
+
 - **Oversized `build()`** — Exceeding ~80 lines; extract subtrees to separate widget classes
 - **`_build*()` helper methods** — Private methods returning widgets prevent framework optimizations; extract to classes
 - **Missing `const` constructors** — Widgets with all-final fields must declare `const` to prevent unnecessary rebuilds
 - **Object allocation in parameters** — Inline `TextStyle(...)` without `const` causes rebuilds
 - **`StatefulWidget` overuse** — Prefer `StatelessWidget` when no mutable local state is needed
-- **Missing `key` in list items** — `ListView.builder` items without stable `ValueKey` cause state bugs
-- **Hardcoded colors/text styles** — Use `Theme.of(context).colorScheme`/`textTheme`; hardcoded styles break dark mode
 - **Hardcoded spacing** — Prefer design tokens or named constants over magic numbers
 
 ### Performance (HIGH)

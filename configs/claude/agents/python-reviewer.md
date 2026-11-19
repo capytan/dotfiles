@@ -57,28 +57,30 @@ When invoked:
 - **Swallowed exceptions**: silent failures — log and handle
 - **Missing context managers**: manual file/resource management — use `with`
 
-### HIGH — Type Hints
-- Public functions without type annotations
-- Using `Any` when specific types are possible
-- Missing `Optional` for nullable parameters
-
-### HIGH — Pythonic Patterns
-- Use list comprehensions over C-style loops
-- Use `isinstance()` not `type() ==`
-- Use `Enum` not magic numbers
-- Use `"".join()` not string concatenation in loops
+### HIGH — Correctness Patterns
 - **Mutable default arguments**: `def f(x=[])` — use `def f(x=None)`
-
-### HIGH — Code Quality
-- Functions > 50 lines, > 5 parameters (use dataclass)
-- Deep nesting (> 4 levels)
-- Duplicate code patterns
-- Magic numbers without named constants
+- Missing `Optional` for nullable parameters
 
 ### HIGH — Concurrency
 - Shared state without locks — use `threading.Lock`
 - Mixing sync/async incorrectly
 - N+1 queries in loops — batch query
+
+### MEDIUM — Type Hints
+- Public functions without type annotations
+- Using `Any` when specific types are possible
+
+### MEDIUM — Pythonic Patterns
+- Use list comprehensions over C-style loops
+- Use `isinstance()` not `type() ==`
+- Use `Enum` not magic numbers
+- Use `"".join()` not string concatenation in loops
+
+### MEDIUM — Code Quality
+- Functions > 50 lines, > 5 parameters (use dataclass)
+- Deep nesting (> 4 levels)
+- Duplicate code patterns
+- Magic numbers without named constants
 
 ### MEDIUM — Best Practices
 - PEP 8: import order, naming, spacing
