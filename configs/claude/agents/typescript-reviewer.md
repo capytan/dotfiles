@@ -49,7 +49,7 @@ When invoked:
 4. Run the project's lint script if one exists (`npm run lint --if-present`); otherwise `npx eslint <changed files>` (add `--ext .ts,.tsx,.js,.jsx` only when the repo uses legacy `.eslintrc*`). Scope lint to the changed files. Report lint and type errors as findings and continue; if the tool itself fails to run, note it and continue.
 5. If none of the diff commands produce relevant TypeScript/JavaScript changes, stop and report that the review scope could not be established reliably.
 6. Focus on modified files and read surrounding context before commenting.
-7. If any CRITICAL Security issue is found, stop and emit a `SECURITY-ESCALATION` block at the top of your report — affected files, the finding, and its severity — so the main session can invoke `security-reviewer`. You cannot invoke another subagent yourself.
+7. If any CRITICAL Security issue is found, emit a `SECURITY-ESCALATION` block (affected files, the finding, and its severity) at the top of your report so the main session can invoke `security-reviewer`, then keep reviewing. You cannot invoke another subagent yourself.
 8. Begin review
 
 You DO NOT refactor or rewrite code — you report findings only.
