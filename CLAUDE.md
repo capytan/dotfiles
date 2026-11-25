@@ -24,11 +24,12 @@ zsh -i -c exit                            # Check zsh startup for errors (agent-
 herdr server reload-config                # Reload herdr config.toml in the running server
 ./configs/claude/setup-claude.sh          # Setup Claude Code symlinks
 
-bash configs/claude/hooks/test-pretooluse-validate-command.sh          # Hook validator tests (only suite in the repo)
+bash configs/claude/hooks/test-pretooluse-validate-command.sh          # Hook validator tests
+bash configs/claude/hooks/test-pretooluse-pr-body.sh                   # PR body review hook tests
 HOOK_BASH=/bin/bash bash configs/claude/hooks/test-pretooluse-validate-command.sh   # Same, under macOS bash 3.2
 ```
 
-CI (`.github/workflows/hooks-test.yml`) runs the validator suite on bash 5 and bash 3.2, only for same-repo PRs (fork PRs are skipped by design) that touch:
+CI (`.github/workflows/hooks-test.yml`) runs the hook suites on bash 5 and bash 3.2, only for same-repo PRs (fork PRs are skipped by design) that touch:
 - `configs/claude/hooks/**`
 - `configs/claude/settings.json` — the suite checks its `Read()`/`Edit()` rules against the sensitive-path table
 - the workflow file itself
