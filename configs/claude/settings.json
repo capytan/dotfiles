@@ -308,6 +308,16 @@
             "command": "bash ~/.claude/hooks/pretooluse-validate-command.sh",
             "timeout": 10,
             "onFailure": "block"
+          },
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/pretooluse-pr-body.sh",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/pretooluse-added-comments.sh",
+            "timeout": 10
           }
         ]
       }
