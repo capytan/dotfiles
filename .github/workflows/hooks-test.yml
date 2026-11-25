@@ -54,3 +54,8 @@ jobs:
         env:
           HOOK_BASH: ${{ matrix.hook_bash }}
         run: bash configs/claude/hooks/test-pretooluse-pr-body.sh
+
+      - name: Run added comments hook tests
+        env:
+          HOOK_BASH: ${{ matrix.hook_bash }}
+        run: bash configs/claude/hooks/test-pretooluse-added-comments.sh

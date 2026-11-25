@@ -26,6 +26,7 @@ herdr server reload-config                # Reload herdr config.toml in the runn
 
 bash configs/claude/hooks/test-pretooluse-validate-command.sh          # Hook validator tests
 bash configs/claude/hooks/test-pretooluse-pr-body.sh                   # PR body review hook tests
+bash configs/claude/hooks/test-pretooluse-added-comments.sh            # Added comments review hook tests
 HOOK_BASH=/bin/bash bash configs/claude/hooks/test-pretooluse-validate-command.sh   # Same, under macOS bash 3.2
 ```
 
