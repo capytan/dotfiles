@@ -25,8 +25,10 @@ check() {
 
 check deny 'gh pr create --draft --body-file body.md'
 check allow 'gh pr create --draft --body "直した本文"'
-check deny 'gh pr create --draft --body-file body.md'
+# ほかの hook が止めて実行されなかった再実行も、30 分の間は止めない
+check allow 'gh pr create --draft --body-file body.md'
 check deny 'git fetch && gh pr edit 3 --body-file other.md'
+check deny 'gh pr edit 5 --body-file other.md'
 check allow 'gh pr edit 3 --title "x"'
 check allow 'gh pr view 3'
 check allow 'git commit -m "add gh pr create hook"'

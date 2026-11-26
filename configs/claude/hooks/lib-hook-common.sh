@@ -17,12 +17,11 @@ marker() {
   [ -n "$(find "$MARKER" -mmin -30 2>/dev/null)" ]
 }
 
-# deny_once <name> <key> <reason>: 同じ key の 2 回目は通す
+# deny_once <name> <key> <reason>: 同じ key は 30 分に 1 回だけ止める。
+# 通したときに印を消すと、同じ回に別の hook が止めてコマンドが実行されなかった場合に次の回でまた止め、
+# hook 同士が交互に止め続ける。そのため印は期限まで残す
 deny_once() {
-  if marker "$1" "$2"; then
-    rm -f "$MARKER"
-    return 0
-  fi
+  if marker "$1" "$2"; then return 0; fi
   : >"$MARKER"
   deny "$3"
 }
