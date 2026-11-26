@@ -28,7 +28,7 @@
 
 ## Code comments
 
-- Don't write comments that restate what the code already shows: what a line does, a paraphrase of a variable or function name, or what changed and when (that belongs in the commit message). Write a comment only for what the code can't tell the reader: the reason, a constraint, an assumption, or why an oddly written spot is that way
+- Don't write comments that restate what the code already shows: what a line does, a paraphrase of a variable or function name, or what changed and when (that belongs in the commit message). Write a comment only for what the code can't tell the reader: the reason, a constraint, an assumption, or why an oddly written spot is that way. Background (why this change was made, what happened) goes in the commit or PR, not the comment; keep only the reasons and constraints someone touching the code later could get wrong
 - This applies to every comment you add when editing existing code too; don't bulk-delete the existing comments
 
 ## Hooks
