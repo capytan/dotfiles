@@ -32,12 +32,14 @@ cd "$dir"
 git rev-parse --git-dir >/dev/null 2>&1 || exit 0
 
 # 後の commit で消したコメントを出さないよう正味の差分を見る。rebase の後に main 側の変更を拾わないよう、
-# 起点は main との merge-base にし、push では upstream との merge-base のほうが新しければそれにする
+# 起点は main との merge-base にし、push では upstream との merge-base のほうが新しいか main が無ければそれにする
 default=$(git symbolic-ref -q --short refs/remotes/origin/HEAD 2>/dev/null || echo origin/main)
-base=$(git merge-base "$default" HEAD 2>/dev/null) || exit 0
-if [ "$kind" = push ] && up=$(git merge-base '@{upstream}' HEAD 2>/dev/null) && git merge-base --is-ancestor "$base" "$up"; then
+base=$(git merge-base "$default" HEAD 2>/dev/null || true)
+if [ "$kind" = push ] && up=$(git merge-base '@{upstream}' HEAD 2>/dev/null) &&
+  { [ -z "$base" ] || git merge-base --is-ancestor "$base" "$up"; }; then
   base=$up
 fi
+[ -n "$base" ] || exit 0
 
 # 見せたコメントを 30 分覚え、まだ見せていないものがあるときだけ止める。HEAD を key にすると、
 # 見直して commit するたびに同じコメントでまた止まり、ほかの hook と交互に止め続ける。
@@ -46,6 +48,9 @@ marker added-comments "$PWD
 $(git symbolic-ref -q --short HEAD || true)
 $kind" || : >"$MARKER"
 seen=$MARKER
+# 追記のたびに期限が延びると、最初に見せたコメントがいつまでも見直し済みのままになるので、
+# 期限は最初に見せた時から数える
+touch -r "$seen" "$seen.stamp"
 
 # Markdown などの見出しと箇条書きはコメントではないので外す
 comments=$(git diff --no-color -U0 "$base" HEAD -- . ':(exclude)*.md' ':(exclude)*.mdx' ':(exclude)*.txt' ':(exclude)*.rst' | awk -v seen="$seen" '
@@ -65,6 +70,7 @@ comments=$(git diff --no-color -U0 "$base" HEAD -- . ':(exclude)*.md' ':(exclude
     }
     line++
   }')
+touch -r "$seen.stamp" "$seen"
 [ -n "$comments" ] || exit 0
 
 deny "足したコメントが必要最小限かを見直す。コードから読めない理由・制約・前提だけを残し、処理の説明、名前の言い換え、経緯、Issue への誘導は消す。直したら commit してから、このままでよければそのまま、もう一度実行する

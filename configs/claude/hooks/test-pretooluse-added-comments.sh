@@ -62,17 +62,35 @@ check deny 'gh pr create --draft'
 commit_file b.tf "$(printf 'x\n# 理由')"
 check allow 'gh pr create --draft'
 
-# 後から足したコメントだけを出し、見せたものと消したものは出さない
+# 後から足したコメントだけを出し、見せたものと消したものは出さない。出しても覚えている期限は延ばさない
+: >"$TMPDIR/before"
+sleep 1
 commit_file c.tf '# 足した'
 check deny "git -C $repo push" "$TMPDIR"
 listed yes 'c.tf:1: # 足した'
 listed no 'b.tf'
+if [ -n "$(find "$TMPDIR/claude-added-comments" -type f ! -name '*.stamp' -newer "$TMPDIR/before")" ]; then
+  fail=$((fail + 1))
+  echo 'FAIL  marker expiry extended'
+fi
 
 commit_file d.tf "$(printf '# d%s\n' $(seq 1 3000))"
 check deny "cd $repo && git push origin HEAD" "$TMPDIR"
 # 一覧に出しきれなかった分は次の回に出す
 check deny 'git push'
 listed yes 'd.tf:41: # d41'
+
+# main を fetch していない clone の push は upstream を起点にする
+repo="$TMPDIR/topic"
+git init -q -b topic "$repo"
+commit_file a.tf 'x'
+git -C "$repo" config remote.origin.url .
+git -C "$repo" config remote.origin.fetch '+refs/heads/*:refs/remotes/origin/*'
+git -C "$repo" update-ref refs/remotes/origin/topic HEAD
+git -C "$repo" config branch.topic.remote origin
+git -C "$repo" config branch.topic.merge refs/heads/topic
+commit_file b.tf '# 理由'
+check deny 'git push'
 
 echo "pass=$pass fail=$fail"
 [ "$fail" -eq 0 ]
