@@ -13,7 +13,7 @@
 - Don't use `git -C <path>` when cwd already matches — use plain `git <subcommand>` so existing permission rules match and Ask prompts don't fire. `-C` only when the target path genuinely differs from cwd (submodule, sibling repo, etc.)
 - Before creating a PR or updating its description, read the repo's PR template (`.github/pull_request_template.md`, the repo root, `docs/`, or `.github/PULL_REQUEST_TEMPLATE/`) and prefer it: keep its headings and comments (markers, etc.). If it has no headings (only comments or markers), keep those as they are and write the body under the headings and guidance of `~/.claude/pull_request_template.md`. If it has headings, add a section from the global template only when the change needs content the repo's sections can't hold. With no repo template, follow the global one. This applies when passing the body with `--body` too, since `gh pr create` only loads a template with `-T` or in interactive mode
 - Likewise before creating an issue, read the repo's issue templates (`.github/ISSUE_TEMPLATE/`) and use the one that fits, keeping its headings and comments; if none fits or there are none, follow `~/.claude/issue_templates/bug.md` or `feature.md`. This applies to `gh issue create --body` too
-- Size the description to the change. Leave out what the diff already shows, the history of the work, and abandoned attempts. Keep issues to what is needed to reproduce or decide
+- Size the description to the change. Leave out what the diff already shows, the history of the work, and abandoned attempts. Keep issues to what is needed to reproduce or decide. In PR and issue descriptions, write only decisions and their reasons, the verification that backs them, the steps and cautions the reader needs next, the numbers behind them, and links; don't restate reasons already in a linked issue, ADR, or report, except the grounds a reviewer needs to approve (whether legitimate traffic or users are affected, the blast radius, plan results) — keep those briefly in the PR or issue even if the link has them. When a section needs nothing, write nothing there — keep its heading and template comments, or drop the heading where the template allows
 - In text people read (Slack messages, PR/issue bodies and comments, chat replies), refer to issues, PRs, and commits by full URL, not `#123` or a short SHA alone — readers can't resolve the bare reference
 
 ## Scope of changes
@@ -28,7 +28,7 @@
 
 ## Code comments
 
-- Don't write comments that restate what the code already shows: what a line does, a paraphrase of a variable or function name, or what changed and when (that belongs in the commit message). Write a comment only for what the code can't tell the reader: the reason, a constraint, an assumption, or why an oddly written spot is that way
+- Don't write comments that restate what the code already shows: what a line does, a paraphrase of a variable or function name, or what changed and when (that belongs in the commit message). Write a comment only for what the code can't tell the reader: the reason, a constraint, an assumption, or why an oddly written spot is that way. The change's background (what happened, the incident or ticket that prompted it) goes in the commit or PR, not the comment; the comment keeps only the reasons and constraints someone touching the code later could get wrong, such as why the code must stay this way
 - This applies to every comment you add when editing existing code too; don't bulk-delete the existing comments
 
 ## Hooks
